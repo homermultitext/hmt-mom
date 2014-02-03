@@ -1,4 +1,4 @@
-# hmt-mom
+# HMT-MOM
 
 Homer Multitext project: Mandatory Ongoing Maintenance.
 
