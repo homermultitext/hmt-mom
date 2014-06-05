@@ -1,9 +1,12 @@
 project.ext {
 
-    // URN of folio you want to verify
+    // URN of folio or papyrus column you want to verify:
     folio = ""
 
-    // Path to directory with XML texts:
-    editions = ""
+
+    // Lists of index files to use in verification:
+    imageToFolio = []
+    textToImage = []
+    textToFolio = []
     
 }
