@@ -69,3 +69,8 @@ task verify(type:  JavaExec, dependsOn: [compileGroovy]) {
     classpath sourceSets.main.output.classesDir
     classpath configurations.runtime
 }
+
+verify.doFirst {
+  System.out.println "\nMOM version: ${version}"
+  System.out.println "Verifying folio ${folio}\n"
+}

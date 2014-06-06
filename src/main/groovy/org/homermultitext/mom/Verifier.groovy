@@ -32,7 +32,6 @@ class Verifier {
     DseManager dsemgr = new DseManager()
     try {
       CiteUrn urn = new CiteUrn (args[0])
-      System.out.println "RUNNING VERIFIER on urn " + urn
 
       String imgFolioStr = args[1].replaceFirst(/^\[/, "")
       imgFolioStr = imgFolioStr.replaceFirst(/\]$/, "")
