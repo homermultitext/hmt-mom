@@ -63,7 +63,7 @@ dependencies {
 task verify(type:  JavaExec, dependsOn: [compileGroovy]) {
     description = "Runs full verification suite on requested URN(s)"
     main = "org.homermultitext.mom.Verifier"
-    args = [folio, imageToFolio, textToImage, textToFolio]
+    args = [folio, folioToImage, textToImage, textToFolio]
 
 
     classpath sourceSets.main.output.classesDir

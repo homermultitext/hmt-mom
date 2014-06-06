@@ -5,7 +5,7 @@ project.ext {
 
 
     // Lists of index files to use in verification:
-    imageToFolio = []
+    folioToImage = []
     textToImage = []
     textToFolio = []
     
