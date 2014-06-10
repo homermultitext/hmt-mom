@@ -64,11 +64,18 @@ class Verifier {
       dsemgr.textTbsIndexFiles = txtFolioFiles
 
 
+      File buildDir = new File(args[4])
+      System.out.println "Write reports in " + buildDir
+
+
+
       if (dsemgr.verifyTbs(urn)) {
 	System.out.println "All DSE relations are valid."
       } else {
 	System.out.println "Errors."
       }
+
+
 
 
     } catch (Exception  e) {
