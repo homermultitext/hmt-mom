@@ -1,0 +1,13 @@
+ul.generatedData {
+  list-style: none;
+}
+ul.generatedData li {
+  display: inline;
+  padding-right: 1em;
+  padding-left: 1em;
+  border-left: 2px solid black;
+}
+ul.generatedData li:nth-child(1) {
+  border-left: none;
+  padding-left: 0em;
+}

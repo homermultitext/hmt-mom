@@ -1,0 +1,11 @@
+
+div.thumbnail {
+float : left;
+padding : 0.2em;
+background-color : inherit;
+}
+
+p.caption {
+font-size : 60%;
+}
+

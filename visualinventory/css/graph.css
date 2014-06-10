@@ -1,0 +1,196 @@
+li.cts-work:nth-child(even) {
+        background-color: #fafaff;
+}
+
+li.cts-work:nth-child(odd) {
+        background-color: #fafaff;
+}
+
+
+li.cts-version:nth-child(even) {
+        border: 1px solid #aab;
+}
+
+li.cts-version:nth-child(odd) {
+        border: 1px solid #aab;
+}
+
+li.cts-version {
+        border: 1px solid #aab;
+}
+
+
+.cite_caption {
+        max-width: 80em;
+        padding: 1em;
+        border: 1px solid silver;
+        background-color: #fafaff;
+
+}
+
+ul#citekit-sources {
+        display: none;
+}
+
+
+#leftDiv, #rightDiv {
+        padding-left: 5px;
+}
+
+#leftDiv {
+        width: 50%;
+}
+
+#rightDiv {
+        float: right;
+        width: 45%;
+}
+
+
+
+.citekit_show_hide_toggle {
+        font-size: 85%;
+        padding: 5px;
+}
+
+.long-text {
+        overflow: auto;
+        font-size: 80%;
+}
+
+.main-text {
+        font-size: 125%;
+}
+
+#canvas {
+        border: 1px solid #ccc;
+}
+
+.hidden {
+        display: none;
+}
+
+
+.toggler {
+        border: 1px solid #ddd;
+        padding: 5px;
+        float: left;
+} 
+
+.nofloat {
+        float: none;
+}
+
+.cite_hilite {
+        -moz-box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        -webkit-box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+
+div.cite_hilite {
+        //background-color: rgba(255,255,255,0.2);
+        z-index: 1000;
+}
+
+.cite_obj {
+        border: 1px solid #557;
+        padding: 3px;
+        margin-bottom: 1em;
+
+}
+
+.cite_snippet {
+        margin: 2px;
+        max-width: 100%;
+}
+
+div.cite_text_hilite {
+        background-color: rgb(255,255,255);
+        position: fixed;
+        padding: 5px;
+        top: 40px;
+        right: 10px;
+        max-width: 75%;
+        z-index: 2000;
+        overflow: auto;
+        -moz-box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        -webkit-box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+}
+div.cite_text_hilite a {
+        background-color: rgb(255,255,200);
+        display: block;
+        padding: 5px;
+}
+
+a.block-link {
+        display: block;
+        float: none;
+}
+
+ul {
+        list-style-type: none;
+}
+
+.cite_sequence {
+        padding: 3px;
+}
+.roiBox {
+        border: 2px solid rgba(128,128,128,0.5);
+        background-color: rgba(128,128,128,0.2);
+}
+.cite_label {
+        display: none;
+        font-size: 65%;
+        color: black;
+        font-family: helvetica, arial, sans-serif;
+        padding: 5px;
+        background-color: rgba(255,255,0,0.7);
+        overflow: hidden;
+}
+
+.cite_label:hover, .cite_label.hover_effect {
+        overflow: visible;
+}
+
+.hover {
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;        
+}
+
+.thumbnail {
+        max-width: 48%;
+}
+
+.text-column { width: 100%; }
+
+.sequence_0 { 
+        border: 2px solid rgba(0,192,192,0.5);
+        background-color: rgba(0,192,192,0.2);
+}
+
+.sequence_1 { 
+        border: 2px solid rgba(255,0,0,0.5);
+        background-color: rgba(255,0,0,0.2);
+}
+.sequence_2 { 
+        border: 2px solid rgba(0,192,0,0.5);
+        background-color: rgba(0,192,0,0.2);
+}
+.sequence_3 { 
+        border: 2px solid rgba(0,0,255,0.5);
+        background-color: rgba(0,0,255,0.2);
+}
+.sequence_4 { 
+        border: 2px solid rgba(192,192,0,0.5);
+        background-color: rgba(192,192,0,0.2);
+}
+.sequence_5 { 
+        border: 2px solid rgba(50,50,50,0.5);
+        background-color: rgba(192,192,192,0.2);
+}
+.sequence_6 { 
+        border: 2px solid rgba(192,0,192,0.5);
+        background-color: rgba(192,0,192,0.2);
+}
+
