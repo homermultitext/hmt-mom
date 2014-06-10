@@ -134,6 +134,11 @@ task verify(type:  JavaExec, dependsOn: [compileGroovy, visinv]) {
 }
 
 verify.doFirst {
-  System.out.println "\nMOM version: ${version}"
   System.out.println "Verifying folio ${folio}\n"
+}
+
+
+verify.doLast {
+  System.out.println "Completed verification."
+  System.out.println "\nMOM version: ${version}"
 }
