@@ -123,7 +123,7 @@ visinv.doLast {
 }
 
 
-task verify(type:  JavaExec, dependsOn: [compileGroovy]) {
+task verify(type:  JavaExec, dependsOn: [compileGroovy, visinv]) {
     description = "Runs full verification suite on requested URN(s)"
     main = "org.homermultitext.mom.Verifier"
     args = [folio, folioToImage, textToImage, textToFolio, buildDir]
