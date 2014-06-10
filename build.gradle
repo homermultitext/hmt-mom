@@ -1,5 +1,20 @@
 /* HMT project Mandatory Ongoing Maintenance. Summer 2014 version.
 */
+buildscript {
+    repositories {
+        mavenCentral()
+	maven {
+	  url "http://beta.hpcc.uh.edu/nexus/content/groups/public"
+	}
+    }
+    dependencies {
+      classpath group: 'org.homermultitext', name : 'citemgr' , version: '0.4.2'
+      classpath group: 'edu.harvard.chs', name : 'cite' , version: '0.14.2'
+    }
+}
+
+import org.homermultitext.citemanager.DseManager
+import edu.harvard.chs.cite.CiteUrn
 
 import org.apache.tools.ant.filters.*
 
@@ -60,10 +75,58 @@ dependencies {
 }
 
 
+
+task setUpVisInv(type: Copy) {
+  from "visualinventory"
+  into "${buildDir}/visualinventory"
+}
+
+task visinv(dependsOn : [setUpVisInv]) {
+  description = "Creates XML visual inventory for conifgured folio."
+}
+
+
+
+visinv.doLast {
+  DseManager dse = new DseManager()
+
+  folioToImage.split(/,/).each { idx ->
+      if (dse.tbsImageIndexFiles) {
+	dse.tbsImageIndexFiles.add(new File(idx))
+      } else {
+	dse.tbsImageIndexFiles = [new File(idx)]
+      }
+  }
+
+  textToImage.split(/,/).each { idx ->
+    if (dse.textImageIndexFiles) {
+      dse.textImageIndexFiles.add(new File(idx))
+    } else {
+      dse.textImageIndexFiles = [new File(idx)]
+    }
+  }
+
+
+
+  textToFolio.split(/,/).each { idx ->
+    if (dse.textTbsIndexFiles) {
+      dse.textTbsIndexFiles.add(new File(idx))
+    } else {
+      dse.textTbsIndexFiles = [new File(idx)]
+    }
+  }
+
+  CiteUrn urn = new CiteUrn(folio)
+  String xml =  dse.getVisualInventoryXml(urn)
+  File visinv = new File("${buildDir}/visualinventory/inventory.xml")
+  visinv.setText(xml,"UTF-8")
+}
+
+
 task verify(type:  JavaExec, dependsOn: [compileGroovy]) {
     description = "Runs full verification suite on requested URN(s)"
     main = "org.homermultitext.mom.Verifier"
-    args = [folio, folioToImage, textToImage, textToFolio]
+    args = [folio, folioToImage, textToImage, textToFolio, buildDir]
 
 
     classpath sourceSets.main.output.classesDir
