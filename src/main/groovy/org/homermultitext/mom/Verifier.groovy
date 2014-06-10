@@ -65,7 +65,7 @@ class Verifier {
 
 
       File buildDir = new File(args[4])
-      System.out.println "Write reports in " + buildDir
+      //System.out.println "Write reports in " + buildDir
 
 
 

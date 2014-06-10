@@ -128,7 +128,6 @@ task verify(type:  JavaExec, dependsOn: [compileGroovy, visinv]) {
     main = "org.homermultitext.mom.Verifier"
     args = [folio, folioToImage, textToImage, textToFolio, buildDir]
 
-
     classpath sourceSets.main.output.classesDir
     classpath configurations.runtime
 }
@@ -139,6 +138,7 @@ verify.doFirst {
 
 
 verify.doLast {
-  System.out.println "Completed verification."
-  System.out.println "\nMOM version: ${version}"
+  System.out.println "Completed verification of ${folio}."
+  System.out.println "Reports are in ${buildDir}/verification."
+  System.out.println "\nMOM version: ${version}."
 }
