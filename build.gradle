@@ -10,11 +10,14 @@ buildscript {
     dependencies {
       classpath group: 'org.homermultitext', name : 'citemgr' , version: '0.4.3'
       classpath group: 'edu.harvard.chs', name : 'cite' , version: '0.14.2'
+      classpath group: 'net.sf.opencsv', name: 'opencsv', version: '2.3'
     }
 }
 
 import org.homermultitext.citemanager.DseManager
 import edu.harvard.chs.cite.CiteUrn
+
+import au.com.bytecode.opencsv.CSVReader
 
 import org.apache.tools.ant.filters.*
 
@@ -81,21 +84,50 @@ task setUpVisInv(type: Copy) {
   into "${buildDir}/visualinventory"
 }
 
-task visinv(dependsOn : [setUpVisInv]) {
-  description = "Creates XML visual inventory for conifgured folio."
+
+task indexScholia() {
+  description = "Reads inventory of scholia, and creates separate indices for surfaces and images"
 }
 
 
+indexScholia.doLast {
+  if (!buildDir.exists()) {
+    buildDir.mkdir()
+  }
+  File scholiaToTbs = new File(buildDir, "scholiaToTbs.csv")
+  File scholiaToImg = new File(buildDir,"scholiaToImage.csv")
+
+  scholiaInventories.split(/,/).each { inv ->
+
+    if (inv) {
+      File invFile = new File(inv)
+      if (invFile) {
+	CSVReader reader = new CSVReader(new FileReader(invFile))
+	reader.readAll().each { ln ->
+	  if (ln.size() == 3) {
+	    scholiaToTbs.append(ln[0] + ',"' + ln[2] + '"\n')
+	    scholiaToImg.append(ln[0] + ',"' + ln[1] + '"\n')
+	  }
+	}
+      }
+    }
+  }
+}
+
+
+task visinv(dependsOn : [setUpVisInv]) {
+  description = "Creates XML visual inventory for conifgured folio."
+}
 
 visinv.doLast {
   DseManager dse = new DseManager()
 
   folioToImage.split(/,/).each { idx ->
-      if (dse.tbsImageIndexFiles) {
-	dse.tbsImageIndexFiles.add(new File(idx))
-      } else {
-	dse.tbsImageIndexFiles = [new File(idx)]
-      }
+    if (dse.tbsImageIndexFiles) {
+      dse.tbsImageIndexFiles.add(new File(idx))
+    } else {
+      dse.tbsImageIndexFiles = [new File(idx)]
+    }
   }
 
   textToImage.split(/,/).each { idx ->
@@ -105,8 +137,6 @@ visinv.doLast {
       dse.textImageIndexFiles = [new File(idx)]
     }
   }
-
-
 
   textToFolio.split(/,/).each { idx ->
     if (dse.textTbsIndexFiles) {
@@ -118,12 +148,13 @@ visinv.doLast {
 
   CiteUrn urn = new CiteUrn(folio)
   String xml =  dse.getVisualInventoryXml(urn)
-  File visinv = new File("${buildDir}/visualinventory/inventory.xml")
+  String fName = "${buildDir}/visualinventory/inventory.xml"
+  File visinv = new File(fName)
   visinv.setText(xml,"UTF-8")
 }
 
 
-task verify(type:  JavaExec, dependsOn: [compileGroovy, visinv]) {
+task verify(type:  JavaExec, dependsOn: [compileGroovy, visinv, indexScholia]) {
     description = "Runs full verification suite on requested URN(s)"
     main = "org.homermultitext.mom.Verifier"
     args = [folio, folioToImage, textToImage, textToFolio, buildDir]
@@ -134,6 +165,8 @@ task verify(type:  JavaExec, dependsOn: [compileGroovy, visinv]) {
 
 verify.doFirst {
   System.out.println "Verifying folio ${folio}\n"
+  ext.textToImage = "${textToImage},${buildDir}/scholiaToImage.csv"
+  ext.textToFolio = "${textToFolio},${buildDir}/scholiaToTbs.csv"
 }
 
 

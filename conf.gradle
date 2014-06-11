@@ -5,8 +5,12 @@ project.ext {
 
 
     // Lists of index files to use in verification:
-    folioToImage = []
-    textToImage = []
-    textToFolio = []
+    folioToImage = ""
+    textToImage = ""
+    textToFolio = ""
+
+    // Scholia inventory files to use in generating indices:
+    scholiaInventories = ""
+
     
 }
