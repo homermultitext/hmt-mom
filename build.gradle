@@ -8,7 +8,7 @@ buildscript {
 	}
     }
     dependencies {
-      classpath group: 'org.homermultitext', name : 'citemgr' , version: '0.4.3'
+      classpath group: 'org.homermultitext', name : 'citemgr' , version: '0.4.4'
       classpath group: 'edu.harvard.chs', name : 'cite' , version: '0.14.2'
       classpath group: 'net.sf.opencsv', name: 'opencsv', version: '2.3'
     }
@@ -61,7 +61,8 @@ repositories {
 
 dependencies {
   compile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
-  compile group: 'org.homermultitext', name : 'citemgr' , version: citemgrversion
+  compile group: 'org.homermultitext', name : 'citemgr' , version: '0.4.4'
+
   compile group: 'edu.harvard.chs', name : 'cite' , version: citeversion
 
   /*
