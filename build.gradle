@@ -141,8 +141,6 @@ visinv.doLast {
   }
   dse.textImageIndexFiles.add(new File(buildDir, "scholiaToImage.csv"))
 
-  println "textImage idx: " + dse.textImageIndexFiles
-
   textToFolio.split(/,/).each { idx ->
     if (dse.textTbsIndexFiles) {
       dse.textTbsIndexFiles.add(new File(idx))
@@ -165,6 +163,9 @@ visinv.doLast {
   String fName = "${buildDir}/visualinventory/inventory.xml"
   File visinv = new File(fName)
   visinv.setText(xml,"UTF-8")
+
+  dse.verifyTbs(folio)
+
 }
 
 /*
