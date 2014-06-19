@@ -18,6 +18,7 @@ import org.homermultitext.citemanager.DseManager
 import edu.harvard.chs.cite.CiteUrn
 
 import au.com.bytecode.opencsv.CSVReader
+import groovy.xml.StreamingMarkupBuilder
 
 import org.apache.tools.ant.filters.*
 
@@ -26,7 +27,6 @@ apply plugin:  "groovy"
 apply plugin:  "maven"
 
 
-//apply from: "pubconf.gradle"
 apply from: "versions.gradle"
 
 
@@ -43,7 +43,9 @@ if (hasProperty('conf')) {
     if (! confFile.exists()) {
         throw new Exception("No configuration file ${conf} found.")
     }
+    System.err.println "Using conf.gradle for configuration"
     apply from: "conf.gradle"
+    
 }
 
 
@@ -78,6 +80,33 @@ dependencies {
   */
 }
 
+
+task chatter() {
+  System.err.println "Paleography:  " + paleo  
+}
+
+task palView() {
+  description = "Creates HTML page displaying paleographic inventory data."
+}
+
+palView.doLast {
+  File palFile = new File(paleo)
+  CSVReader reader = new CSVReader(new FileReader(palFile))
+
+  StreamingMarkupBuilder xml = new StreamingMarkupBuilder()
+  xml.encoding = "UTF-8"
+
+  def doc = xml.bind {
+    mkp.xmlDeclaration()
+    reader.readAll().each { ln ->
+      if (ln.size() >= 3) {
+	//scholiaToTbs.append(ln[0] + ',"' + ln[2] + '"\n')
+	//scholiaToImg.append(ln[0] + ',"' + ln[1] + '"\n')
+      }
+    }
+  }
+  println "XML: " + doc.toString()
+}
 
 
 task setUpVisInv(type: Copy) {

@@ -12,5 +12,9 @@ project.ext {
     // Scholia inventory files to use in generating indices:
     scholiaInventories = ""
 
+    // Collection with systematic, random set of HMT
+    // paleographic observations:
+    //paleo = "collections/paleography.csv"
+    
     
 }
