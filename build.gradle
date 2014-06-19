@@ -16,6 +16,7 @@ buildscript {
 
 import org.homermultitext.citemanager.DseManager
 import edu.harvard.chs.cite.CiteUrn
+import edu.harvard.chs.cite.CtsUrn
 
 import au.com.bytecode.opencsv.CSVReader
 import groovy.xml.StreamingMarkupBuilder
@@ -82,7 +83,9 @@ dependencies {
 
 
 task chatter() {
-  System.err.println "Paleography:  " + paleo  
+  if (hasProperty('paleo')) {
+	System.err.println "Paleography:  " + paleo  
+  }
 }
 
 task palView() {
@@ -90,6 +93,10 @@ task palView() {
 }
 
 palView.doLast {
+  String urnBase = "http://beta.hpcc.uh.edu/tomcat/hmtdigital/images?request=GetBinaryImage&w=9000&urn="
+
+  File outputFile = new File(buildDir, "paleographyViewer.html")
+
   File palFile = new File(paleo)
   CSVReader reader = new CSVReader(new FileReader(palFile))
 
@@ -98,14 +105,40 @@ palView.doLast {
 
   def doc = xml.bind {
     mkp.xmlDeclaration()
-    reader.readAll().each { ln ->
-      if (ln.size() >= 3) {
-	//scholiaToTbs.append(ln[0] + ',"' + ln[2] + '"\n')
-	//scholiaToImg.append(ln[0] + ',"' + ln[1] + '"\n')
+    html {
+      head () {
+      }
+      body{
+	table {
+	  tr {
+	    th ("Reading")
+	    th ("Image")
+	  }
+	  reader.readAll().each { ln ->
+	    if (ln.size() >= 3) {
+	      tr {
+		CtsUrn urn
+		String urnVal
+		try {
+		  urn = new CtsUrn(ln[1])
+		  urnVal = urn.getSubref1()
+		  td (urnVal)
+		  td {
+		    img(src : "${urnBase}${ln[2]}")
+		  }
+
+		} catch (Exception e) {
+		  System.err.println "Bad CTS URN: " + ln[1]
+		}
+	      }
+	    }
+	  }
+	}
       }
     }
   }
-  println "XML: " + doc.toString()
+  outputFile.setText(doc.toString(), "UTF-8")
+  System.err.println "Paleography observations in ${buildDir}/paleographyViewer.html"
 }
 
 
