@@ -82,20 +82,19 @@ dependencies {
 }
 
 
-task chatter() {
-  if (hasProperty('paleo')) {
-	System.err.println "Paleography:  " + paleo  
-  }
-}
-
 task palView() {
   description = "Creates HTML page displaying paleographic inventory data."
 }
 
 palView.doLast {
-  String urnBase = "http://beta.hpcc.uh.edu/tomcat/hmtdigital/images?request=GetBinaryImage&w=9000&urn="
+  File outputDir = new File(buildDir, "paleography")
+  if (! outputDir.exists()) {
+    outputDir.mkdir()
+  }
+  File outputFile = new File(outputDir, "viewer.html")
 
-  File outputFile = new File(buildDir, "paleographyViewer.html")
+
+  String urnBase = "http://beta.hpcc.uh.edu/tomcat/hmtdigital/images?request=GetBinaryImage&w=9000&urn="
 
   File palFile = new File(paleo)
   CSVReader reader = new CSVReader(new FileReader(palFile))
@@ -138,7 +137,7 @@ palView.doLast {
     }
   }
   outputFile.setText(doc.toString(), "UTF-8")
-  System.err.println "Paleography observations in ${buildDir}/paleographyViewer.html"
+  System.err.println "Paleography observations in ${outputDir}/viewer.html"
 }
 
 
