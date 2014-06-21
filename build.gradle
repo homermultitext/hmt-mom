@@ -87,6 +87,9 @@ task palView() {
 }
 
 palView.doLast {
+  if (! buildDir.exists()) {
+    buildDir.mkdir()
+  }
   File outputDir = new File(buildDir, "paleography")
   if (! outputDir.exists()) {
     outputDir.mkdir()
