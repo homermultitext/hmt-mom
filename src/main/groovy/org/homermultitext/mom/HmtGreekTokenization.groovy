@@ -123,13 +123,15 @@ class HmtGreekTokenization {
       case "persName":
       GreekNode n = new GreekNode(node)
       String wd = n.collectText()
-      returnVal.add(["${urnBase}@${wd}", "urn:cite:hmt:pers.{node.'@n'}"])
+      //returnVal.add(["${urnBase}@${wd}", "urn:cite:hmt:pers.{node.'@n'}"])
+      returnVal.add(["${urnBase}@${wd}", "${node.'@n'}"])
       break
 
       case "placeName":
       GreekNode n = new GreekNode(node)
       String wd = n.collectText()
-      returnVal.add(["${urnBase}@${wd}", "urn:cite:hmt:place.{node.'@n'}"])
+      //returnVal.add(["${urnBase}@${wd}", "urn:cite:hmt:place.{node.'@n'}"])
+      returnVal.add(["${urnBase}@${wd}", "${node.'@n'}"])
       break
 
       case "rs":
