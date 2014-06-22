@@ -46,74 +46,86 @@ class HmtTokenizer {
     /**
     */
     void tokenizeTabs() {
-        HmtGreekTokenization tokenSystem = new HmtGreekTokenization()
-        tokensFile.setText("")
+      HmtGreekTokenization tokenSystem = new HmtGreekTokenization()
+      tokensFile.setText("")
 
-        def tabList = tabulatedDir.list({d, f-> f ==~ /.*.txt/ } as FilenameFilter )?.toList() 
-        tabList.each { f ->
-            File tabFile = new File(tabulatedDir,f)
-            if (debug > 0) { System.err.println "TOKENIZE TAB FILE " + tabFile }
-            tokenSystem.tokenize(tabFile, separator).each { tokenPair ->
-	      
-	      String rawCts = tokenPair[0]
-	      String analysis = tokenPair[1]
+      def tabList = tabulatedDir.list({d, f-> f ==~ /.*.txt/ } as FilenameFilter )?.toList() 
+      tabList.each { f ->
+	File tabFile = new File(tabulatedDir,f)
+	if (debug > 0) { System.err.println "TOKENIZE TAB FILE " + tabFile }
+	
+	tokenSystem.tokenize(tabFile, separator).each { tokenPair ->
+	  String rawCts = tokenPair[0]
+	  String analysis = tokenPair[1]
 
-	      CtsUrn urn
-	      String ctsval =  rawCts.replaceAll(/\n/,"")
-	      try {
-		urn = new CtsUrn(ctsval)
-	      } catch (Exception e) {
-		System.err.println "HmtTokenzier, tokenizeTabs:  unable to make URN from ${ctsval} in pair ${tokenPair}"
-	      }
+	  CtsUrn urn
+	  String ctsval =  rawCts.replaceAll(/\n/,"")
+	  try {
+	    urn = new CtsUrn(ctsval)
+	  } catch (Exception e) {
+	    System.err.println "HmtTokenzier, tokenizeTabs:  unable to make URN from ${ctsval} in pair ${tokenPair}"
+	  }
 
 
-	      def checkVal = "${urn.getUrnWithoutPassage()}:${urn.getRef()}"
-	      String subref = urn.getSubref1()
+	  def checkVal = "${urn.getUrnWithoutPassage()}:${urn.getRef()}"
+	  String subref = urn.getSubref1()
 
-	      //  HmtGreekTokenization is a white-space tokenizer that 
-	      //  keeps punctuation.  For analysis, we will throw out punctuation 
-	      //  characters.  ·
-		if (subref)  {
-		  subref = subref.replaceAll(/^[\(\[]/,"")
-		  subref = subref.replaceAll(/[.,;?·]$/, "")
-		  String trimmed = trimWord(subref)
+	  //  HmtGreekTokenization is a white-space tokenizer that 
+	  //  keeps punctuation.  For analysis, we will throw out punctuation 
+	  //  characters.  ·
+	  if (!subref)  {
+	    System.err.println "HmtTokenizer, tokenizeTabs:  null subref in pair ${tokenPair}"
+
+
+	  } else {
+	    subref = subref.replaceAll(/^[\(\[]/,"")
+	    subref = subref.replaceAll(/[.,;?·]$/, "")
+	    String trimmed = trimWord(subref)
+
+	    CiteUrn analysisUrn 
+	    String collection
+	    try {
+	      analysisUrn = new CiteUrn(analysis)
+	      collection =  analysisUrn.getCollection()
+	    } catch (Exception e) {
+	    }
+	    
+	    System.err.println "COLL: " + collection
+	    if (collection != "tokentypes") {
+	      System.err.println "FROM ${collection} appending " + analysis
+	      tokensFile.append("${analysis}\t${ctsval}\n")
+
+	    } else {
+	      System.err.println "FROM ${collection}, analyzing: " + tokenPair[1]
+	      switch (tokenPair[1]) {
+	      case "urn:cite:hmt:tokentypes.lexical":
+	      tokensFile.append("${lexurnbase}.${trimmed}\t${ctsval}\n", "UTF-8")
+	      break
                         
-		  // some analyses carry an id as well as a type:
-		  def parts = analysis.split(":")
-		  System.err.println "${checkVal}, ${subref}, ${analysis}"
-		  System.err.println "\tyields ${parts}"
-		  /*
-		  switch (tokenPair[1]) {
-                            case "urn:cite:hmt:tokentypes.lexical":
-                                tokensFile.append("${lexurnbase}.${trimmed} lex:occursIn ${ctsval} .\n", "UTF-8")
-                            break
-                        
-                            case "urn:cite:hmt:tokentypes.numeric":
-                                tokensFile.append("${numurnbase}.${trimmed} lex:occursIn ${ctsval} .\n", "UTF-8")
-                            break
+	      case "urn:cite:hmt:tokentypes.numeric":
+	      tokensFile.append("${numurnbase}.${trimmed}\t${ctsval}\n", "UTF-8")
+	      break
 
-                            case "urn:cite:hmt:tokentypes.namedEntity":
-                                tokensFile.append("${nameurnbase}.${parts[1]} lex:occursIn ${ctsval} .\n", "UTF-8")
-                            break
-
-                        
-                            case ":cite:hmt:tokentypes.waw":
-                                tokensFile.append("${literalurnbase}.${trimmed} lex:occursIn ${ctsval} .\n", "UTF-8")
-                            break
-                        
-                            default : 
-                                System.err.println "Unrecognized token type: ${tokenPair[1]} of class ${tokenPair[1].getClass()}"
-                            break
-                        }
-
-
+	      /*
+		case "urn:cite:hmt:tokentypes.namedEntity":
+		tokensFile.append("${nameurnbase}.${parts[1]}\t${ctsval}\n", "UTF-8")
+		break
 	      */
-		
-		} else {
-		  System.err.println "HmtTokenizer, tokenizeTabs:  null subref in pair ${tokenPair}"
-		}
-            } 
+                        
+	      case ":cite:hmt:tokentypes.waw":
+	      tokensFile.append("${literalurnbase}.${trimmed}\t${ctsval}\n", "UTF-8")
+	      break
+              
+	      default : 
+	      System.err.println "Unrecognized token type: ${tokenPair[1]} of class ${tokenPair[1].getClass()}"
+	      break
+	      }
+		  
+	    }
+	  }
+	  
         }
+      }
     }
 
 
