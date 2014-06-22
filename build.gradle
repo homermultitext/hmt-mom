@@ -1,4 +1,5 @@
-/* HMT project Mandatory Ongoing Maintenance. Summer 2014 version.
+/* HMT project Mandatory Ongoing Maintenance. 
+   Summer 2014 version.
 */
 buildscript {
     repositories {
@@ -11,12 +12,15 @@ buildscript {
       classpath group: 'org.homermultitext', name : 'citemgr' , version: '0.4.4'
       classpath group: 'edu.harvard.chs', name : 'cite' , version: '0.14.2'
       classpath group: 'net.sf.opencsv', name: 'opencsv', version: '2.3'
+      classpath group: 'edu.holycross.shot', name: 'hocuspocus', version : '0.7.27'
     }
 }
 
 import org.homermultitext.citemanager.DseManager
 import edu.harvard.chs.cite.CiteUrn
 import edu.harvard.chs.cite.CtsUrn
+import edu.holycross.shot.hocuspocus.Corpus
+
 
 import au.com.bytecode.opencsv.CSVReader
 import groovy.xml.StreamingMarkupBuilder
@@ -74,7 +78,9 @@ dependencies {
 
     compile group: "edu.holycross.shot", name: "hocuspocus", version: hocuspocusversion
     compile group: 'edu.harvard.chs', name : 'greekutils' , version: greekutilsversion
+  */
     testCompile group: 'junit', name: 'junit', version: '4.8.2'
+  /*
     compile group: 'com.thaiopensource', name:'jing', version: '20091111'
     compile group: 'net.sf.saxon', name: 'saxon-dom', version: '8.7'
     compile group: 'org.codehaus.groovy.modules.http-builder', name: 'http-builder', version: '0.5.2'	
@@ -141,7 +147,7 @@ palView.doLast {
   }
   outputFile.setText(doc.toString(), "UTF-8")
   System.err.println "Paleography observations in ${outputDir}/viewer.html"
-}
+} /*end palView task */
 
 
 task setUpVisInv(type: Copy) {
@@ -180,11 +186,11 @@ indexScholia.doLast {
 }
 
 
-task visinv(dependsOn : [setUpVisInv, indexScholia]) {
-  description = "Creates XML visual inventory for conifgured folio."
+task dse(dependsOn : [setUpVisInv, indexScholia]) {
+  description = "Does citemgr's DSE validation,  and creates an XML visual inventory for the specified folio."
 }
 
-visinv.doLast {
+dse.doLast {
   DseManager dse = new DseManager()
 
   folioToImage.split(/,/).each { idx ->
@@ -194,7 +200,6 @@ visinv.doLast {
       dse.tbsImageIndexFiles = [new File(idx)]
     }
   }
-
 
   textToImage.split(/,/).each { idx ->
     if (dse.textImageIndexFiles) {
@@ -243,7 +248,42 @@ task verify(type:  JavaExec, dependsOn: [compileGroovy, visinv, indexScholia]) {
     }*/
 
 
-task verify(dependsOn: [visinv]) {
+task tabulate() {
+  description = "Tabulates all inventoried material"
+}
+
+
+tabulate.doLast {
+  File tiFile = new File(textInventory)
+  File archiveDir = new File(textArchive)
+  File outDir = new File(buildDir,"tabulated")
+  if (! buildDir.exists()) { 
+    buildDir.mkdir()
+  }
+  if (! outDir.exists()) {
+    outDir.mkdir()
+  }
+
+  Corpus c = new Corpus(tiFile, archiveDir)
+  c.tabulateRepository(outDir)
+}
+
+task tokenize(dependsOn: tabulate) {
+  description = "Creates HMT classified tokenization of texts for given page"
+  
+}
+
+tokenize.doLast {
+  File tabsDir = new File(buildDir, "tabulated")
+  File outputDir = new File(buildDir, "tokens")
+  if (! outputDir.exists()) {
+    outputDir.mkdir()
+  }
+  String fldSeparator = "#"
+
+}
+
+task verify(dependsOn: [dse, tokenize]) {
     description = "Runs full verification suite on requested URN(s)"
 }
 

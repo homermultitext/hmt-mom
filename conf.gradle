@@ -1,16 +1,26 @@
 project.ext {
 
-    // URN of folio or papyrus column you want to verify:
+    // URN of folio page or papyrus column you want to verify:
     folio = ""
 
 
-    // Lists of index files to use in verification:
+    // Settings for hocuspocus CTS repository:
+    textInventory = ""
+    textArchive = ""
+
+
+    // Lists of index files to use in DSE verification:
     folioToImage = ""
     textToImage = ""
     textToFolio = ""
 
-    // Scholia inventory files to use in generating indices:
+    // Scholia Collections to use in automatically 
+    // generating DSE indices for scholia:
     scholiaInventories = ""
+
+
+    
+
 
     // Collection with systematic, random set of HMT
     // paleographic observations:
