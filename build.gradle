@@ -103,7 +103,7 @@ palView.doLast {
   File outputFile = new File(outputDir, "viewer.html")
 
 
-  String urnBase = "http://beta.hpcc.uh.edu/tomcat/hmtdigital/images?request=GetBinaryImage&w=9000&urn="
+  String urnBase = "http://beta.hpcc.uh.edu/tomcat/hmt-digital/images?request=GetBinaryImage&w=9000&urn="
 
   File palFile = new File(paleo)
   CSVReader reader = new CSVReader(new FileReader(palFile))
@@ -210,6 +210,8 @@ dse.doLast {
   }
   dse.textImageIndexFiles.add(new File(buildDir, "scholiaToImage.csv"))
 
+  //System.err.printn ""
+
   textToFolio.split(/,/).each { idx ->
     if (dse.textTbsIndexFiles) {
       dse.textTbsIndexFiles.add(new File(idx))
@@ -224,7 +226,17 @@ dse.doLast {
 
   CiteUrn  img = dse.imageForTbs(folio)
 
-  def iMaps = dse.imageMapsByText(img)
+  System.err.println "Default image: " + img
+
+  if (!img) {
+    System.err.println "No default image for " + folio
+  }
+  def iMaps 
+  try {
+    iMaps = dse.imageMapsByText(img)
+  } catch (Exception e)  {
+    System.err.println "Unable to get image maps for ${img}."
+  }
 
   CiteUrn urn = new CiteUrn(folio)
   String xml =  dse.getVisualInventoryXml(urn)
