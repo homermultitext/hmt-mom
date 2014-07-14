@@ -11,7 +11,7 @@
   
 
     <!--URL for image service: configure dynamically!-->
-    <xsl:variable name="imgURL">http://beta.hpcc.uh.edu/tomcat/hmtdigital/images</xsl:variable>
+    <xsl:variable name="imgURL">http://beta.hpcc.uh.edu/tomcat/hmt-digital/images</xsl:variable>
 
 
     <!-- Variables for CSS Classes and HTML IDs -->
