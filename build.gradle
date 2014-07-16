@@ -10,12 +10,16 @@ buildscript {
     }
     dependencies {
       classpath group: 'org.homermultitext', name : 'citemgr' , version: '0.4.4'
+      classpath group: 'org.homermultitext', name : 'hmt-utils' , version: '0.1.2'
+
       classpath group: 'edu.harvard.chs', name : 'cite' , version: '0.14.2'
-      classpath group: 'net.sf.opencsv', name: 'opencsv', version: '2.3'
       classpath group: 'edu.holycross.shot', name: 'hocuspocus', version : '0.7.27'
+
+      classpath group: 'net.sf.opencsv', name: 'opencsv', version: '2.3'
     }
 }
 
+import org.homermultitext.utils.HmtTokenizer
 import org.homermultitext.citemanager.DseManager
 import edu.harvard.chs.cite.CiteUrn
 import edu.harvard.chs.cite.CtsUrn
@@ -55,8 +59,27 @@ if (hasProperty('conf')) {
 
 
 
+if (hasProperty('repoconf')) {
+    System.err.println "Using repository locations data from ${repoconf}"
+    File confFile = new File(repoconf)
+    if (! confFile.exists()) {
+        throw new Exception("No file ${repoconf} found.")
+    }
+    apply from: repoconf
+
+} else {
+    File confFile = new File("repos.gradle")
+    if (! confFile.exists()) {
+        throw new Exception("No configuration file ${confFile} found.")
+    }
+    System.err.println "Using repos.gradle for finding repositories."
+    apply from: "repos.gradle"
+}
+
+
+
 group = "org.homermultitext"
-version = '0.4.0'
+version = '0.5.0'
 
 
 repositories {
@@ -291,11 +314,23 @@ tokenize.doLast {
   if (! outputDir.exists()) {
     outputDir.mkdir()
   }
+  File outputFile = new File(outputDir, "tokens.txt")
   String fldSeparator = "#"
-
+  HmtTokenizer hmtTokens = new HmtTokenizer(tabsDir, outputFile, fldSeparator)
+  hmtTokens.tokenizeTabs()
 }
 
-task verify(dependsOn: [dse, tokenize]) {
+
+task namedents(dependsOn: [tokenize]) {
+  description  = "Check that named entities are valid."
+}
+namedents.doLast {
+  File tokens = new File("${buildDir}/tokens/tokens.txt")
+  def nes = tokens.readLines().findAll { l -> l ==~ /urn:cite:hmt.+/}
+  println "named ents: " + nes.size() + " (class ${nes.getClass()})"
+}
+
+task verify(dependsOn: [dse, namedents]) {
     description = "Runs full verification suite on requested URN(s)"
 }
 
@@ -309,8 +344,6 @@ verify.doLast {
   DseManager dse = new DseManager()
   dse.debug = 5
 
-  // assing all indices
-  // then
   
 
   System.out.println "Completed verification of ${folio}."

@@ -1,0 +1,12 @@
+
+/* default values are relative location
+   in HMT virtual machine
+*/
+
+ext {
+    byzortho = "../byzortho/orthoequivs.csv"
+    persnames = "../hmt-authlists/data/hmtnames.csv"
+    placenames = "../hmt-authlists/data/hmtplaces.csv"
+
+    morpheus = "../morpheus/bin/morpheus"
+}
