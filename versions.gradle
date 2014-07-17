@@ -3,14 +3,4 @@ ext {
     groovyVersion = "2.0.6"
     citeversion = "0.14.2"
 
-    /*
-    dseversion = "0.3.0"
-    hocuspocusversion = "0.7.27"
-
-    greekutilsversion = "0.8.5"
-
-    junitversion = "4.10"
-    xmlunitversion = "1.3"
-    jingversion = "20091111"
-    */
 }
