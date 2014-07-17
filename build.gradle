@@ -264,7 +264,7 @@ dse.doLast {
 }
 
 
-task tabulate() {
+task tabulate(dependsOn: dse) {
   description = "Writes tabulated form of all inventoried texts in ${buildDir}/tabulated."
 }
 
@@ -285,19 +285,12 @@ tabulate.doLast {
   c.tabulateRepository(tabDir)
 }
 
-task tokenize(dependsOn: tabulate) {
-  description = "Creates HMT classified tokenization of texts for given page"
-  
+task tabulateSurface(dependsOn: tabulate) {
 }
 
-tokenize.doLast {
+tabulateSurface.doLast {
   // input and output files:
   File tabsDir = new File(buildDir, "tabulated")
-  File outputDir = new File(buildDir, "tokens")
-  if (! outputDir.exists()) {
-    outputDir.mkdir()
-  }
-  File tokensFile = new File(outputDir, "tokens.txt")
 
   // Get a hocuspocus corpus for text repository:
   File archiveDir = new File(textArchive)
@@ -338,16 +331,39 @@ tokenize.doLast {
   ArrayList tabData = dse.tabDataForSurface(folio, corpus, tabsDir)
   
 
-  File surfTabsDir = new File(buildDir, "surfacetabs")
-  surfTabsDir.mkdir()
-  File tabDataFile = new File(surfTabsDir, "tokens.txt")
+
+  File outputDir = new File(buildDir, "surfaceTabs")
+  if (! outputDir.exists()) {
+    outputDir.mkdir()
+  }
+
+  File tabDataFile = new File(outputDir, "tab.txt")
   tabData.each {
     tabDataFile.append(it + "\n", "UTF-8")
   }
+
+}
+
+task tokenize(dependsOn: tabulateSurface) {
+  description = "Creates HMT classified tokenization of texts for given page"
+  
+}
+
+tokenize.doLast {
+  // input and output files:
+  File surfTabsDir = new File(buildDir, "surfaceTabs")
+  File outputDir = new File(buildDir, "tokens")
+  if (! outputDir.exists()) {
+    outputDir.mkdir()
+  }
+  File tokensFile = new File(outputDir, "tokens.txt")
+
   String fldSeparator = "#"
   HmtTokenizer hmtTokens = new HmtTokenizer(surfTabsDir, tokensFile, fldSeparator)
   hmtTokens.tokenizeTabs()
 }
+
+
 
 
 task namedents(dependsOn: [tokenize]) {
@@ -359,7 +375,7 @@ namedents.doLast {
   println "named ents: " + nes.size() + " (class ${nes.getClass()})"
 }
 
-task verify(dependsOn: [dse, namedents]) {
+task verify(dependsOn: [namedents]) {
     description = "Runs full verification suite on requested URN(s)"
 }
 
