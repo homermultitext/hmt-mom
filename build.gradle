@@ -596,6 +596,7 @@ verify.doLast {
       }
       body {
 	h1 ("Page ${folio} — summary of verification")
+	p("MOM version: ${version}")
 	p("DSE reports are not yet integrated in this web page:  see separate feedback in terminal.)")
 	p {
 	  mkp.yield "Also see a "
@@ -635,5 +636,5 @@ verify.doLast {
 
   System.out.println "Completed verification of ${folio}."
   System.out.println "See a summary of results in ${buildDir}/verification/index.html."
-  //System.out.println "\nMOM version: ${version}."
+
 }
