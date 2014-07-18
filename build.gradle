@@ -614,7 +614,7 @@ verify.doLast {
 	  Integer reportCount = 0
 	  summaries.eachLine { ln ->
 	    reportCount++
-	    if (reportCount > 0) {
+	    if (reportCount > 1) {
 	      def cols = ln.split(/,/)
 	      tr {
 		td(cols[0])
