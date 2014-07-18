@@ -373,7 +373,6 @@ persNames.doLast {
 
   File tokens = new File("${buildDir}/tokens/tokens.txt")
   if (tokens.exists()) {
-    println "Tokens: " + tokens.readLines().size()
     def persNames = tokens.readLines().findAll { l -> l ==~ /urn:cite:hmt:pers.+/}
     def occurrenceMap = [:]
     persNames.each { 
@@ -452,7 +451,28 @@ persNames.doLast {
 
     
     /*
+    */
 
+
+
+  } else {
+    println "No tokens file."
+  }
+}
+
+
+
+task placeNames(dependsOn: [tokenize]) {
+  description  = "Check that place name identifiers are valid."
+}
+
+placeNames.doLast {
+
+  File summaries = new File(buildDir,"summaries.txt")
+  File reportsDir = new File(buildDir, "verification")
+
+  File tokens = new File("${buildDir}/tokens/tokens.txt")
+  if (tokens.exists()) {
     def placeNames = tokens.readLines().findAll { l -> l ==~ /urn:cite:hmt:place.+/}
     def placeList = []
     File placeFile = new File (placenames)
@@ -460,7 +480,7 @@ persNames.doLast {
       def cols = it.split(/,/)
       placeList.add(cols[0])
     }
-    println "Check " + placeNames.size() + " place name occurrences  against " + personsList.size() + " authority list entries."
+    println "Check " + placeNames.size() + " place name occurrences  against " + placeList.size() + " authority list entries."
 
 
     def placeOccurrenceMap = [:]
@@ -489,16 +509,54 @@ persNames.doLast {
 	badPlace++
       }
     }
-    println "Score: ${goodPlace} / ${badPlace} / total: ${placeOccurrenceMap.keySet().size()}"
-    */
 
 
+    //println "Score: ${goodPlace} / ${badPlace} / total: ${placeOccurrenceMap.keySet().size()}"
+    summaries.append("Place names,${goodPlace},${badPlace},${placeOccurrenceMap.keySet().size()},placenames.html\n")
+    File placeReport = new File(reportsDir, "placenames.html")
+
+    def placesXml = new groovy.xml.StreamingMarkupBuilder().bind {
+      //mkp.pi("xml-stylesheet": "type='text/xsl' href='xslt/image.xsl'" )
+      html {
+	head {
+	  title ("Verification of place names for ${folio}")
+	}
+	body {
+	  h1("Place names for ${folio}")
+	  table {
+	    tr {
+	      th ("Reference")
+	      th ("Valid?")
+	      th ("Occurs in")
+	    }
+	    placeOccurrenceMap.keySet().each { k ->
+	      tr {
+		td ("${k}")
+		td("${placeList.contains(k)}")
+		td {
+		  def psgs = placeOccurrenceMap[k]
+		  if (psgs.size() == 1) {
+		    mkp.yield "${psgs[0]}"
+		  } else {
+		    ul {
+		      psgs.each { p ->
+			li ("${p}")
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+    placeReport.setText(placesXml.toString())
 
   } else {
     println "No tokens file."
   }
 }
-
 
 task initReport {
   description = "Initializes a new verification report."
@@ -514,7 +572,7 @@ task initReport {
 }
 
 
-task verify(dependsOn: [persNames, initReport]) {
+task verify(dependsOn: [initReport, persNames, placeNames]) {
     description = "Runs full verification suite on requested URN(s)"
 }
 
@@ -537,7 +595,7 @@ verify.doLast {
 	title ("Summary of verification for ${folio}")
       }
       body {
-	h1 ("Page ${folio}: summary of verification")
+	h1 ("Page ${folio} — summary of verification")
 	p("DSE reports are not yet integrated in this web page:  see separate feedback in terminal.)")
 	p {
 	  mkp.yield "Also see a "
