@@ -666,7 +666,7 @@ lex2.doLast {
   morphin.eachLine { l ->
     if (l.size() > 0) {
       count++
-      def command = "/vagrant/morpheus/bin/morpheus ${l}"
+      def command = "${morpheus} ${l}"
       print "${count}: Analyzing ${l}..."
       def proc = command.execute()
       proc.waitFor()
