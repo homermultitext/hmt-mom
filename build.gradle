@@ -597,7 +597,7 @@ verify.doLast {
       body {
 	h1 ("Page ${folio} — summary of verification")
 	p("MOM version: ${version}")
-	p("DSE reports are not yet integrated in this web page:  see separate feedback in terminal.)")
+	p("DSE reports are not yet integrated in this web page:  see separate feedback in terminal.")
 	p {
 	  mkp.yield "Also see a "
 	  a(href: "../visualinventory/", "visual inventory")
