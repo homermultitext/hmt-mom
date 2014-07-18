@@ -15,7 +15,13 @@ buildscript {
       classpath group: 'edu.harvard.chs', name : 'cite' , version: '0.14.2'
       classpath group: 'edu.holycross.shot', name: 'hocuspocus', version : '0.7.27'
 
+      classpath group: 'edu.harvard.chs', name : 'greekutils' , version: '0.8.5'
+
+      classpath group : 'edu.unc.epidoc', name: 'transcoder', version : '1.2-SNAPSHOT'
+
       classpath group: 'net.sf.opencsv', name: 'opencsv', version: '2.3'
+
+
     }
 }
 
@@ -25,9 +31,12 @@ import edu.harvard.chs.cite.CiteUrn
 import edu.harvard.chs.cite.CtsUrn
 
 import edu.holycross.shot.hocuspocus.Corpus
-//import edu.holycross.shot.hocuspocus.TabUtil
 
 import org.homermultitext.citemanager.DseManager
+
+import edu.harvard.chs.f1k.GreekNode
+
+import edu.unc.epidoc.transcoder.TransCoder
 
 import au.com.bytecode.opencsv.CSVReader
 import groovy.xml.StreamingMarkupBuilder
@@ -82,7 +91,7 @@ if (hasProperty('repoconf')) {
 
 
 group = "org.homermultitext"
-version = '0.5.0'
+version = '0.6.0'
 
 
 repositories {
@@ -477,7 +486,6 @@ placeNames.doLast {
 
   File summaries = new File(buildDir,"summaries.txt")
   File reportsDir = new File(buildDir, "verification")
-
   File tokens = new File("${buildDir}/tokens/tokens.txt")
   if (tokens.exists()) {
     def placeNames = tokens.readLines().findAll { l -> l ==~ /urn:cite:hmt:place.+/}
@@ -594,6 +602,99 @@ task copyCss(type: Copy) {
   into "${buildDir}/verification/css"
 }
 
+
+task testLex {
+  description = "test lex."
+}
+
+testLex.doLast {
+  File tokens = new File("${buildDir}/tokens/tokens.txt")
+  if (tokens.exists()) {
+    def lexItems = tokens.readLines().findAll { l -> l ==~ /urn:cite:perseus:lextoken.+/}
+    println "Unique lexical items: " + lexItems.unique().size() + " (${lexItems.size()} total)"
+    TransCoder tobeta = new TransCoder()
+    tobeta.setConverter("BetaCode")
+    tobeta.setParser("Unicode")
+
+
+    TransCoder frombeta = new TransCoder()
+    frombeta.setParser("BetaCode")
+    frombeta.setConverter("UnicodeC")
+
+    File summaries = new File(buildDir,"summaries.txt")
+    File reportsDir = new File(buildDir, "verification")
+
+    println "Use byz ortho in " + byzortho
+    println "Excecute morpheus from " + morpheus
+
+
+    StringBuffer wordList = new StringBuffer()
+    lexItems.each { lex ->
+      def cols = lex.split(/\t/)
+      def token = cols[0].replace(/urn:cite:perseus:lextoken./,"")
+      println "${token} -> ${tobeta.getString(token)}"
+      wordList.append(tobeta.getString(token) + "\n")
+    }
+
+    if (wordList.toString().readLines().size() > 0) {
+      File morphin = new File(buildDir, "wordlist.txt")
+      morphin.setText(wordList.toString())
+      println "Wrote " + morphin.readLines().size() + " tokens to file."
+    } else {
+      println "No tokens in tokens file."
+    }
+
+
+  } else {
+    println "No tokens file."
+  }
+
+}
+
+
+task lex2(dependsOn: testLex) {
+//task lex2 {
+  description="Test morpheus invocation"
+}
+
+lex2.doLast {
+  File morphin  = new File (buildDir, "wordlist.txt")
+
+  Integer success = 0
+  Integer fail = 0
+  Integer count = 0
+  morphin.eachLine { l ->
+    if (l.size() > 0) {
+      count++
+      def command = "/vagrant/morpheus/bin/morpheus ${l}"
+      print "${count}: Analyzing ${l}..."
+      def proc = command.execute()
+      proc.waitFor()
+      def reply = proc.in.text.readLines()
+      
+      if (reply[1] ==~ /.*unknown.+/) {
+	fail++
+	println " fail."
+      } else {
+	success++
+	println " success."
+      }
+    }
+  }
+  println "Totals:  ${success}/${fail}/total: ${count}"
+  
+}
+
+
+/*
+task morph(type: Exec) {
+  commandLine "bash", "-c", "/vagrant/hmt-mom/morph.sh"
+}
+*/
+
+task gmorph(type: Exec) {
+  commandLine "/usr/bin/groovy", "/vagrant/hmt-mom/morph.groovy"
+}
 
 task verify(dependsOn: [initReport, persNames, placeNames, copyCss]) {
     description = "Runs full verification suite on requested URN(s)"
