@@ -364,44 +364,157 @@ tokenize.doLast {
 }
 
 
-/*
-task tokensHost() {
- File tabsDir = new File("/Users/nsmith/Desktop/hmt-vm/hmt-mom/build/surfaceTabs")
-    File outputFile = new File("testdata/out/tokens2.txt")
-    String separatorStr = "#"
-    HmtTokenizer tokenizer = new HmtTokenizer(tabsDir, outputFile, separatorStr)
-    tokenizer.tokenizeTabs()
-}
-
-*/
-
-/*
-task tokensOnly() {
-  File surfTabsDir = new File(buildDir, "surfaceTabs")
-  File outputDir = new File(buildDir, "tokens")
-  if (! outputDir.exists()) {
-    outputDir.mkdir()
-  }
-  File tokensFile = new File(outputDir, "tokens.txt")
-
-  String fldSeparator = "#"
-  HmtTokenizer hmtTokens = new HmtTokenizer(surfTabsDir, tokensFile, fldSeparator)
-  hmtTokens.tokenizeTabs()
-
-}
-*/
-
 task namedents(dependsOn: [tokenize]) {
   description  = "Check that named entities are valid."
 }
 namedents.doLast {
-  File tokens = new File("${buildDir}/tokens/tokens.txt")
-  def nes = tokens.readLines().findAll { l -> l ==~ /urn:cite:hmt.+/}
-  println "named ents: " + nes.size() + " (class ${nes.getClass()})"
+  File summaries = new File(buildDir,"summaries.txt")
+  File reportsDir = new File(buildDir, "verification")
 
+  File tokens = new File("${buildDir}/tokens/tokens.txt")
+  if (tokens.exists()) {
+    println "Tokens: " + tokens.readLines().size()
+    def persNames = tokens.readLines().findAll { l -> l ==~ /urn:cite:hmt:pers.+/}
+    def occurrenceMap = [:]
+    persNames.each { 
+      def cols = it.split(/\t/)
+      def pname = cols[0]
+      def psg = cols[1]
+      if (occurrenceMap[pname]) {
+	def psgs = occurrenceMap[pname]
+	psgs.add(psg)
+	occurrenceMap[pname] =  psgs
+      } else {
+	occurrenceMap[pname] = [psg]
+      }
+    }
+
+    def personsList = []
+    File personsFile = new File (persnames)
+    personsFile.eachLine {
+      def cols = it.split(/,/)
+      personsList.add(cols[0])
+    }
+    println "Check " + persNames.size() + " personal name occurrences  against " + personsList.size() + " authority list entries."
+    
+    Integer good = 0
+    Integer bad = 0
+    def scoreMap = [:]
+    occurrenceMap.keySet().each { k ->
+      if (personsList.contains(k)) {
+	good++
+	  
+      } else {
+	bad++
+      }
+    }
+    //println "Score: ${good} / ${bad} / total: ${occurrenceMap.keySet().size()}"
+    summaries.append("Personal names,${good},${bad},${occurrenceMap.keySet().size()},personalnames.html")
+    File persReport = new File(reportsDir, "personalnames.html")
+
+    def personsXml = new groovy.xml.StreamingMarkupBuilder().bind {
+      //mkp.pi("xml-stylesheet": "type='text/xsl' href='xslt/image.xsl'" )
+      html {
+	head {
+	  title ("Verification of personal names for ${folio}")
+	}
+	body {
+	  h1("Personal names for ${folio}")
+	  table {
+	    tr {
+	      th ("Reference")
+	      th ("Valid?")
+	      th ("Occurs in")
+	    }
+	    occurrenceMap.keySet().each { k ->
+	      tr {
+		td ("${k}")
+		td("${personsList.contains(k)}")
+		td {
+		  def psgs = occurrenceMap[k]
+		  if (psgs.size() == 1) {
+		    mkp.yield "${psgs[0]}"
+		  } else {
+		    ul {
+		      psgs.each { p ->
+			li ("${p}")
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+    persReport.setText(personsXml.toString())
+
+    
+    /*
+
+    def placeNames = tokens.readLines().findAll { l -> l ==~ /urn:cite:hmt:place.+/}
+    def placeList = []
+    File placeFile = new File (placenames)
+    placeFile.eachLine {
+      def cols = it.split(/,/)
+      placeList.add(cols[0])
+    }
+    println "Check " + placeNames.size() + " place name occurrences  against " + personsList.size() + " authority list entries."
+
+
+    def placeOccurrenceMap = [:]
+    placeNames.each { 
+      def cols = it.split(/\t/)
+      def pname = cols[0]
+      def psg = cols[1]
+      if (placeOccurrenceMap[pname]) {
+	def psgs = placeOccurrenceMap[pname]
+	psgs.add(psg)
+	placeOccurrenceMap[pname] =  psgs
+      } else {
+	placeOccurrenceMap[pname] = [psg]
+      }
+    }
+
+
+
+
+    Integer goodPlace = 0
+    Integer badPlace = 0
+    placeOccurrenceMap.keySet().each { k ->
+      if (placeList.contains(k)) {
+	goodPlace++
+      } else {
+	badPlace++
+      }
+    }
+    println "Score: ${goodPlace} / ${badPlace} / total: ${placeOccurrenceMap.keySet().size()}"
+    */
+
+
+
+  } else {
+    println "No tokens file."
+  }
 }
 
-task verify(dependsOn: [namedents]) {
+
+task initReport {
+  description = "Initializes a new verification report."
+  if (! buildDir.exists()) {
+    buildDir.mkdir()
+  }
+  File summaries = new File(buildDir,"summaries.txt")
+  summaries.setText("label,success,failure,total,link")
+  File reportsDir = new File(buildDir, "verification")
+  if (! reportsDir.exists()) {
+    reportsDir.mkdir()
+  }
+}
+
+
+task verify(dependsOn: [namedents, initReport]) {
     description = "Runs full verification suite on requested URN(s)"
 }
 
@@ -414,10 +527,9 @@ verify.doLast {
   
   DseManager dse = new DseManager()
   dse.debug = 5
-
   
 
   System.out.println "Completed verification of ${folio}."
-  System.out.println "Reports are in ${buildDir}/verification."
-  System.out.println "\nMOM version: ${version}."
+  System.out.println "See results in ${buildDir}/verification."
+  //System.out.println "\nMOM version: ${version}."
 }
