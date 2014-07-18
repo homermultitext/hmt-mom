@@ -132,6 +132,7 @@ palView.doLast {
       head () {
       }
       body{
+
 	table {
 	  tr {
 	    th ("Reading")
@@ -416,27 +417,38 @@ persNames.doLast {
       html {
 	head {
 	  title ("Verification of personal names for ${folio}")
+	  link(type: "text/css", rel: "stylesheet", href: "css/hmt-core.css", title: "HMT CSS")
+	
 	}
 	body {
-	  h1("Personal names for ${folio}")
-	  table {
-	    tr {
-	      th ("Reference")
-	      th ("Valid?")
-	      th ("Occurs in")
+	  header(role: "banner") {
+	    mkp.yield "HMT-MOM: "
+	    nav(role: "navigation") {
+	      ul {
+	      }
 	    }
-	    occurrenceMap.keySet().each { k ->
+	  }
+	  article(role: "main") {
+	    h1("Personal names for ${folio}")
+	    table {
 	      tr {
-		td ("${k}")
-		td("${personsList.contains(k)}")
-		td {
-		  def psgs = occurrenceMap[k]
-		  if (psgs.size() == 1) {
-		    mkp.yield "${psgs[0]}"
-		  } else {
-		    ul {
-		      psgs.each { p ->
-			li ("${p}")
+		th ("Reference")
+		th ("Valid?")
+		th ("Occurs in")
+	      }
+	      occurrenceMap.keySet().each { k ->
+		tr {
+		  td ("${k}")
+		  td("${personsList.contains(k)}")
+		  td {
+		    def psgs = occurrenceMap[k]
+		    if (psgs.size() == 1) {
+		      mkp.yield "${psgs[0]}"
+		    } else {
+		      ul {
+			psgs.each { p ->
+			  li ("${p}")
+			}
 		      }
 		    }
 		  }
@@ -448,12 +460,7 @@ persNames.doLast {
       }
     }
     persReport.setText(personsXml.toString())
-
     
-    /*
-    */
-
-
 
   } else {
     println "No tokens file."
@@ -520,27 +527,38 @@ placeNames.doLast {
       html {
 	head {
 	  title ("Verification of place names for ${folio}")
+	  link(type: "text/css", rel: "stylesheet", href: "css/hmt-core.css", title: "HMT CSS")
+	
 	}
 	body {
-	  h1("Place names for ${folio}")
-	  table {
-	    tr {
-	      th ("Reference")
-	      th ("Valid?")
-	      th ("Occurs in")
+	  header(role: "banner") {
+	    mkp.yield "HMT-MOM: "
+	    nav(role: "navigation") {
+	      ul {
+	      }
 	    }
-	    placeOccurrenceMap.keySet().each { k ->
+	  }
+	  article (role: "main") {
+	    h1("Place names for ${folio}")
+	    table {
 	      tr {
-		td ("${k}")
-		td("${placeList.contains(k)}")
-		td {
-		  def psgs = placeOccurrenceMap[k]
-		  if (psgs.size() == 1) {
-		    mkp.yield "${psgs[0]}"
-		  } else {
-		    ul {
-		      psgs.each { p ->
-			li ("${p}")
+		th ("Reference")
+		th ("Valid?")
+		th ("Occurs in")
+	      }
+	      placeOccurrenceMap.keySet().each { k ->
+		tr {
+		  td ("${k}")
+		  td("${placeList.contains(k)}")
+		  td {
+		    def psgs = placeOccurrenceMap[k]
+		    if (psgs.size() == 1) {
+		      mkp.yield "${psgs[0]}"
+		    } else {
+		      ul {
+			psgs.each { p ->
+			  li ("${p}")
+			}
 		      }
 		    }
 		  }
@@ -571,8 +589,13 @@ task initReport {
   }
 }
 
+task copyCss(type: Copy) {
+  from "css"
+  into "${buildDir}/verification/css"
+}
 
-task verify(dependsOn: [initReport, persNames, placeNames]) {
+
+task verify(dependsOn: [initReport, persNames, placeNames, copyCss]) {
     description = "Runs full verification suite on requested URN(s)"
 }
 
@@ -593,37 +616,50 @@ verify.doLast {
     html {
       head {
 	title ("Summary of verification for ${folio}")
+	link(type: "text/css", rel: "stylesheet", href: "css/hmt-core.css", title: "HMT CSS")
       }
       body {
-	h1 ("Page ${folio} — summary of verification")
-	p("MOM version: ${version}")
-	p("DSE reports are not yet integrated in this web page:  see separate feedback in terminal.")
-	p {
-	  mkp.yield "Also see a "
-	  a(href: "../visualinventory/", "visual inventory")
-	  mkp.yield " of indexed text passages. "
-	  mkp.yield "(Open with Safari or Firefox.)"
-	}
-
-
-	table {
-	  tr {
-	    th("Report")
-	    th("Results")
-	    th("Details")
-	  }
-	  Integer reportCount = 0
-	  summaries.eachLine { ln ->
-	    reportCount++
-	    if (reportCount > 1) {
-	      def cols = ln.split(/,/)
-	      tr {
-		td(cols[0])
-		td("${cols[1]}/${cols[2]}/${cols[3]}")
-		td {
-		  a(href : "${cols[4]}", "details")
-		}
+	header(role: "banner") {
+	  mkp.yield "HMT-MOM: "
+	  nav(role: "navigation") {
+	    ul {
+	      li {
+		a(href:"index.html", "summary")
 	      }
+	    }
+	  }
+	}
+	article (role: "main") {
+	  h1 ("Page ${folio} — summary of verification")
+	  p("MOM version: ${version}")
+	  p("DSE reports are not yet integrated in this web page:  see separate feedback in terminal.")
+	  p {
+	    mkp.yield "Also see a "
+	    a(href: "../visualinventory/", "visual inventory")
+	    mkp.yield " of indexed text passages. "
+	    mkp.yield "(Open with Safari or Firefox.)"
+	  }
+
+
+	  table {
+	    tr {
+	      th("Report")
+	      th("Results")
+	      th("Details")
+	    }
+	    Integer reportCount = 0
+	    summaries.eachLine { ln ->
+	      reportCount++
+		if (reportCount > 1) {
+		  def cols = ln.split(/,/)
+		  tr {
+		    td(cols[0])
+		    td("${cols[1]}/${cols[2]}/${cols[3]}")
+		    td {
+		      a(href : "${cols[4]}", "details")
+		    }
+		  }
+		}
 	    }
 	  }
 	}
