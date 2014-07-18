@@ -364,10 +364,10 @@ tokenize.doLast {
 }
 
 
-task namedents(dependsOn: [tokenize]) {
-  description  = "Check that named entities are valid."
+task persNames(dependsOn: [tokenize]) {
+  description  = "Check that personal name identifiers are valid."
 }
-namedents.doLast {
+persNames.doLast {
   File summaries = new File(buildDir,"summaries.txt")
   File reportsDir = new File(buildDir, "verification")
 
@@ -514,7 +514,7 @@ task initReport {
 }
 
 
-task verify(dependsOn: [namedents, initReport]) {
+task verify(dependsOn: [persNames, initReport]) {
     description = "Runs full verification suite on requested URN(s)"
 }
 
