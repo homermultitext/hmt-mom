@@ -9,8 +9,8 @@ buildscript {
 	}
     }
     dependencies {
-      classpath group: 'org.homermultitext', name : 'citemgr' , version: '0.4.5'
-      classpath group: 'org.homermultitext', name : 'hmt-utils' , version: '0.2.0'
+      classpath group: 'org.homermultitext', name : 'citemgr' , version: '0.4.9'
+      classpath group: 'org.homermultitext', name : 'hmt-utils' , version: '0.2.5'
 
       classpath group: 'edu.harvard.chs', name : 'cite' , version: '0.14.2'
       classpath group: 'edu.holycross.shot', name: 'hocuspocus', version : '0.7.27'
@@ -364,7 +364,32 @@ tokenize.doLast {
 }
 
 
+/*
+task tokensHost() {
+ File tabsDir = new File("/Users/nsmith/Desktop/hmt-vm/hmt-mom/build/surfaceTabs")
+    File outputFile = new File("testdata/out/tokens2.txt")
+    String separatorStr = "#"
+    HmtTokenizer tokenizer = new HmtTokenizer(tabsDir, outputFile, separatorStr)
+    tokenizer.tokenizeTabs()
+}
 
+*/
+
+/*
+task tokensOnly() {
+  File surfTabsDir = new File(buildDir, "surfaceTabs")
+  File outputDir = new File(buildDir, "tokens")
+  if (! outputDir.exists()) {
+    outputDir.mkdir()
+  }
+  File tokensFile = new File(outputDir, "tokens.txt")
+
+  String fldSeparator = "#"
+  HmtTokenizer hmtTokens = new HmtTokenizer(surfTabsDir, tokensFile, fldSeparator)
+  hmtTokens.tokenizeTabs()
+
+}
+*/
 
 task namedents(dependsOn: [tokenize]) {
   description  = "Check that named entities are valid."
@@ -373,6 +398,7 @@ namedents.doLast {
   File tokens = new File("${buildDir}/tokens/tokens.txt")
   def nes = tokens.readLines().findAll { l -> l ==~ /urn:cite:hmt.+/}
   println "named ents: " + nes.size() + " (class ${nes.getClass()})"
+
 }
 
 task verify(dependsOn: [namedents]) {
