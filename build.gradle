@@ -409,7 +409,7 @@ persNames.doLast {
       }
     }
     //println "Score: ${good} / ${bad} / total: ${occurrenceMap.keySet().size()}"
-    summaries.append("Personal names,${good},${bad},${occurrenceMap.keySet().size()},personalnames.html")
+    summaries.append("Personal names,${good},${bad},${occurrenceMap.keySet().size()},personalnames.html\n")
     File persReport = new File(reportsDir, "personalnames.html")
 
     def personsXml = new groovy.xml.StreamingMarkupBuilder().bind {
@@ -506,7 +506,7 @@ task initReport {
     buildDir.mkdir()
   }
   File summaries = new File(buildDir,"summaries.txt")
-  summaries.setText("label,success,failure,total,link")
+  summaries.setText("label,success,failure,total,link\n")
   File reportsDir = new File(buildDir, "verification")
   if (! reportsDir.exists()) {
     reportsDir.mkdir()
@@ -528,8 +528,54 @@ verify.doLast {
   DseManager dse = new DseManager()
   dse.debug = 5
   
+  File summaries = new File(buildDir, "summaries.txt")
+
+  def reportXml = new groovy.xml.StreamingMarkupBuilder().bind {
+    //mkp.pi("xml-stylesheet": "type='text/xsl' href='xslt/image.xsl'" )
+    html {
+      head {
+	title ("Summary of verification for ${folio}")
+      }
+      body {
+	h1 ("Page ${folio}: summary of verification")
+	p("DSE reports are not yet integrated in this web page:  see separate feedback in terminal.)")
+	p {
+	  mkp.yield "Also see a "
+	  a(href: "../visualinventory/", "visual inventory")
+	  mkp.yield " of indexed text passages. "
+	  mkp.yield "(Open with Safari or Firefox.)"
+	}
+
+
+	table {
+	  tr {
+	    th("Report")
+	    th("Results")
+	    th("Details")
+	  }
+	  Integer reportCount = 0
+	  summaries.eachLine { ln ->
+	    reportCount++
+	    if (reportCount > 0) {
+	      def cols = ln.split(/,/)
+	      tr {
+		td(cols[0])
+		td("${cols[1]}/${cols[2]}/${cols[3]}")
+		td {
+		  a(href : "${cols[4]}", "details")
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+
+  File summaryReport = new File("${buildDir}/verification/index.html")
+  summaryReport.setText(reportXml.toString())
 
   System.out.println "Completed verification of ${folio}."
-  System.out.println "See results in ${buildDir}/verification."
+  System.out.println "See a summary of results in ${buildDir}/verification/index.html."
   //System.out.println "\nMOM version: ${version}."
 }
