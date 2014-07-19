@@ -417,7 +417,6 @@ persNames.doLast {
 	bad++
       }
     }
-    //println "Score: ${good} / ${bad} / total: ${occurrenceMap.keySet().size()}"
     summaries.append("Personal names,${good},${bad},${occurrenceMap.keySet().size()},personalnames.html\n")
     File persReport = new File(verificationDir, "personalnames.html")
 
@@ -534,8 +533,6 @@ placeNames.doLast {
       }
     }
 
-
-    //println "Score: ${goodPlace} / ${badPlace} / total: ${placeOccurrenceMap.keySet().size()}"
     summaries.append("Place names,${goodPlace},${badPlace},${placeOccurrenceMap.keySet().size()},placenames.html\n")
     File placeReport = new File(verificationDir, "placenames.html")
 
@@ -661,7 +658,6 @@ lex1.doLast {
     lexItems.each { lex ->
       def cols = lex.split(/\t/)
       def token = cols[0].replace(/urn:cite:perseus:lextoken./,"")
-      println "${token} -> ${tobeta.getString(token)}"
       String betaToken = tobeta.getString(token)
       if (byzTokensList.contains(betaToken)) {
 	println "Byzantine orthography ok: " + token
@@ -679,7 +675,6 @@ lex1.doLast {
     } else {
       println "No tokens in tokens file."
     }
-
 
   } else {
     println "No tokens file."
