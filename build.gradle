@@ -607,13 +607,35 @@ task copyCss(type: Copy) {
   into "${buildDir}/verification/css"
 }
 
+task byzorth (dependsOn: tokenize) {
+  description="Check tokens against list of byzantine orthographic variants."
+}
 
-task lex1(dependsOn: tokenize) {
+byzorth.doLast {
+  // write failures to lextokens
+  File tokens = new File("${buildDir}/tokens/tokens.txt")
+  File lextokens = new File("${buildDir}/tokens/lextokens.txt")
+  if (tokens.exists()) {
+    tokens.eachLine {
+      lextokens.append(it + "\n")
+    }
+  } else {
+    println "No tokens file."
+  }
+}
+
+task cpCheck(dependsOn: tabulate) {
+  description = "Check that code point usage is valid for given document."
+}
+cpCheck.doLast {
+}
+
+task lex1(dependsOn: byzorth) {
   description = "Create word list, in beta code, for morpheus."
 }
 
 lex1.doLast {
-  File tokens = new File("${buildDir}/tokens/tokens.txt")
+  File tokens = new File("${buildDir}/tokens/lextokens.txt")
   if (tokens.exists()) {
     def lexItems = tokens.readLines().findAll { l -> l ==~ /urn:cite:perseus:lextoken.+/}
     println "Unique lexical items: " + lexItems.unique().size() + " (${lexItems.size()} total)"
@@ -762,8 +784,13 @@ lex2.doLast {
  
 }
 
-
-task verify(dependsOn: [initReport, persNames, placeNames, lex2, copyCss]) {
+task concordance(dependsOn: tokenize) {
+  description = "Compiles alphabetized concordance of lexical tokens on this surface"
+}
+concordance.doLast {
+  println "Concordance: not yet implemented."
+}
+task verify(dependsOn: [initReport, persNames, placeNames, lex2, copyCss, concordance, cpCheck]) {
     description = "Runs full verification suite on requested URN(s)"
 }
 
@@ -812,7 +839,7 @@ verify.doLast {
 	  table {
 	    tr {
 	      th("Report")
-	      th("Results")
+	      th("Success/Failure/Total")
 	      th("Details")
 	    }
 	    Integer reportCount = 0
