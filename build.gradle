@@ -627,25 +627,44 @@ lex.doLast {
   File tokens = new File("${buildDir}/tokens/tokens.txt")
 
   if (tokens.exists()) {
-    // record of analysis:  map each token to one of 
-    // byz (appears in byz ortho list), 
-    // success (morpheus parses), 
-    // fail (neither of the preceding)
+    // 2 data structures:
+    // 1. Map of unique tokens to passages:
+    def passageMap = [:]
+
+    // 2. record of analysis:  analyze each token as one of 
+    // a) byz (appears in byz ortho list), 
+    // b) success (morpheus parses), 
+    // c) fail (neither of the preceding)
     def statusMap = [:]
 
     // Lexical tokens for morpheus to analyze:
     File lexTokensFile = new File("${buildDir}/tokens/lextokens.txt")
 
+
     def lexItems = tokens.readLines().findAll { l -> l ==~ /urn:cite:perseus:lextoken.+/}
     println "Unique lexical items: " + lexItems.unique().size() + " (${lexItems.size()} total)"
+
+    lexItems.each { 
+      def cols = it.split(/\t/)
+      def lex = cols[0]
+      def psg = cols[1]
+      if (passageMap[lex]) {
+	def psgs = passageMap[lex]
+	psgs.add(psg)
+	passageMap[lex] =  psgs
+      } else {
+	passageMap[lex] = [psg]
+      }
+    }
+
     TransCoder tobeta = new TransCoder()
     tobeta.setConverter("BetaCode")
     tobeta.setParser("Unicode")
-
-
+    /*
     TransCoder frombeta = new TransCoder()
     frombeta.setParser("BetaCode")
     frombeta.setConverter("UnicodeC")
+    */
 
     File summaries = new File(buildDir,"summaries.txt")
     File verificationDir = new File(buildDir, "verification")
@@ -667,21 +686,19 @@ lex.doLast {
     Integer fail = 0
     Integer lexCount = 0
 
-    //def tempKludgePuncts =  [".", "·"]
     lexItems.each { lex ->
       lexCount = lexCount + 1
       def cols = lex.split(/\t/)
       String tokenUrn = cols[0]
       String token = tokenUrn.replace(/urn:cite:perseus:lextoken./,"")
       String betaToken = tobeta.getString(token)
-      //      if (tempKludgePuncts.contains(token)) {
-      //println "${lexCount}: omit punctuation " + '"' +  token + '"'
-      //      } else 
       if (token.size() < 1) {
 	println "${lexCount}: omit punctuation ${token}"
       } else if (orthoAuthorityList.contains(betaToken)) {
+
 	println "${lexCount}: Byzantine orthography ok: " + token
 	statusMap[tokenUrn] = "byz"
+
       } else {
 
 	def command = "${morpheus} ${betaToken}"
@@ -689,7 +706,6 @@ lex.doLast {
 	def proc = command.execute()
 	proc.waitFor()
 	def reply = proc.in.text.readLines()
-
 
 	if (reply[1] ==~ /.*unknown.+/) {
 	  statusMap[tokenUrn]  = "fail"
@@ -733,6 +749,37 @@ lex.doLast {
 		th ("Reference")
 		th ("Valid?")
 		th ("Occurs in")
+	      }
+
+	      // cycle each token in status map
+	      // report its passages from occurrence map
+	      statusMap.keySet().each { k ->
+		tr {
+		  td(k)
+		  td {
+		    if (statusMap[k] == "byz") {
+		      img(src: "css/check.png")
+		      
+		    } else if (statusMap[k] == "success") {
+		      img(src: "css/check.png")
+		    } else {
+		      img(src: "css/delete.png")
+		    }
+		  }
+		    
+		  td {
+		    def psgs =  passageMap[k]
+		    if (psgs.size() > 1) {
+		      ul {
+			psgs.each {
+			  li(it)
+			}
+		      }
+		    } else {
+		      mkp.yield (psgs[0])
+		    }
+		  }
+		}
 	      }
 	    }
 	  }
