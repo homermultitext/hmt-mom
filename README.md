@@ -21,8 +21,8 @@ or user interface).
 
 ## Further information##
 
-See the [project wiki][1] for draft documentation,
-and discussion of future developemnt plans.
+See the [project wiki][1] for further notes and draft documentation,
+and discussion of future development plans.
 
 
 [morph]: https://github.com/homermultitext/morpheus
