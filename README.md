@@ -10,6 +10,14 @@ the [Homer Multitext project virtual machine for editors][vm].
 Detailed documentation on how to use MOM in editing material for the Homer Multitext
 project is being added to the project web site's [guides for editors and contributors][2].
 
+## Version numbering##
+
+The left-most digit identifies a major version, defined as a version that either dramatically
+changes MOM's functionality, or requires a change in configuration.  The second digit from the left
+identifies an upgrade that adds some tests or functionality to the main version, but does not
+require a change in configuration.  The third digit identifies a version with changes 
+that do not change what MOM tests and validates (e.g., a version that improves formatting of HTML reports
+or user interface).
 
 ## Further information##
 
