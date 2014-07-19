@@ -176,6 +176,7 @@ palView.doLast {
 
 
 task setUpVisInv(type: Copy) {
+  description="Copy template files for visual inventory to build area."
   from "visualinventory"
   into "${buildDir}/visualinventory"
 }
@@ -295,10 +296,11 @@ tabulate.doLast {
   c.tabulateRepository(tabDir)
 }
 
-task tabulateSurface(dependsOn: tabulate) {
+task tabsForSurface(dependsOn: tabulate) {
+  description="Selects tabulated text data for requested text-bearing surface."
 }
 
-tabulateSurface.doLast {
+tabsForSurface.doLast {
   // input and output files:
   File tabsDir = new File(buildDir, "tabulated")
 
@@ -354,7 +356,7 @@ tabulateSurface.doLast {
 
 }
 
-task tokenize(dependsOn: tabulateSurface) {
+task tokenize(dependsOn: tabsForSurface) {
   description = "Creates HMT classified tokenization of texts for given page"
   
 }
@@ -379,7 +381,7 @@ task persNames(dependsOn: [tokenize]) {
 }
 persNames.doLast {
   File summaries = new File(buildDir,"summaries.txt")
-  File reportsDir = new File(buildDir, "verification")
+  File verificationDir = new File(buildDir, "verification")
 
   File tokens = new File("${buildDir}/tokens/tokens.txt")
   if (tokens.exists()) {
@@ -419,7 +421,7 @@ persNames.doLast {
     }
     //println "Score: ${good} / ${bad} / total: ${occurrenceMap.keySet().size()}"
     summaries.append("Personal names,${good},${bad},${occurrenceMap.keySet().size()},personalnames.html\n")
-    File persReport = new File(reportsDir, "personalnames.html")
+    File persReport = new File(verificationDir, "personalnames.html")
 
     def personsXml = new groovy.xml.StreamingMarkupBuilder().bind {
       //mkp.pi("xml-stylesheet": "type='text/xsl' href='xslt/image.xsl'" )
@@ -434,6 +436,9 @@ persNames.doLast {
 	    mkp.yield "HMT-MOM: "
 	    nav(role: "navigation") {
 	      ul {
+		li {
+		  a(href:"index.html", "summary")
+		}
 	      }
 	    }
 	  }
@@ -485,7 +490,7 @@ task placeNames(dependsOn: [tokenize]) {
 placeNames.doLast {
 
   File summaries = new File(buildDir,"summaries.txt")
-  File reportsDir = new File(buildDir, "verification")
+  File verificationDir = new File(buildDir, "verification")
   File tokens = new File("${buildDir}/tokens/tokens.txt")
   if (tokens.exists()) {
     def placeNames = tokens.readLines().findAll { l -> l ==~ /urn:cite:hmt:place.+/}
@@ -528,7 +533,7 @@ placeNames.doLast {
 
     //println "Score: ${goodPlace} / ${badPlace} / total: ${placeOccurrenceMap.keySet().size()}"
     summaries.append("Place names,${goodPlace},${badPlace},${placeOccurrenceMap.keySet().size()},placenames.html\n")
-    File placeReport = new File(reportsDir, "placenames.html")
+    File placeReport = new File(verificationDir, "placenames.html")
 
     def placesXml = new groovy.xml.StreamingMarkupBuilder().bind {
       //mkp.pi("xml-stylesheet": "type='text/xsl' href='xslt/image.xsl'" )
@@ -591,9 +596,9 @@ task initReport {
   }
   File summaries = new File(buildDir,"summaries.txt")
   summaries.setText("label,success,failure,total,link\n")
-  File reportsDir = new File(buildDir, "verification")
-  if (! reportsDir.exists()) {
-    reportsDir.mkdir()
+  File verificationDir = new File(buildDir, "verification")
+  if (! verificationDir.exists()) {
+    verificationDir.mkdir()
   }
 }
 
@@ -603,11 +608,11 @@ task copyCss(type: Copy) {
 }
 
 
-task testLex {
-  description = "test lex."
+task lex1(dependsOn: tokenize) {
+  description = "Create word list, in beta code, for morpheus."
 }
 
-testLex.doLast {
+lex1.doLast {
   File tokens = new File("${buildDir}/tokens/tokens.txt")
   if (tokens.exists()) {
     def lexItems = tokens.readLines().findAll { l -> l ==~ /urn:cite:perseus:lextoken.+/}
@@ -622,7 +627,7 @@ testLex.doLast {
     frombeta.setConverter("UnicodeC")
 
     File summaries = new File(buildDir,"summaries.txt")
-    File reportsDir = new File(buildDir, "verification")
+    File verificationDir = new File(buildDir, "verification")
 
     println "Use byz ortho in " + byzortho
     println "Excecute morpheus from " + morpheus
@@ -652,9 +657,8 @@ testLex.doLast {
 }
 
 
-task lex2(dependsOn: testLex) {
-//task lex2 {
-  description="Test morpheus invocation"
+task lex2(dependsOn: lex1) {
+  description="Invoke morpheus on wordlist"
 }
 
 lex2.doLast {
@@ -671,7 +675,23 @@ lex2.doLast {
       def proc = command.execute()
       proc.waitFor()
       def reply = proc.in.text.readLines()
-      
+
+
+      /*
+      def lexOccurrenceMap = [:]
+    placeNames.each { 
+      def cols = it.split(/\t/)
+      def pname = cols[0]
+      def psg = cols[1]
+      if (placeOccurrenceMap[pname]) {
+	def psgs = placeOccurrenceMap[pname]
+	psgs.add(psg)
+	placeOccurrenceMap[pname] =  psgs
+      } else {
+	placeOccurrenceMap[pname] = [psg]
+      }
+    }
+      */
       if (reply[1] ==~ /.*unknown.+/) {
 	fail++
 	println " fail."
@@ -681,22 +701,69 @@ lex2.doLast {
       }
     }
   }
-  println "Totals:  ${success}/${fail}/total: ${count}"
-  
+  File summaries = new File(buildDir,"summaries.txt")
+  summaries.append("Lexical tokens,${success},${fail},${success + fail},lextokens.html\n")  
+
+  File verificationDir = new File(buildDir, "verification")
+  File lexReport = new File(verificationDir, "lextokens.html")
+
+    def lexXml = new groovy.xml.StreamingMarkupBuilder().bind {
+      //mkp.pi("xml-stylesheet": "type='text/xsl' href='xslt/image.xsl'" )
+      html {
+	head {
+	  title ("Verification of lexical tokens for ${folio}")
+	  link(type: "text/css", rel: "stylesheet", href: "css/hmt-core.css", title: "HMT CSS")
+	
+	}
+	body {
+	  header(role: "banner") {
+	    mkp.yield "HMT-MOM: "
+	    nav(role: "navigation") {
+	      ul {
+		li {
+		  a(href:"index.html", "summary")
+		}
+	      }
+	    }
+	  }
+	  article (role: "main") {
+	    h1("Lexical tokens for ${folio}")
+	    table {
+	      tr {
+		th ("Reference")
+		th ("Valid?")
+		th ("Occurs in")
+	      }
+	      /*
+	      placeOccurrenceMap.keySet().each { k ->
+		tr {
+		  td ("${k}")
+		  td("${placeList.contains(k)}")
+		  td {
+		    def psgs = placeOccurrenceMap[k]
+		    if (psgs.size() == 1) {
+		      mkp.yield "${psgs[0]}"
+		    } else {
+		      ul {
+			psgs.each { p ->
+			  li ("${p}")
+			}
+		      }
+		    }
+		  }
+		}
+		}*/
+	    }
+	  }
+	}
+      }
+    }
+    lexReport.setText(lexXml.toString())
+ 
 }
 
 
-/*
-task morph(type: Exec) {
-  commandLine "bash", "-c", "/vagrant/hmt-mom/morph.sh"
-}
-*/
-
-task gmorph(type: Exec) {
-  commandLine "/usr/bin/groovy", "/vagrant/hmt-mom/morph.groovy"
-}
-
-task verify(dependsOn: [initReport, persNames, placeNames, copyCss]) {
+task verify(dependsOn: [initReport, persNames, placeNames, lex2, copyCss]) {
     description = "Runs full verification suite on requested URN(s)"
 }
 
@@ -753,8 +820,20 @@ verify.doLast {
 	      reportCount++
 		if (reportCount > 1) {
 		  def cols = ln.split(/,/)
+		  Integer success = cols[1].toInteger()
+		  Integer fail = cols[2].toInteger()
+		  Integer total = cols[3].toInteger()
 		  tr {
-		    td(cols[0])
+		    td {
+		      if  (success == total) {
+			img(src: "css/check.png")
+			mkp.yield(cols[0])
+		      } else {
+			img(src: "css/delete.png")
+			mkp.yield(cols[0])
+		      }
+
+		    }
 		    td("${cols[1]}/${cols[2]}/${cols[3]}")
 		    td {
 		      a(href : "${cols[4]}", "details")
