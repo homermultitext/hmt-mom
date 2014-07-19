@@ -1,9 +1,0 @@
-# Notes on summer, 2014 work#
-
-- migrating to use `citemgr` for validation of standard DSE configurations
-- layer specific HMT validations on top of that
-
-
-## validation via `citemgr` ##
-
-- referential integrity of 3-way DSE indexes (image, text, object)

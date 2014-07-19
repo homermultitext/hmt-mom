@@ -91,7 +91,7 @@ if (hasProperty('repoconf')) {
 
 
 group = "org.homermultitext"
-version = '1.0.0'
+version = '1.0.test'
 
 
 repositories {
@@ -836,7 +836,9 @@ verify.doLast {
 	}
 	article (role: "main") {
 	  h1 ("Page ${folio} — summary of verification")
-	  p("MOM version: ${version}")
+	  p {
+	    strong("MOM version: ${version}")
+	  }
 	  p("DSE reports are not yet integrated in this web page:  see separate feedback in terminal.")
 	  p {
 	    mkp.yield "Also see a "
