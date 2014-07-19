@@ -453,7 +453,13 @@ persNames.doLast {
 	      occurrenceMap.keySet().each { k ->
 		tr {
 		  td ("${k}")
-		  td("${personsList.contains(k)}")
+		  td {
+		    if (personsList.contains(k)) {
+		      img(src: "css/check.png")
+		    } else {
+		      img(src: "css/delete.png")
+		    }
+		  }
 		  td {
 		    def psgs = occurrenceMap[k]
 		    if (psgs.size() == 1) {
@@ -562,7 +568,13 @@ placeNames.doLast {
 	      placeOccurrenceMap.keySet().each { k ->
 		tr {
 		  td ("${k}")
-		  td("${placeList.contains(k)}")
+		  td {
+		    if (placeList.contains(k)) {
+		      img(src: "css/check.png")
+		    } else {
+		      img(src: "css/delete.png")
+		    }
+		  }
 		  td {
 		    def psgs = placeOccurrenceMap[k]
 		    if (psgs.size() == 1) {
