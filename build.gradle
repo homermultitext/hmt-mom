@@ -175,7 +175,7 @@ palView.doLast {
 } /*end palView task */
 
 
-task setUpVisInv(type: Copy) {
+task setUpVisualInventory(type: Copy) {
   description="Copy template files for visual inventory to build area."
   from "visualinventory"
   into "${buildDir}/visualinventory"
@@ -212,7 +212,7 @@ indexScholia.doLast {
 }
 
 
-task dse(dependsOn : [setUpVisInv, indexScholia]) {
+task dse(dependsOn : [setUpVisualInventory, indexScholia]) {
   description = "Does citemgr's DSE validation,  and creates an XML visual inventory for the specified folio."
 }
 
@@ -549,6 +549,9 @@ placeNames.doLast {
 	    mkp.yield "HMT-MOM: "
 	    nav(role: "navigation") {
 	      ul {
+		li {
+		  a(href:"index.html", "summary")
+		}
 	      }
 	    }
 	  }
@@ -615,15 +618,21 @@ task copyCss(type: Copy) {
 }
 
 
-task lex1(dependsOn: tokenize) {
-  description = "Creates word list, in beta code, and writes it to lextokens.txt for morpheus to analyze."
+task lex(dependsOn: tokenize) {
+  description = "Analyzes lexical tokens."
 }
 
-lex1.doLast {
+lex.doLast {
   // All tokens, as created by tokenize task:
   File tokens = new File("${buildDir}/tokens/tokens.txt")
 
   if (tokens.exists()) {
+    // record of analysis:  map each token to one of 
+    // byz (appears in byz ortho list), 
+    // success (morpheus parses), 
+    // fail (neither of the preceding)
+    def statusMap = [:]
+
     // Lexical tokens for morpheus to analyze:
     File lexTokensFile = new File("${buildDir}/tokens/lextokens.txt")
 
@@ -644,95 +653,60 @@ lex1.doLast {
     println "Use byz ortho in " + byzortho
     File byzorth = new File( byzortho)
 
-    def byzTokensList = []
+    def orthoAuthorityList = []
     Integer count = 0
     byzorth.eachLine {
       if (count > 0) {
 	def cols = it.split(/,/)
-	byzTokensList.add( tobeta.getString(cols[1]) )
+	orthoAuthorityList.add( tobeta.getString(cols[1]) )
       }
-      count++
-	}
-  
-    StringBuffer wordList = new StringBuffer()
+      count = count + 1
+    }
+
+    Integer success = 0
+    Integer fail = 0
+    Integer lexCount = 0
+
+    //def tempKludgePuncts =  [".", "·"]
     lexItems.each { lex ->
+      lexCount = lexCount + 1
       def cols = lex.split(/\t/)
-      def token = cols[0].replace(/urn:cite:perseus:lextoken./,"")
+      String tokenUrn = cols[0]
+      String token = tokenUrn.replace(/urn:cite:perseus:lextoken./,"")
       String betaToken = tobeta.getString(token)
-      if (byzTokensList.contains(betaToken)) {
-	println "Byzantine orthography ok: " + token
+      //      if (tempKludgePuncts.contains(token)) {
+      //println "${lexCount}: omit punctuation " + '"' +  token + '"'
+      //      } else 
+      if (token.size() < 1) {
+	println "${lexCount}: omit punctuation ${token}"
+      } else if (orthoAuthorityList.contains(betaToken)) {
+	println "${lexCount}: Byzantine orthography ok: " + token
+	statusMap[tokenUrn] = "byz"
       } else {
-	wordList.append( betaToken+ "\n")
+
+	def command = "${morpheus} ${betaToken}"
+	print "${lexCount}: Analyzing ${token}..."
+	def proc = command.execute()
+	proc.waitFor()
+	def reply = proc.in.text.readLines()
+
+
+	if (reply[1] ==~ /.*unknown.+/) {
+	  statusMap[tokenUrn]  = "fail"
+	  fail = fail + 1
+	  println " fail."
+	} else {
+	  statusMap[tokenUrn]  = "success"
+	  success = success + 1
+	  println " success."
+	}
       }
     }
 
 
-    if (wordList.toString().readLines().size() > 0) {
-      //File morphin = new File(buildDir, "lextokens.txt")
-      //morphin.setText(wordList.toString())
-      //println "Wrote " + morphin.readLines().size() + " tokens to file."
-      lexTokensFile.setText(wordList.toString())
-    } else {
-      println "No tokens in tokens file."
-    }
+    summaries.append("Lexical tokens,${success},${fail},${success + fail},lextokens.html\n")  
 
-  } else {
-    println "No tokens file."
-  }
-
-}
-
-
-task lex2(dependsOn: lex1) {
-  description="Invoke morpheus on wordlist"
-}
-
-lex2.doLast {
-  File morphin  = new File ("${buildDir}/tokens/lextokens.txt")
-
-  Integer success = 0
-  Integer fail = 0
-  Integer count = 0
-  morphin.eachLine { l ->
-    if (l.size() > 0) {
-      count++
-      def command = "${morpheus} ${l}"
-      print "${count}: Analyzing ${l}..."
-      def proc = command.execute()
-      proc.waitFor()
-      def reply = proc.in.text.readLines()
-
-
-      /*
-      def lexOccurrenceMap = [:]
-    placeNames.each { 
-      def cols = it.split(/\t/)
-      def pname = cols[0]
-      def psg = cols[1]
-      if (placeOccurrenceMap[pname]) {
-	def psgs = placeOccurrenceMap[pname]
-	psgs.add(psg)
-	placeOccurrenceMap[pname] =  psgs
-      } else {
-	placeOccurrenceMap[pname] = [psg]
-      }
-    }
-      */
-      if (reply[1] ==~ /.*unknown.+/) {
-	fail++
-	println " fail."
-      } else {
-	success++
-	println " success."
-      }
-    }
-  }
-  File summaries = new File(buildDir,"summaries.txt")
-  summaries.append("Lexical tokens,${success},${fail},${success + fail},lextokens.html\n")  
-
-  File verificationDir = new File(buildDir, "verification")
-  File lexReport = new File(verificationDir, "lextokens.html")
-
+    File lexReport = new File(verificationDir, "lextokens.html")
     def lexXml = new groovy.xml.StreamingMarkupBuilder().bind {
       //mkp.pi("xml-stylesheet": "type='text/xsl' href='xslt/image.xsl'" )
       html {
@@ -760,62 +734,38 @@ lex2.doLast {
 		th ("Valid?")
 		th ("Occurs in")
 	      }
-	      /*
-	      placeOccurrenceMap.keySet().each { k ->
-		tr {
-		  td ("${k}")
-		  td("${placeList.contains(k)}")
-		  td {
-		    def psgs = placeOccurrenceMap[k]
-		    if (psgs.size() == 1) {
-		      mkp.yield "${psgs[0]}"
-		    } else {
-		      ul {
-			psgs.each { p ->
-			  li ("${p}")
-			}
-		      }
-		    }
-		  }
-		}
-		}*/
 	    }
 	  }
 	}
       }
     }
     lexReport.setText(lexXml.toString())
- 
+
+  } else {
+    println "No tokens file."
+  }
+
 }
 
 
 
 task cpCheck(dependsOn: tabulate) {
-  description = "Check that code point usage is valid for given document."
+  description = "Checks that unicode code point usage is valid for given document."
 }
 cpCheck.doLast {
+  //println "Validation of unicode code point usage not yet implemented."
 }
 
 
-task concordance(dependsOn: tokenize) {
-  description = "Compiles alphabetized concordance of lexical tokens on this surface"
-}
-concordance.doLast {
-  println "Concordance: not yet implemented."
-}
-task verify(dependsOn: [initReport, persNames, placeNames, lex2, copyCss, concordance, cpCheck]) {
+task verify(dependsOn: [initReport, persNames, placeNames, lex, copyCss, cpCheck]) {
     description = "Runs full verification suite on requested URN(s)"
 }
-
 verify.doFirst {
-  System.out.println "Verifying folio ${folio}\n"
+  System.out.println "Preparing report on folio ${folio}\n"
 }
-
-
 verify.doLast {
-  
   DseManager dse = new DseManager()
-  dse.debug = 5
+  dse.debug = 0
   
   File summaries = new File(buildDir, "summaries.txt")
 
