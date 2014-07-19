@@ -236,8 +236,6 @@ dse.doLast {
   }
   dse.textImageIndexFiles.add(new File(buildDir, "scholiaToImage.csv"))
 
-  //System.err.printn ""
-
   textToFolio.split(/,/).each { idx ->
     if (dse.textTbsIndexFiles) {
       dse.textTbsIndexFiles.add(new File(idx))
@@ -296,11 +294,11 @@ tabulate.doLast {
   c.tabulateRepository(tabDir)
 }
 
-task tabsForSurface(dependsOn: tabulate) {
+task textsForSurface(dependsOn: tabulate) {
   description="Selects tabulated text data for requested text-bearing surface."
 }
 
-tabsForSurface.doLast {
+textsForSurface.doLast {
   // input and output files:
   File tabsDir = new File(buildDir, "tabulated")
 
@@ -356,7 +354,7 @@ tabsForSurface.doLast {
 
 }
 
-task tokenize(dependsOn: tabsForSurface) {
+task tokenize(dependsOn: textsForSurface) {
   description = "Creates HMT classified tokenization of texts for given page"
   
 }
@@ -619,36 +617,19 @@ task copyCss(type: Copy) {
   into "${buildDir}/verification/css"
 }
 
-task byzorth (dependsOn: tokenize) {
-  description="Check tokens against list of byzantine orthographic variants."
-}
 
-byzorth.doLast {
-  // write failures to lextokens
-  File tokens = new File("${buildDir}/tokens/tokens.txt")
-  File lextokens = new File("${buildDir}/tokens/lextokens.txt")
-  if (tokens.exists()) {
-    tokens.eachLine {
-      lextokens.append(it + "\n")
-    }
-  } else {
-    println "No tokens file."
-  }
-}
-
-task cpCheck(dependsOn: tabulate) {
-  description = "Check that code point usage is valid for given document."
-}
-cpCheck.doLast {
-}
-
-task lex1(dependsOn: byzorth) {
-  description = "Create word list, in beta code, for morpheus."
+task lex1(dependsOn: tokenize) {
+  description = "Creates word list, in beta code, and writes it to lextokens.txt for morpheus to analyze."
 }
 
 lex1.doLast {
-  File tokens = new File("${buildDir}/tokens/lextokens.txt")
+  // All tokens, as created by tokenize task:
+  File tokens = new File("${buildDir}/tokens/tokens.txt")
+
   if (tokens.exists()) {
+    // Lexical tokens for morpheus to analyze:
+    File lexTokensFile = new File("${buildDir}/tokens/lextokens.txt")
+
     def lexItems = tokens.readLines().findAll { l -> l ==~ /urn:cite:perseus:lextoken.+/}
     println "Unique lexical items: " + lexItems.unique().size() + " (${lexItems.size()} total)"
     TransCoder tobeta = new TransCoder()
@@ -664,21 +645,37 @@ lex1.doLast {
     File verificationDir = new File(buildDir, "verification")
 
     println "Use byz ortho in " + byzortho
-    println "Excecute morpheus from " + morpheus
+    File byzorth = new File( byzortho)
 
-
+    def byzTokensList = []
+    Integer count = 0
+    byzorth.eachLine {
+      if (count > 0) {
+	def cols = it.split(/,/)
+	byzTokensList.add( tobeta.getString(cols[1]) )
+      }
+      count++
+	}
+  
     StringBuffer wordList = new StringBuffer()
     lexItems.each { lex ->
       def cols = lex.split(/\t/)
       def token = cols[0].replace(/urn:cite:perseus:lextoken./,"")
       println "${token} -> ${tobeta.getString(token)}"
-      wordList.append(tobeta.getString(token) + "\n")
+      String betaToken = tobeta.getString(token)
+      if (byzTokensList.contains(betaToken)) {
+	println "Byzantine orthography ok: " + token
+      } else {
+	wordList.append( betaToken+ "\n")
+      }
     }
 
+
     if (wordList.toString().readLines().size() > 0) {
-      File morphin = new File(buildDir, "wordlist.txt")
-      morphin.setText(wordList.toString())
-      println "Wrote " + morphin.readLines().size() + " tokens to file."
+      //File morphin = new File(buildDir, "lextokens.txt")
+      //morphin.setText(wordList.toString())
+      //println "Wrote " + morphin.readLines().size() + " tokens to file."
+      lexTokensFile.setText(wordList.toString())
     } else {
       println "No tokens in tokens file."
     }
@@ -696,7 +693,7 @@ task lex2(dependsOn: lex1) {
 }
 
 lex2.doLast {
-  File morphin  = new File (buildDir, "wordlist.txt")
+  File morphin  = new File ("${buildDir}/tokens/lextokens.txt")
 
   Integer success = 0
   Integer fail = 0
@@ -795,6 +792,15 @@ lex2.doLast {
     lexReport.setText(lexXml.toString())
  
 }
+
+
+
+task cpCheck(dependsOn: tabulate) {
+  description = "Check that code point usage is valid for given document."
+}
+cpCheck.doLast {
+}
+
 
 task concordance(dependsOn: tokenize) {
   description = "Compiles alphabetized concordance of lexical tokens on this surface"
