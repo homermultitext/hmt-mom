@@ -10,7 +10,7 @@ buildscript {
     }
     dependencies {
       classpath group: 'org.homermultitext', name : 'citemgr' , version: '0.4.9'
-      classpath group: 'org.homermultitext', name : 'hmt-utils' , version: '0.2.5'
+      classpath group: 'org.homermultitext', name : 'hmt-utils' , version: '0.2.6'
 
       classpath group: 'edu.harvard.chs', name : 'cite' , version: '0.14.2'
       classpath group: 'edu.holycross.shot', name: 'hocuspocus', version : '0.7.27'
