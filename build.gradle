@@ -10,7 +10,7 @@ buildscript {
     }
     dependencies {
       classpath group: 'org.homermultitext', name : 'citemgr' , version: '0.4.9'
-      classpath group: 'org.homermultitext', name : 'hmt-utils' , version: '0.2.6'
+      classpath group: 'org.homermultitext', name : 'hmt-utils' , version: '0.2.8'
 
       classpath group: 'edu.harvard.chs', name : 'cite' , version: '0.14.2'
       classpath group: 'edu.holycross.shot', name: 'hocuspocus', version : '0.7.27'
@@ -340,7 +340,6 @@ textsForSurface.doLast {
   ArrayList tabData = dse.tabDataForSurface(folio, corpus, tabsDir)
   
 
-
   File outputDir = new File(buildDir, "surfaceTabs")
   if (! outputDir.exists()) {
     outputDir.mkdir()
@@ -350,9 +349,19 @@ textsForSurface.doLast {
   tabData.each {
     tabDataFile.append(it + "\n", "UTF-8")
   }
+  
+  if (hasProperty('debug')) {
+    println "debug is on."
+  }
+    println "textsForSurface settings:"
+    println "\tcorpus built from " + textArchive + " with inventory " + textInventory
+    println "\ttabsDir was " + tabsDir 
+    //}
 
 }
 
+
+  //task tokenize {
 task tokenize(dependsOn: textsForSurface) {
   description = "Creates HMT classified tokenization of texts for given page"
   
@@ -691,7 +700,7 @@ lex.doLast {
       String tokenUrn = cols[0]
       String token = tokenUrn.replace(/urn:cite:perseus:lextoken./,"")
       String betaToken = tobeta.getString(token)
-      if (token.size() < 1) {
+      if ((token.size() < 1) || (token == "⁑")){
 	println "${lexCount}: omit punctuation ${token}"
       } else if (orthoAuthorityList.contains(betaToken)) {
 
