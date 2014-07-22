@@ -91,7 +91,7 @@ if (hasProperty('repoconf')) {
 
 
 group = "org.homermultitext"
-version = '0.9.0'
+version = '1.0.test1'
 
 repositories {
     mavenCentral()
@@ -493,6 +493,126 @@ persNames.doLast {
 }
 
 
+task ethnics(dependsOn: [tokenize]) {
+  description  = "Check that ethnic adjective identifiers are valid."
+}
+ethnics.doLast {
+  File summaries = new File(buildDir,"summaries.txt")
+  File verificationDir = new File(buildDir, "verification")
+
+  File tokens = new File("${buildDir}/tokens/tokens.txt")
+  if (tokens.exists()) {
+    def ethnicNames = tokens.readLines().findAll { l -> l ==~ /urn:cite:hmt:peoples.+/}
+    def occurrenceMap = [:]
+    ethnicNames.each { 
+      def cols = it.split(/\t/)
+      def ename = cols[0]
+      def psg = cols[1]
+      if (occurrenceMap[ename]) {
+	def psgs = occurrenceMap[ename]
+	psgs.add(psg)
+	occurrenceMap[ename] =  psgs
+      } else {
+	occurrenceMap[ename] = [psg]
+      }
+    }
+    println "Using placenames list in " + placenames
+    def ethnicsList = []
+    File ethnicsFile = new File(placenames)
+    ethnicsFile.eachLine {
+      def cols = it.split(/,/)
+      ethnicsList.add(cols[0])
+    }
+    println "Check " + ethnicNames.size() + " ethnic name occurrences  against " + ethnicsList.size() + " authority list entries."
+
+
+
+    Integer good = 0
+    Integer bad = 0
+    def scoreMap = [:]
+
+    occurrenceMap.keySet().each { k ->
+      String place = k.replace("hmt:peoples","hmt:place")
+      if (ethnicsList.contains(place)) {
+	good++
+
+      } else {
+	bad++
+      }
+    }
+    println "${good}/${bad}/${occurrenceMap.keySet().size()}"
+
+
+    summaries.append("Ethnic adjectives,${good},${bad},${occurrenceMap.keySet().size()},ethnics.html\n")
+    File ethnicReport = new File(verificationDir, "ethnics.html")
+
+    def ethnicsXml = new groovy.xml.StreamingMarkupBuilder().bind {
+      //mkp.pi("xml-stylesheet": "type='text/xsl' href='xslt/image.xsl'" )
+      html {
+	head {
+	  title ("Verification of ethnic adjectives for ${folio}")
+	  link(type: "text/css", rel: "stylesheet", href: "css/hmt-core.css", title: "HMT CSS")
+	
+	}
+	body {
+	  header(role: "banner") {
+	    mkp.yield "HMT-MOM: "
+	    nav(role: "navigation") {
+	      ul {
+		li {
+		  a(href:"index.html", "summary")
+		}
+	      }
+	    }
+	  }
+	  article(role: "main") {
+	    h1("Ethnic adjectives for ${folio}")
+	    table {
+	      tr {
+		th ("Reference")
+		th ("Valid?")
+		th ("Occurs in")
+	      }
+	      occurrenceMap.keySet().each { k ->
+		String place = k.replace("hmt:peoples","hmt:place")
+		tr {
+		  td ("${k}")
+		  td {
+		    if (ethnicsList.contains(place)) {
+		      img(src: "css/check.png")
+		    } else {
+		      img(src: "css/delete.png")
+		    }
+		  }
+		  td {
+		    def psgs = occurrenceMap[k]
+		    if (psgs.size() == 1) {
+		      mkp.yield "${psgs[0]}"
+		    } else {
+		      ul {
+			psgs.each { p ->
+			  li ("${p}")
+			}
+		      }
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+    ethnicReport.setText(ethnicsXml.toString())
+
+
+  } else {
+    println "No tokens file."
+  }
+}
+
+
+
 
 task placeNames(dependsOn: [tokenize]) {
   description  = "Check that place name identifiers are valid."
@@ -685,7 +805,9 @@ lex.doLast {
     byzorth.eachLine {
       if (count > 0) {
 	def cols = it.split(/,/)
-	orthoAuthorityList.add( tobeta.getString(cols[1]) )
+	if (cols[3] != "rejected") {
+	  orthoAuthorityList.add( tobeta.getString(cols[1]) )
+	}
       }
       count = count + 1
     }
@@ -699,7 +821,7 @@ lex.doLast {
       def cols = lex.split(/\t/)
       String tokenUrn = cols[0]
       String token = tokenUrn.replace(/urn:cite:perseus:lextoken./,"")
-      String betaToken = tobeta.getString(token)
+      String betaToken = tobeta.getString(token.toLowerCase())
       if ((token.size() < 1) || (token == "⁑")){
 	println "${lexCount}: omit punctuation ${token}"
       } else if (orthoAuthorityList.contains(betaToken)) {
@@ -812,7 +934,7 @@ cpCheck.doLast {
 }
 
 
-task verify(dependsOn: [initReport, persNames, placeNames, lex, copyCss, cpCheck]) {
+task verify(dependsOn: [initReport, persNames, placeNames, lex, ethnics, copyCss, cpCheck]) {
     description = "Runs full verification suite on requested URN(s)"
 }
 verify.doFirst {
