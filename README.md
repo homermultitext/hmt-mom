@@ -1,4 +1,4 @@
-# HMT-MOM: 0.9 pre-release series#
+# HMT-MOM: 1.0 release series#
 
 Homer Multitext project: Mandatory Ongoing Maintenance.
 
