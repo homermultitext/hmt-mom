@@ -748,7 +748,8 @@ task copyCss(type: Copy) {
 }
 
 
-task lex(dependsOn: tokenize) {
+//task lex(dependsOn: tokenize) {
+task lex {
   description = "Analyzes lexical tokens."
 }
 
@@ -799,11 +800,15 @@ lex.doLast {
 
     def orthoAuthorityList = []
     Integer count = 0
-    byzorth.eachLine {
+    byzorth.eachLine { l ->
       if (count > 0) {
-	def cols = it.split(/,/)
-	if (cols[3] != "rejected") {
-	  orthoAuthorityList.add( tobeta.getString(cols[1]) )
+	def cols = l.split(/,/)
+	if (l.size() == 0) {
+	  // omit
+	} else {
+	  if (cols[3] != "rejected") {
+	    orthoAuthorityList.add( tobeta.getString(cols[1]) )
+	  }
 	}
       }
       count = count + 1
