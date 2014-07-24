@@ -290,6 +290,7 @@ tabulate.doLast {
   }
 
   Corpus c = new Corpus(tiFile, archiveDir)
+  c.debug = 5
   c.tabulateRepository(tabDir)
 }
 
@@ -335,6 +336,7 @@ textsForSurface.doLast {
   }
   dse.textTbsIndexFiles.add(new File (buildDir, "scholiaToTbs.csv"))
 
+  //dse.debug = 5
 
   // get relevant tabular data, and tokenize it:
   ArrayList tabData = dse.tabDataForSurface(folio, corpus, tabsDir)
@@ -788,11 +790,6 @@ lex.doLast {
     TransCoder tobeta = new TransCoder()
     tobeta.setConverter("BetaCode")
     tobeta.setParser("Unicode")
-    /*
-    TransCoder frombeta = new TransCoder()
-    frombeta.setParser("BetaCode")
-    frombeta.setConverter("UnicodeC")
-    */
 
     File summaries = new File(buildDir,"summaries.txt")
     File verificationDir = new File(buildDir, "verification")
