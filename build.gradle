@@ -9,7 +9,7 @@ buildscript {
 	}
     }
     dependencies {
-      classpath group: 'org.homermultitext', name : 'citemgr' , version: '0.5.1'
+      classpath group: 'org.homermultitext', name : 'citemgr' , version: '0.5.2'
       classpath group: 'org.homermultitext', name : 'hmt-utils' , version: '0.2.8'
 
       classpath group: 'edu.harvard.chs', name : 'cite' , version: '0.14.2'
@@ -1053,6 +1053,8 @@ task dserange(dependsOn : [setUpVisualInventory, indexScholia]) {
 dserange.doLast {
   DseManager dse = new DseManager()
   def scorecard = []
+  def reptDetails = [:]
+  
   Integer totalGood = 0
   folioToImage.split(/,/).each { idx ->
     if (dse.tbsImageIndexFiles) {
@@ -1108,12 +1110,14 @@ dserange.doLast {
       } catch (Exception e) {
 	throw new Exception("Could not make URN from ${currUrnStr}")
       }
-      
+
       if (cols[1] == startUrn) {
 	inSeq = true
       }
 
       if (inSeq)  {
+	
+	/*
 	CiteUrn  img = dse.imageForTbs(currUrn)
 	println "${currUrn} has default image: " + img
 	if (!img) {
@@ -1121,6 +1125,9 @@ dserange.doLast {
 	  throw new Exception("For folio ${currUrn}: no default image.")
 	}
 
+	*/
+	def rept = dse.dseReport(currUrn)
+	reptDetails[currUrn.toString()] = rept
 	//dse.debug = 5
 	String xml =  dse.getVisualInventoryXml(currUrn)
 	String fName = "${buildDir}/visualinventory/${urn.getCollection()}_${currUrn.getObjectId()}.xml"
@@ -1161,23 +1168,29 @@ dserange.doLast {
 	    code("visualinventory")
 	    mkp.yield "subdirectory."
 	  }
+
 	  
-	  ol {
+	  table {
+
+	    tr {
+	      th("Page")
+	      th("Summary")
+	      th("Visual inventory")
+	    }
 	    scorecard.each { pair ->
 	      CiteUrn pg = pair[0]
 	      String bgcolor = "red"
+	      String summary = "Failed one or more tests."
 	      if (pair[1]) {
 		bgcolor = "green"
+		summary = "Passed all tests."
 	      }
-	      li {
-		strong("${pg}")
-		mkp.yield ": "
-		span(style: "padding: 0.2em; background-color: ${bgcolor};", pair[1])
-		mkp.yield " ("
-		a (href: "visualinventory/${pg.getCollection()}_${pg.getObjectId()}.xml", "visual inventory")
-		mkp.yield ")"
-		
-		
+	      tr {
+		td("${pg}")
+		td(style: "padding: 0.2em; background-color: ${bgcolor};",summary)
+		td {
+		  a (href: "visualinventory/${pg.getCollection()}_${pg.getObjectId()}.xml", "visual inventory")
+		}
 	      }
 	    }
 	  }
