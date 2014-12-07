@@ -9,7 +9,7 @@ buildscript {
 	}
     }
     dependencies {
-      classpath group: 'org.homermultitext', name : 'citemgr' , version: '0.5.2'
+      classpath group: 'org.homermultitext', name : 'citemgr' , version: '0.5.4'
       classpath group: 'org.homermultitext', name : 'hmt-utils' , version: '0.2.8'
 
       classpath group: 'edu.harvard.chs', name : 'cite' , version: '0.14.2'
@@ -1116,19 +1116,9 @@ dserange.doLast {
       }
 
       if (inSeq)  {
-	
-	/*
-	CiteUrn  img = dse.imageForTbs(currUrn)
-	println "${currUrn} has default image: " + img
-	if (!img) {
-	  System.err.println "No default image for " + currUrn
-	  throw new Exception("For folio ${currUrn}: no default image.")
-	}
-
-	*/
 	def rept = dse.dseReport(currUrn)
 	reptDetails[currUrn.toString()] = rept
-	//dse.debug = 5
+
 	String xml =  dse.getVisualInventoryXml(currUrn)
 	String fName = "${buildDir}/visualinventory/${urn.getCollection()}_${currUrn.getObjectId()}.xml"
 	File visinv = new File(fName)
@@ -1147,7 +1137,7 @@ dserange.doLast {
   }
 
   def xml = new groovy.xml.StreamingMarkupBuilder().bind {
-
+    
     html {
 	head {
 	  title("DSE validation, folios ${folio}")
@@ -1175,21 +1165,71 @@ dserange.doLast {
 	    tr {
 	      th("Page")
 	      th("Summary")
-	      th("Visual inventory")
+	      th("See visual inventory")
+	      th("Default image")
+	      th("Same texts indexed to image and surface")
+	      th("Notes")
+	      
 	    }
 	    scorecard.each { pair ->
 	      CiteUrn pg = pair[0]
-	      String bgcolor = "red"
+	      String defaultImg = "none found"
+	      
+	      String bgcolor = "#ffb0b0"
 	      String summary = "Failed one or more tests."
 	      if (pair[1]) {
-		bgcolor = "green"
+		bgcolor = "#afa"
 		summary = "Passed all tests."
 	      }
 	      tr {
 		td("${pg}")
 		td(style: "padding: 0.2em; background-color: ${bgcolor};",summary)
 		td {
-		  a (href: "visualinventory/${pg.getCollection()}_${pg.getObjectId()}.xml", "visual inventory")
+
+		  a (href: "visualinventory/${pg.getCollection()}_${pg.getObjectId()}.xml", "inventory for ${pg.getObjectId()}")
+		}
+
+		def details = reptDetails[pg.toString()]
+		def imgRept = details[0]
+		def mappingRept = details[1]
+
+		bgcolor = "#ffb0b0"
+
+		if (imgRept[0]) {
+		  bgcolor = "#afa"
+		  defaultImg = imgRept[1]
+		}
+		td(style: "padding: 0.2em; background-color: ${bgcolor};",defaultImg)
+
+		bgcolor = "#ffb0b0"
+		if (mappingRept[0]) {
+		  bgcolor = "#afa"
+		}
+		td(style: "padding: 0.2em; background-color: ${bgcolor};",mappingRept[1])
+
+		
+		def txtCheck = dse.textNodesForSurface(pg)
+		if (txtCheck.size() == 0) {
+		  td(style: "padding: 0.2em; background-color: #ffffcc;", "Caution: no text units found for this page.")
+
+		  
+		} else {
+		  // check for no Iliad text
+		  String iliad = "urn:cts:greekLit:tlg0012.tlg001.msA"
+		  def iMapKeys = dse.imageMapsByText(defaultImg).keySet()
+		  
+		  if (! iMapKeys.contains(iliad)) {
+		    System.err.println("TEXT KEYS: " + iMapKeys )
+		    td(style: "padding: 0.2em; background-color: #ffffcc;") {
+		      strong("Caution")
+		      mkp.yield ": no "
+		      em("Iliad")
+		      mkp.yield (" text found for this page.")
+		    }
+		    
+		  } else {
+		    td("")
+		  }
 		}
 	      }
 	    }
@@ -1197,9 +1237,11 @@ dserange.doLast {
 	}
     }
   }
-  File totals = new File("${buildDir}/scorecard.html")
+
+  
+  File totals = new File("${buildDir}/${urn.getObjectId()}.html")
   totals.setText(xml.toString(), "UTF-8")
 
   println ""
-  println "Results of DSE validation are in ${buildDir}/scorecad.html"
+  println "Results of DSE validation are in ${buildDir}/${urn.getObjectId()}.html"
 }
