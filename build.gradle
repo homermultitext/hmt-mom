@@ -1,5 +1,4 @@
 /* HMT project Mandatory Ongoing Maintenance. 
-   Summer 2014 version.
 */
 buildscript {
     repositories {
@@ -1051,39 +1050,6 @@ verify.doLast {
 task dserange(dependsOn : [setUpVisualInventory, indexScholia]) {
 }
 dserange.doLast {
-  DseManager dse = new DseManager()
-  def scorecard = []
-  def reptDetails = [:]
-  
-  Integer totalGood = 0
-  folioToImage.split(/,/).each { idx ->
-    if (dse.tbsImageIndexFiles) {
-      dse.tbsImageIndexFiles.add(new File(idx))
-    } else {
-      dse.tbsImageIndexFiles = [new File(idx)]
-    }
-  }
-
-  textToImage.split(/,/).each { idx ->
-    if (dse.textImageIndexFiles) {
-      dse.textImageIndexFiles.add(new File(idx))
-    } else {
-      dse.textImageIndexFiles = [new File(idx)]
-    }
-  }
-
-  textToFolio.split(/,/).each { idx ->
-    if (dse.textTbsIndexFiles) {
-      dse.textTbsIndexFiles.add(new File(idx))
-    } else {
-      dse.textTbsIndexFiles = [new File(idx)]
-    }
-  }
-  dse.textTbsIndexFiles.add(new File (buildDir, "scholiaToTbs.csv"))
-
-
-  println "Created DSE Manager"
-
   CiteUrn urn
   try {
     urn  = new CiteUrn(folio)
@@ -1095,6 +1061,44 @@ dserange.doLast {
   String startUrn = "urn:cite:${urn.getNs()}:${urn.getCollection()}.${range[0]}"
   String endUrn = "urn:cite:${urn.getNs()}:${urn.getCollection()}.${range[1]}"
 
+
+  
+  def scorecard = []
+  def reptDetails = [:]
+  Integer totalGood = 0
+
+
+  DseManager dse = new DseManager()
+  folioToImage.split(/,/).each { idx ->
+    if (dse.tbsImageIndexFiles) {
+      dse.tbsImageIndexFiles.add(new File(idx))
+    } else {
+      dse.tbsImageIndexFiles = [new File(idx)]
+    }
+  }
+  textToImage.split(/,/).each { idx ->
+    if (dse.textImageIndexFiles) {
+      dse.textImageIndexFiles.add(new File(idx))
+    } else {
+      dse.textImageIndexFiles = [new File(idx)]
+    }
+  }
+  textToFolio.split(/,/).each { idx ->
+    if (dse.textTbsIndexFiles) {
+      dse.textTbsIndexFiles.add(new File(idx))
+    } else {
+      dse.textTbsIndexFiles = [new File(idx)]
+    }
+  }
+  dse.textTbsIndexFiles.add(new File (buildDir, "scholiaToTbs.csv"))
+
+  println "Created DSE Manager"
+
+
+
+
+  
+  
   File venAseq = new File(repo + "/cite/collections/codexModels/venetusA.csv")
   println "Running DSE from folio " +startUrn + " to " + endUrn
   boolean inSeq = false
@@ -1140,10 +1144,10 @@ dserange.doLast {
     
     html {
 	head {
-	  title("DSE validation, folios ${folio}")
+	  title("DSE validation for ${urn.getCollection()}, pages ${urn.getObjectId()}")
 	}
 	body {
-	  h1("DSE validation, folios ${folio}")
+	  h1("DSE validation for ${urn.getCollection()}, pages ${urn.getObjectId()}")
 	  h2("Summary")
 	  p {
 	    mkp.yield "Totals:  "
@@ -1219,7 +1223,6 @@ dserange.doLast {
 		  def iMapKeys = dse.imageMapsByText(defaultImg).keySet()
 		  
 		  if (! iMapKeys.contains(iliad)) {
-		    System.err.println("TEXT KEYS: " + iMapKeys )
 		    td(style: "padding: 0.2em; background-color: #ffffcc;") {
 		      strong("Caution")
 		      mkp.yield ": no "
