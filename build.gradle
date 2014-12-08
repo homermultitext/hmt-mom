@@ -87,7 +87,15 @@ if (hasProperty('repoconf')) {
     apply from: "repos.gradle"
 }
 
+if (hasProperty('baserepo')) {
+    System.err.println "Using base repo from ${baserepo}"
+}
 
+if (hasProperty('baserepo')) {
+  println "USE " + baserepo + " for repository base for DSE validation."
+} else {
+  println "NO REPO CONFIGURED"
+}
 
 group = "org.homermultitext"
 version = '1.0.test1'
@@ -193,7 +201,8 @@ indexScholia.doLast {
   File scholiaToImg = new File(buildDir,"scholiaToImage.csv")
 
   scholiaInventories.split(/,/).each {
-    String inv = it.replace(/#REPO#/,repo)
+    String inv = it.replace(/#REPO#/,baserepo)
+    println "repo prop ${baserepo} yields SCHOLIA INV " + inv
     if (inv) {
       File invFile = new File(inv)
       if (invFile) {
@@ -232,7 +241,7 @@ dse.doLast {
 
   DseManager dse = new DseManager()
   folioToImage.split(/,/).each {
-    String idx = it.replace(/#REPO#/,repo)
+    String idx = it.replace(/#REPO#/,baserepo)
     if (dse.tbsImageIndexFiles) {
       dse.tbsImageIndexFiles.add(new File(idx))
     } else {
@@ -240,7 +249,7 @@ dse.doLast {
     }
   }
   textToImage.split(/,/).each {
-    String idx = it.replace(/#REPO#/,repo)
+    String idx = it.replace(/#REPO#/,baserepo)
     if (dse.textImageIndexFiles) {
       dse.textImageIndexFiles.add(new File(idx))
     } else {
@@ -248,7 +257,7 @@ dse.doLast {
     }
   }
   textToFolio.split(/,/).each {
-    String idx = it.replace(/#REPO#/,repo)
+    String idx = it.replace(/#REPO#/,baserepo)
     if (dse.textTbsIndexFiles) {
       dse.textTbsIndexFiles.add(new File(idx))
     } else {
@@ -268,8 +277,7 @@ dse.doLast {
 
     String startUrn = "urn:cite:${urn.getNs()}:${urn.getCollection()}.${range[0]}"
     String endUrn = "urn:cite:${urn.getNs()}:${urn.getCollection()}.${range[1]}"
-
-    File venAseq = new File(repo + "/cite/collections/codexModels/venetusA.csv")
+    File venAseq = new File(baserepo + "/cite/collections/codexModels/venetusA.csv")
     println "Running DSE from folio " +startUrn + " to " + endUrn
     boolean inSeq = false
 

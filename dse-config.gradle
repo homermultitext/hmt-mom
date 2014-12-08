@@ -21,7 +21,7 @@ project.ext {
 
   // base dir for repo:
   //repo="/Users/nsmith/repos/hmt-git/hmt-archive"
-  repo=""
+  baserepo=""
   
   // For texts, must use composite indices assembled in build area:
   textInventory="#REPO#/build/editions/archive/inventory.xml"
