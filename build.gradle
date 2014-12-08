@@ -192,7 +192,8 @@ indexScholia.doLast {
   File scholiaToTbs = new File(buildDir, "scholiaToTbs.csv")
   File scholiaToImg = new File(buildDir,"scholiaToImage.csv")
 
-  scholiaInventories.split(/,/).each { inv ->
+  scholiaInventories.split(/,/).each {
+    String inv = it.replace(/#REPO#/,repo)
     if (inv) {
       File invFile = new File(inv)
       if (invFile) {
@@ -209,30 +210,45 @@ indexScholia.doLast {
 }
 
 
+/* DSE analysis for a physical surface, or a range
+ * of physical surfaces, identified by URN value
+ * of the project property "folio".
+ */
 task dse(dependsOn : [setUpVisualInventory, indexScholia]) {
-  description = "Does citemgr's DSE validation,  and creates an XML visual inventory for the specified folio."
 }
-
 dse.doLast {
-  DseManager dse = new DseManager()
+  CiteUrn urn
+  try {
+    urn  = new CiteUrn(folio)
+  } catch (Exception e) {
+    System.err.println "Unable to make urn for ${folio}"
+    throw e
+  }
 
-  folioToImage.split(/,/).each { idx ->
+  def scorecard = []
+  def reptDetails = [:]
+  Integer totalGood = 0
+  
+
+  DseManager dse = new DseManager()
+  folioToImage.split(/,/).each {
+    String idx = it.replace(/#REPO#/,repo)
     if (dse.tbsImageIndexFiles) {
       dse.tbsImageIndexFiles.add(new File(idx))
     } else {
       dse.tbsImageIndexFiles = [new File(idx)]
     }
   }
-
-  textToImage.split(/,/).each { idx ->
+  textToImage.split(/,/).each {
+    String idx = it.replace(/#REPO#/,repo)
     if (dse.textImageIndexFiles) {
       dse.textImageIndexFiles.add(new File(idx))
     } else {
       dse.textImageIndexFiles = [new File(idx)]
     }
   }
-
-  textToFolio.split(/,/).each { idx ->
+  textToFolio.split(/,/).each {
+    String idx = it.replace(/#REPO#/,repo)
     if (dse.textTbsIndexFiles) {
       dse.textTbsIndexFiles.add(new File(idx))
     } else {
@@ -241,54 +257,184 @@ dse.doLast {
   }
   dse.textTbsIndexFiles.add(new File (buildDir, "scholiaToTbs.csv"))
 
-
   println "Created DSE Manager"
 
-  CiteUrn urn
-  try {
-    urn  = new CiteUrn(folio)
-  } catch (Exception e) {
-    System.err.println "Unable to make urn for folio ${folio}"
-    throw e
+
+
+
+  def range = urn.getObjectId().split(/-/)
+  //  if (urn.isRange()) {
+  if (range.size() == 2) {
+
+    String startUrn = "urn:cite:${urn.getNs()}:${urn.getCollection()}.${range[0]}"
+    String endUrn = "urn:cite:${urn.getNs()}:${urn.getCollection()}.${range[1]}"
+
+    File venAseq = new File(repo + "/cite/collections/codexModels/venetusA.csv")
+    println "Running DSE from folio " +startUrn + " to " + endUrn
+    boolean inSeq = false
+
+    Integer lineCount = 0
+    venAseq.eachLine { l ->
+      if (lineCount > 0) {
+	def cols = l.split(/,/)
+	String currUrnStr = cols[1]
+	CiteUrn currUrn
+	try {
+	  currUrn = new CiteUrn(currUrnStr)
+	} catch (Exception e) {
+	  throw new Exception("Could not make URN from ${currUrnStr}")
+	}
+
+	if (cols[1] == startUrn) {
+	  inSeq = true
+	}
+
+	if (inSeq)  {
+	  def rept = dse.dseReport(currUrn)
+	  reptDetails[currUrn.toString()] = rept
+
+	  String xml =  dse.getVisualInventoryXml(currUrn)
+	  String fName = "${buildDir}/visualinventory/${urn.getCollection()}_${currUrn.getObjectId()}.xml"
+	  File visinv = new File(fName)
+	  visinv.setText(xml,"UTF-8")
+	  boolean passfail = dse.verifyTbs(currUrn)
+	  if (passfail) { totalGood++ }
+	  def score = [currUrn,passfail]
+	  scorecard.add(score)
+	}
+	
+	if (cols[1] == endUrn) {
+	  inSeq = false
+	}
+      }
+      lineCount++;
+    }
+
+
+  } else {
+
+    def rept = dse.dseReport(urn)
+    reptDetails[urn.toString()] = rept
+
+    String xml =  dse.getVisualInventoryXml(urn)
+    String fName = "${buildDir}/visualinventory/${urn.getCollection()}_${urn.getObjectId()}.xml"
+    File visinv = new File(fName)
+    visinv.setText(xml,"UTF-8")
+    boolean passfail = dse.verifyTbs(urn)
+    if (passfail) { totalGood++ }
+    def score = [urn,passfail]
+    scorecard.add(score)
+    
   }
-
-
-  /**
-  if (urn.isRange() ) {
-    println "Do a range!"
-
-    throw new Exception("Not ready for ranges.")
-    }*/
-
 
   
-  CiteUrn  img = dse.imageForTbs(folio)
+  def xml = new groovy.xml.StreamingMarkupBuilder().bind {
+    
+    html {
+	head {
+	  title("DSE validation for ${urn.getCollection()}, pages ${urn.getObjectId()}")
+	}
+	body {
+	  h1("DSE validation for ${urn.getCollection()}, pages ${urn.getObjectId()}")
+	  h2("Summary")
+	  p {
+	    mkp.yield "Totals:  "
+	    strong "${scorecard.size()}"
+	    mkp.yield " pages examined, "
+	    strong "${totalGood}"
+	    mkp.yield " pages pass DSE validation."
+	  }
+	  h2("Page-by-page record")
+	  p {
+	    mkp.yield "Visual inventories for individual pages are in the "
+	    code("visualinventory")
+	    mkp.yield "subdirectory."
+	  }
 
-  System.err.println "Default image: " + img
+	  
+	  table {
 
-  if (!img) {
-    System.err.println "No default image for " + folio
-    throw new Exception("For folio ${folio}: no default image.")
+	    tr {
+	      th("Page")
+	      th("Summary")
+	      th("See visual inventory")
+	      th("Default image")
+	      th("Same texts indexed to image and surface")
+	      th("Notes")
+	      
+	    }
+	    scorecard.each { pair ->
+	      CiteUrn pg = pair[0]
+	      String defaultImg = "none found"
+	      
+	      String bgcolor = "#ffb0b0"
+	      String summary = "Failed one or more tests."
+	      if (pair[1]) {
+		bgcolor = "#afa"
+		summary = "Passed all tests."
+	      }
+	      tr {
+		td("${pg}")
+		td(style: "padding: 0.2em; background-color: ${bgcolor};",summary)
+		td {
+
+		  a (href: "visualinventory/${pg.getCollection()}_${pg.getObjectId()}.xml", "inventory for ${pg.getObjectId()}")
+		}
+
+		def details = reptDetails[pg.toString()]
+		def imgRept = details[0]
+		def mappingRept = details[1]
+
+		bgcolor = "#ffb0b0"
+
+		if (imgRept[0]) {
+		  bgcolor = "#afa"
+		  defaultImg = imgRept[1]
+		}
+		td(style: "padding: 0.2em; background-color: ${bgcolor};",defaultImg)
+
+		bgcolor = "#ffb0b0"
+		if (mappingRept[0]) {
+		  bgcolor = "#afa"
+		}
+		td(style: "padding: 0.2em; background-color: ${bgcolor};",mappingRept[1])
+
+		
+		def txtCheck = dse.textNodesForSurface(pg)
+		if (txtCheck.size() == 0) {
+		  td(style: "padding: 0.2em; background-color: #ffffcc;", "Caution: no text units found for this page.")
+
+		  
+		} else {
+		  // check for no Iliad text
+		  String iliad = "urn:cts:greekLit:tlg0012.tlg001.msA"
+		  def iMapKeys = dse.imageMapsByText(defaultImg).keySet()
+		  
+		  if (! iMapKeys.contains(iliad)) {
+		    td(style: "padding: 0.2em; background-color: #ffffcc;") {
+		      strong("Caution")
+		      mkp.yield ": no "
+		      em("Iliad")
+		      mkp.yield (" text found for this page.")
+		    }
+		    
+		  } else {
+		    td("")
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+    }
   }
-  def iMaps
-  //dse.debug = 10
-  try {
-    iMaps = dse.imageMapsByText(img)
-  } catch (Exception e)  {
-    System.err.println "Unable to get image maps for ${img}."
-  }
-
 
   
-  String xml =  dse.getVisualInventoryXml(urn)
+  File totals = new File("${buildDir}/${urn.getObjectId()}.html")
+  totals.setText(xml.toString(), "UTF-8")
 
-  //String fName = "${buildDir}/visualinventory/inventory.xml"
-  String fName = "${buildDir}/visualinventory/${urn.getCollection()}_${urn.getObjectId()}.xml"
-  File visinv = new File(fName)
-  visinv.setText(xml,"UTF-8")
-
-  dse.verifyTbs(folio)
-
+  println ""
+  println "Results of DSE validation are in ${buildDir}/${urn.getObjectId()}.html"
 }
 
 
@@ -1046,205 +1192,3 @@ verify.doLast {
 
 }
 
-
-task dserange(dependsOn : [setUpVisualInventory, indexScholia]) {
-}
-dserange.doLast {
-  CiteUrn urn
-  try {
-    urn  = new CiteUrn(folio)
-  } catch (Exception e) {
-    System.err.println "Unable to make urn for ${folio}"
-    throw e
-  }
-  def range = urn.getObjectId().split(/-/)
-  String startUrn = "urn:cite:${urn.getNs()}:${urn.getCollection()}.${range[0]}"
-  String endUrn = "urn:cite:${urn.getNs()}:${urn.getCollection()}.${range[1]}"
-
-
-  
-  def scorecard = []
-  def reptDetails = [:]
-  Integer totalGood = 0
-
-
-  DseManager dse = new DseManager()
-  folioToImage.split(/,/).each { idx ->
-    if (dse.tbsImageIndexFiles) {
-      dse.tbsImageIndexFiles.add(new File(idx))
-    } else {
-      dse.tbsImageIndexFiles = [new File(idx)]
-    }
-  }
-  textToImage.split(/,/).each { idx ->
-    if (dse.textImageIndexFiles) {
-      dse.textImageIndexFiles.add(new File(idx))
-    } else {
-      dse.textImageIndexFiles = [new File(idx)]
-    }
-  }
-  textToFolio.split(/,/).each { idx ->
-    if (dse.textTbsIndexFiles) {
-      dse.textTbsIndexFiles.add(new File(idx))
-    } else {
-      dse.textTbsIndexFiles = [new File(idx)]
-    }
-  }
-  dse.textTbsIndexFiles.add(new File (buildDir, "scholiaToTbs.csv"))
-
-  println "Created DSE Manager"
-
-
-
-
-  
-  
-  File venAseq = new File(repo + "/cite/collections/codexModels/venetusA.csv")
-  println "Running DSE from folio " +startUrn + " to " + endUrn
-  boolean inSeq = false
-
-  Integer lineCount = 0
-  venAseq.eachLine { l ->
-    if (lineCount > 0) {
-      def cols = l.split(/,/)
-      String currUrnStr = cols[1]
-      CiteUrn currUrn
-      try {
-	currUrn = new CiteUrn(currUrnStr)
-      } catch (Exception e) {
-	throw new Exception("Could not make URN from ${currUrnStr}")
-      }
-
-      if (cols[1] == startUrn) {
-	inSeq = true
-      }
-
-      if (inSeq)  {
-	def rept = dse.dseReport(currUrn)
-	reptDetails[currUrn.toString()] = rept
-
-	String xml =  dse.getVisualInventoryXml(currUrn)
-	String fName = "${buildDir}/visualinventory/${urn.getCollection()}_${currUrn.getObjectId()}.xml"
-	File visinv = new File(fName)
-	visinv.setText(xml,"UTF-8")
-	boolean passfail = dse.verifyTbs(currUrn)
-	if (passfail) { totalGood++ }
-	def score = [currUrn,passfail]
-	scorecard.add(score)
-      }
-
-      if (cols[1] == endUrn) {
-	inSeq = false
-      }
-    }
-    lineCount++;
-  }
-
-  def xml = new groovy.xml.StreamingMarkupBuilder().bind {
-    
-    html {
-	head {
-	  title("DSE validation for ${urn.getCollection()}, pages ${urn.getObjectId()}")
-	}
-	body {
-	  h1("DSE validation for ${urn.getCollection()}, pages ${urn.getObjectId()}")
-	  h2("Summary")
-	  p {
-	    mkp.yield "Totals:  "
-	    strong "${scorecard.size()}"
-	    mkp.yield " pages examined, "
-	    strong "${totalGood}"
-	    mkp.yield " pages pass DSE validation."
-	  }
-	  h2("Page-by-page record")
-	  p {
-	    mkp.yield "Visual inventories for individual pages are in the "
-	    code("visualinventory")
-	    mkp.yield "subdirectory."
-	  }
-
-	  
-	  table {
-
-	    tr {
-	      th("Page")
-	      th("Summary")
-	      th("See visual inventory")
-	      th("Default image")
-	      th("Same texts indexed to image and surface")
-	      th("Notes")
-	      
-	    }
-	    scorecard.each { pair ->
-	      CiteUrn pg = pair[0]
-	      String defaultImg = "none found"
-	      
-	      String bgcolor = "#ffb0b0"
-	      String summary = "Failed one or more tests."
-	      if (pair[1]) {
-		bgcolor = "#afa"
-		summary = "Passed all tests."
-	      }
-	      tr {
-		td("${pg}")
-		td(style: "padding: 0.2em; background-color: ${bgcolor};",summary)
-		td {
-
-		  a (href: "visualinventory/${pg.getCollection()}_${pg.getObjectId()}.xml", "inventory for ${pg.getObjectId()}")
-		}
-
-		def details = reptDetails[pg.toString()]
-		def imgRept = details[0]
-		def mappingRept = details[1]
-
-		bgcolor = "#ffb0b0"
-
-		if (imgRept[0]) {
-		  bgcolor = "#afa"
-		  defaultImg = imgRept[1]
-		}
-		td(style: "padding: 0.2em; background-color: ${bgcolor};",defaultImg)
-
-		bgcolor = "#ffb0b0"
-		if (mappingRept[0]) {
-		  bgcolor = "#afa"
-		}
-		td(style: "padding: 0.2em; background-color: ${bgcolor};",mappingRept[1])
-
-		
-		def txtCheck = dse.textNodesForSurface(pg)
-		if (txtCheck.size() == 0) {
-		  td(style: "padding: 0.2em; background-color: #ffffcc;", "Caution: no text units found for this page.")
-
-		  
-		} else {
-		  // check for no Iliad text
-		  String iliad = "urn:cts:greekLit:tlg0012.tlg001.msA"
-		  def iMapKeys = dse.imageMapsByText(defaultImg).keySet()
-		  
-		  if (! iMapKeys.contains(iliad)) {
-		    td(style: "padding: 0.2em; background-color: #ffffcc;") {
-		      strong("Caution")
-		      mkp.yield ": no "
-		      em("Iliad")
-		      mkp.yield (" text found for this page.")
-		    }
-		    
-		  } else {
-		    td("")
-		  }
-		}
-	      }
-	    }
-	  }
-	}
-    }
-  }
-
-  
-  File totals = new File("${buildDir}/${urn.getObjectId()}.html")
-  totals.setText(xml.toString(), "UTF-8")
-
-  println ""
-  println "Results of DSE validation are in ${buildDir}/${urn.getObjectId()}.html"
-}

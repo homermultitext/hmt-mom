@@ -1,0 +1,55 @@
+
+/* Project settings to run DSE validation.
+ *
+ * The default settings in this file work to validate the hmt-archive repository,
+ * or any identically organized repostiory.
+ *
+ * Use the "repo" project variable to identify the path to the base
+ * directory of an HMT editing repository:  in other properies,
+ * the string #REPO# will be replaced with the value of the "repo"
+ * property.
+ *
+ * This means that you can run the "dse" task to validate hmt-archive
+ * without touching this file if you supply a command-line value for
+ * the "repo" property, for example, like this:
+ *
+ *    gradle -Pconf=dse-config.gradle -Prepo=/PATH/TO/YOUR/REPO \
+ *           -Pfolio=urn:cite:hmt:msA.1r dse
+ * 
+ */
+project.ext {
+
+  // base dir for repo:
+  //repo="/Users/nsmith/repos/hmt-git/hmt-archive"
+  repo=""
+  
+  // For texts, must use composite indices assembled in build area:
+  textInventory="#REPO#/build/editions/archive/inventory.xml"
+  textArchive="#REPO#/build/editions/archive/"
+
+  // For other indices, directly use versions in repostiory.
+  //
+  // Index of folios to default image:
+  folioToImage ="#REPO#/cite/indices/tbsToDefaultImage/venA.csv"
+
+  // Index of text URNs to image
+  //textToImage = "#REPO#/cite/indices/textToImage/venetusA/venA-extraIliadic.csv,#REPO#/cite/indices/textToImage/venetusA/venA-captions.csv,#REPO#/cite/indices/textToImage/venetusA/scholiaToImage.csv"
+
+    
+  textToImage = "#REPO#/cite/indices/textToImage/venetusA/venA-Iliad-4.csv,#REPO#/cite/indices/textToImage/venetusA/venA-Iliad-5.csv,#REPO#/cite/indices/textToImage/venetusA/venA-Iliad-6.csv,#REPO#/cite/indices/textToImage/venetusA/venA-Iliad-7.csv,#REPO#/cite/indices/textToImage/venetusA/venA-Iliad-8.csv,#REPO#/cite/indices/textToImage/venetusA/venA-Iliad-9.csv,#REPO#/cite/indices/textToImage/venetusA/venA-Iliad-10.csv,#REPO#/cite/indices/textToImage/venetusA/venA-extraIliadic.csv,#REPO#/cite/indices/textToImage/venetusA/venA-captions.csv,/Users/nsmith/Desktop/vms-dev/hmt-vm/hmt-mom/build/scholiaToImage.csv"
+
+  
+  // Index of text URNs to folio
+  textToFolio = "#REPO#/cite/indices/textToSurface/venetusA/venA-Iliad.tsv,#REPO#/cite/indices/textToSurface/venetusA/venA-extraIliadic.csv,#REPO#/cite/indices/textToSurface/venetusA/venA-captions.csv"
+
+    //"#REPO#/cite/indices/textToSurface/venetusA/venA-Iliad-4.csv,#REPO#/cite/indices/textToSurface/venetusA/venA-Iliad-5.csv,#REPO#/cite/indices/textToSurface/venetusA/venA-Iliad-6.csv,#REPO#/cite/indices/textToSurface/venetusA/venA-Iliad-7.csv,#REPO#/cite/indices/textToSurface/venetusA/venA-Iliad-8.csv,#REPO#/cite/indices/textToSurface/venetusA/venA-Iliad-9.csv,#REPO#/cite/indices/textToSurface/venetusA/venA-Iliad-10.csv,#REPO#/cite/indices/textToSurface/venetusA/venA-extraIliadic.csv,#REPO#/cite/indices/textToSurface/venetusA/venA-captions.csv"
+
+
+  // For scholia, indexing is generated off of scholia inventory collection:
+  //
+  //
+  scholiaInventories = "#REPO#/cite/scholiaInventory/VenetusA-Scholia-01.csv,#REPO#/cite/scholiaInventory/VenetusA-Scholia-02.csv,#REPO#/cite/scholiaInventory/VenetusA-Scholia-03.csv,#REPO#/cite/scholiaInventory/VenetusA-Scholia-04.csv,#REPO#/cite/scholiaInventory/VenetusA-Scholia-05.csv,#REPO#/cite/scholiaInventory/VenetusA-Scholia-06.csv,#REPO#/cite/scholiaInventory/VenetusA-Scholia-07.csv,#REPO#/cite/scholiaInventory/VenetusA-Scholia-08.csv,#REPO#/cite/scholiaInventory/VenetusA-Scholia-09.csv,#REPO#/cite/scholiaInventory/VenetusA-Scholia-10.csv"
+
+    ///"/Users/nsmith/Desktop/vms-dev/hmt-vm/iliad6/collections/venA-exterior.csv,/Users/nsmith/Desktop/vms-dev/hmt-vm/iliad6/collections/venA-intermarginal.csv,/Users/nsmith/Desktop/vms-dev/hmt-vm/iliad6/collections/venA-interior.csv,/Users/nsmith/Desktop/vms-dev/hmt-vm/iliad6/collections/venA-mainScholia.csv,/Users/nsmith/Desktop/vms-dev/hmt-vm/iliad6/collections/venA-interlinear.csv"
+    
+}
