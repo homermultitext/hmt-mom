@@ -12,8 +12,8 @@ class TestTokenizer extends GroovyTestCase {
 
   
   void testFullCorpusTokenizer() {
-    HmtTokenizer tokenizer = new HmtTokenizer(tabsDir, outputFile, separatorStr)
-    tokenizer.tokenizeTabs()
+    //    HmtTokenizer tokenizer = new HmtTokenizer(tabsDir, outputFile, separatorStr)
+    // tokenizer.tokenizeTabs()
   }
   
 }

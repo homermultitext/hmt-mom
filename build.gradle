@@ -1,6 +1,12 @@
 /* HMT project Mandatory Ongoing Maintenance. 
 */
+
+
+import com.github.rjeschke.txtmark.*
+import org.apache.tools.ant.filters.*
+
 buildscript {
+  apply from: "versions.gradle"
     repositories {
         mavenCentral()
 	maven {
@@ -8,17 +14,17 @@ buildscript {
 	}
     }
     dependencies {
-      classpath group: 'org.homermultitext', name : 'citemgr' , version: '0.5.4'
-      classpath group: 'org.homermultitext', name : 'hmt-utils' , version: '0.2.8'
+      classpath group: 'com.github.rjeschke', name: 'txtmark', version: '0.11'
+      classpath group: 'org.homermultitext', name : 'citemgr' , version: citemgrVersion
+      classpath group: 'org.homermultitext', name : 'hmt-utils' , version: hmtutilsVersion
 
-      classpath group: 'edu.harvard.chs', name : 'cite' , version: '0.14.2'
-      classpath group: 'edu.holycross.shot', name: 'hocuspocus', version : '0.7.27'
+      classpath group: 'edu.harvard.chs', name : 'cite' , version: citeVersion
+      classpath group: 'edu.holycross.shot', name: 'hocuspocus', version : hocuspocusVersion
 
-      classpath group: 'edu.harvard.chs', name : 'greekutils' , version: '0.8.5'
+      classpath group: 'edu.harvard.chs', name : 'greekutils' , version: greekutilsVersion
 
-      classpath group : 'edu.unc.epidoc', name: 'transcoder', version : '1.2-SNAPSHOT'
-
-      classpath group: 'net.sf.opencsv', name: 'opencsv', version: '2.3'
+      classpath group : 'edu.unc.epidoc', name: 'transcoder', version : transcoderVersion
+      classpath group: 'net.sf.opencsv', name: 'opencsv', version: opencsvVersion
 
 
     }
@@ -109,11 +115,13 @@ repositories {
 
 dependencies {
   compile group: 'org.codehaus.groovy', name: 'groovy-all', version: groovyVersion
-  compile group: 'org.homermultitext', name : 'citemgr' , version: '0.4.5'
+  compile group: 'org.homermultitext', name : 'citemgr' , version: citemgrVersion
+  compile group: 'edu.harvard.chs', name : 'cite' , version: citeVersion
 
-  compile group: 'edu.harvard.chs', name : 'cite' , version: citeversion
-
-    testCompile group: 'junit', name: 'junit', version: '4.8.2'
+  testCompile 'junit:junit:4.11'
+  testCompile 'org.concordion:concordion:1.4.4'
+  
+  //testCompile group: 'junit', name: 'junit', version: junitVersion
 
 }
 
@@ -1200,3 +1208,92 @@ verify.doLast {
 
 }
 
+
+// for specs with concordion:
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+        }
+        resources {
+            srcDir 'src'
+        }
+    }
+    test {
+        java {
+	  srcDir "specs/java"
+        }
+        resources {
+	  srcDir "${buildDir}/specs"
+        }
+    }
+}
+
+task cpResources(type: Copy) {
+  from "specs/resources"
+  into "${buildDir}/specs"
+}
+
+task setUpResources(dependsOn: cpResources) {
+}
+setUpResources.doLast {
+  println "READING FILE TREE FROM " + mdSrc
+  FileTree tree = fileTree(mdSrc) {
+    include "**/*.md"
+  }
+  tree.visit { f ->
+    if (f.relativePath.isFile()) {
+      File inFile = new File("${mdSrc}/${f.relativePath}")
+      println "Need to work on " + inFile
+      def segs = f.relativePath.getSegments()
+      String treePath = "${buildDir}/specs"
+      Integer limit =  segs.size() - 1
+      segs.eachWithIndex { s, i ->
+	if (i < limit) {
+	  treePath = "${treePath}/${s}"
+	  File nxtDir = new File(treePath)
+	  if (! nxtDir.exists()) {
+	    nxtDir.mkdir()
+	  }
+	}
+      }
+      File outDir = new File(treePath)
+      String htmlFileName = f.relativePath.getLastName().replaceFirst(/.md$/,".html")
+      File htmlFile = new File(outDir, htmlFileName)
+      println "Created ${htmlFile}"
+
+      String body = Processor.process(inFile.getText("UTF-8"),Configuration.DEFAULT)
+      htmlFile.setText("${htmlPreface}${body}${htmlEnd}", "UTF-8")
+    }
+  }
+}
+
+
+test.dependsOn setUpResources
+test {
+    systemProperties 'concordion.output.dir': file("${buildDir}/concordion-results")
+
+}
+
+task addVersion(){
+}
+addVersion.doLast {
+  tokenMap["version"] = version
+  tokenMap["deps"] = """
+    <tr><td><a href="http://cite-architecture.github.io/cite/">cite</a></td><td>${citeVersion}</td></tr>
+  <tr><td><a href="http://cite-architecture.github.io/citemgr/">citemgr</a></td><td>${citemgrVersion}</td></tr>
+
+  <tr><td><a href="http://homermultitext.github.io/hmt-utils/">hmt-utils</a></td><td>${hmtutilsVersion}</td></tr>
+  
+  <tr><td><a href="http://cite-architecture.github.io/hocuspocus/">hocuspocus</a></td><td>${hocuspocusVersion}</td></tr>
+  <tr><td>greekutils</td><td>${greekutilsVersion}</td></tr>
+  <tr><td>Epidoc transcoder</td><td>${transcoderVersion}</td></tr>
+""".toString() 
+}
+
+task conc(type: Copy, dependsOn: [test, addVersion]) {
+//task conc(type: Copy) {
+  from "${buildDir}/concordion-results"
+  into "${buildDir}/concordion-formatted"
+  filter(ReplaceTokens, tokens: tokenMap)
+}

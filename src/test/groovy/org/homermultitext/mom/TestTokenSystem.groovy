@@ -11,11 +11,13 @@ class TestTokenSystem extends GroovyTestCase {
   String separatorStr = "#"
 
   void testTokenizing() {
+    /*
     HmtGreekTokenization toker = new HmtGreekTokenization()
     ArrayList results = toker.tokenize( inputFile,  separatorStr) 
     results.each { pr ->
       println "${pr[0]} -> ${pr[1]}"
     }
+    */
   }
   
 }

@@ -26,5 +26,16 @@ project.ext {
     // paleographic observations:
     //paleo = "collections/paleography.csv"
     
+    // settings for concordion testing    
+    mdSrc = "specs/md" 	       
+
+    htmlPreface = """                                                           
+<html xmlns:concordion="http://www.concordion.org/2007/concordion">             
+<body>                                                                          
+    """
+    htmlEnd = "</body>\n</html>\n"
+
+
+    tokenMap = [    "openex": "<div class='example'>", "closeex" : "</div>"]
     
 }
