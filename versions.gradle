@@ -6,7 +6,7 @@ ext {
     
     // register these:
     citeVersion = "0.14.2"
-    citemgrVersion = '0.5.4'
+    citemgrVersion = '0.6.1'
     hmtutilsVersion = '0.3.0'
     hocuspocusVersion =  '0.7.27'
     greekutilsVersion = '0.8.5'
