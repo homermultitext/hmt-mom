@@ -1,4 +1,4 @@
-/* HMT project Mandatory Ongoing Maintenance. 
+/* HMT project:  Mandatory Ongoing Maintenance. 
 */
 
 
@@ -94,13 +94,9 @@ if (hasProperty('repoconf')) {
 }
 
 if (hasProperty('baserepo')) {
-    System.err.println "Using base repo from ${baserepo}"
-}
-
-if (hasProperty('baserepo')) {
   println "USE " + baserepo + " for repository base for DSE validation."
 } else {
-  println "NO REPO CONFIGURED"
+  println "NO base repository configured"
 }
 
 group = "org.homermultitext"
@@ -186,7 +182,8 @@ palView.doLast {
   }
   outputFile.setText(doc.toString(), "UTF-8")
   System.err.println "Paleography observations in ${outputDir}/viewer.html"
-} /*end palView task */
+}
+/*end palView task */
 
 
 task setUpVisualInventory(type: Copy) {
@@ -198,27 +195,33 @@ task setUpVisualInventory(type: Copy) {
 
 task indexScholia() {
   description = "Reads inventory of scholia, and creates separate indices for surfaces and images"
+  //outputs.file "${buildDir}/scholiaToTbs.csv"
 }
 
 
 indexScholia.doLast {
+  
   if (!buildDir.exists()) {
     buildDir.mkdir()
   }
   File scholiaToTbs = new File(buildDir, "scholiaToTbs.csv")
   File scholiaToImg = new File(buildDir,"scholiaToImage.csv")
+  //println "WORK FROM scholia inventories "  + scholiaInventories
 
-  scholiaInventories.split(/,/).each {
-    String inv = it.replace(/#REPO#/,baserepo)
-    println "repo prop ${baserepo} yields SCHOLIA INV " + inv
+  scholiaInventories.split(/,/).each { inv ->
+    //String inv = it.replace(/#REPO#/,baserepo)
+    // println "repo prop ${baserepo} yields SCHOLIA INV " + inv
     if (inv) {
       File invFile = new File(inv)
+      //System.err.println "Copy contents of scholia index file " + inv
       if (invFile) {
 	CSVReader reader = new CSVReader(new FileReader(invFile))
+	//System.err.println "Contents are " + invFile.getText("UTF-8")
 	reader.readAll().each { ln ->
-	  if (ln.size() > 3) {
-	    scholiaToTbs.append(ln[0] + ',"' + ln[3] + '"\n')
-	    scholiaToImg.append(ln[0] + ',"' + ln[2] + '"\n')
+	  // Format: scholion, image, folio
+	  if (ln.size() >= 3) {
+	    scholiaToTbs.append(ln[0] + ',"' + ln[2] + '"\n')
+	    scholiaToImg.append(ln[0] + ',"' + ln[1] + '"\n')
 	  }
 	}
       }
@@ -234,6 +237,9 @@ indexScholia.doLast {
 task dse(dependsOn : [setUpVisualInventory, indexScholia]) {
 }
 dse.doLast {
+
+  Integer debugDse = 0
+  
   CiteUrn urn
   try {
     urn  = new CiteUrn(folio)
@@ -242,30 +248,45 @@ dse.doLast {
     throw e
   }
 
+  System.err.println "DSE analysis for URN " + urn
+  
   def scorecard = []
   def reptDetails = [:]
   Integer totalGood = 0
   
 
   DseManager dse = new DseManager()
-  folioToImage.split(/,/).each {
-    String idx = it.replace(/#REPO#/,baserepo)
+
+  if (debugDse > 0) {
+    println "DSE configuration:"
+    println "FolioToImage: " + folioToImage
+    println "TextToImage: " + textToImage
+
+  }
+
+  folioToImage.split(/,/).each { idx ->
+    //String idx = it.replace(/#REPO#/,baserepo)
     if (dse.tbsImageIndexFiles) {
       dse.tbsImageIndexFiles.add(new File(idx))
     } else {
       dse.tbsImageIndexFiles = [new File(idx)]
     }
   }
-  textToImage.split(/,/).each {
-    String idx = it.replace(/#REPO#/,baserepo)
+
+  
+  textToImage.split(/,/).each { idx ->
+    //String idx = it.replace(/#REPO#/,baserepo)
     if (dse.textImageIndexFiles) {
       dse.textImageIndexFiles.add(new File(idx))
     } else {
       dse.textImageIndexFiles = [new File(idx)]
     }
   }
-  textToFolio.split(/,/).each {
-    String idx = it.replace(/#REPO#/,baserepo)
+  dse.textImageIndexFiles.add(new File (buildDir, "scholiaToImage.csv"))
+
+  
+  textToFolio.split(/,/).each { idx ->
+    // String idx = it.replace(/#REPO#/,baserepo)
     if (dse.textTbsIndexFiles) {
       dse.textTbsIndexFiles.add(new File(idx))
     } else {
@@ -274,18 +295,20 @@ dse.doLast {
   }
   dse.textTbsIndexFiles.add(new File (buildDir, "scholiaToTbs.csv"))
 
-  println "Created DSE Manager"
+  if (debugDse > 0) {println "Created DSE Manager"}
 
 
 
 
   def range = urn.getObjectId().split(/-/)
-  //  if (urn.isRange()) {
   if (range.size() == 2) {
+    System.err.println "Pages ranges are not currently suppored.  Please validate one page at a time."
 
+    
+    /*
     String startUrn = "urn:cite:${urn.getNs()}:${urn.getCollection()}.${range[0]}"
     String endUrn = "urn:cite:${urn.getNs()}:${urn.getCollection()}.${range[1]}"
-    File venAseq = new File(baserepo + "/cite/collections/codexModels/venetusA.csv")
+    File venAseq = new File(codexModel)
     println "Running DSE from folio " +startUrn + " to " + endUrn
     boolean inSeq = false
 
@@ -326,10 +349,22 @@ dse.doLast {
       lineCount++;
     }
 
+    */
+
 
   } else {
 
+    System.err.println "Found ${dse.textNodesForSurface(urn).size()} text nodes, breaking down as follows: "
+    dse.textTbsIndexFiles.each { f ->
+      System.err.println "\tin the index ${f}, " + dse.textNodesForSurface(urn, f).size() + " nodes"
+    }
+    System.err.println "Using default image " + dse.imageForTbs(urn)  + ", found ${dse.textNodesForImage(dse.imageForTbs(urn)).size()} text nodes"
+    
+    
+
+
     def rept = dse.dseReport(urn)
+
     reptDetails[urn.toString()] = rept
 
     String xml =  dse.getVisualInventoryXml(urn)
@@ -340,10 +375,10 @@ dse.doLast {
     if (passfail) { totalGood++ }
     def score = [urn,passfail]
     scorecard.add(score)
-    
+
   }
 
-  
+
   def xml = new groovy.xml.StreamingMarkupBuilder().bind {
     
     html {
@@ -448,7 +483,7 @@ dse.doLast {
   
   File totals = new File("${buildDir}/${urn.getObjectId()}.html")
   totals.setText(xml.toString(), "UTF-8")
-
+  
   println ""
   println "Results of DSE validation are in ${buildDir}/${urn.getObjectId()}.html"
 }

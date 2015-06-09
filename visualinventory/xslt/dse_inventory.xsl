@@ -11,11 +11,11 @@
   
 
     <!--URL for image service: configure dynamically!-->
-    <xsl:variable name="imgURL">http://beta.hpcc.uh.edu/tomcat/hmt-digital/images</xsl:variable>
+    <xsl:variable name="imgURL">http://amphoreus.hpcc.uh.edu/tomcat/hmt-digital/images</xsl:variable>
 
 
     <!-- Variables for CSS Classes and HTML IDs -->
-    <xsl:variable name="coreCss">css/hmt-core.css</xsl:variable>
+    <!--<xsl:variable name="coreCss">css/hmt-core.css</xsl:variable>-->
 
 
     <xsl:variable name="canvasId">canvas</xsl:variable>
@@ -62,7 +62,7 @@
             <head>
                 <meta charset="utf-8"/>
                 <title>Visual proofreader</title>`
-                <link href="$coreCss" rel="stylesheet"/>
+                <link href="css/hmt-core.css" rel="stylesheet"/>
                 <link href="css/graph.css" rel="stylesheet"/>
                 
                 <script src="js/jquery.min.js"/>
