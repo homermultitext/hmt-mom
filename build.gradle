@@ -123,6 +123,14 @@ dependencies {
 }
 
 
+
+task seeSettings() {
+}
+seeSettings.doLast () {
+  println "persnames ${persnames}"
+    println "placenames ${placenames}"
+}
+
 task palView() {
   description = "Creates HTML page displaying paleographic inventory data."
 }
@@ -872,7 +880,7 @@ placeNames.doLast {
     File placeFile = new File (placenames)
     placeFile.eachLine {
       def cols = it.split(/,/)
-      placeList.add(cols[1])
+      placeList.add(cols[0])
     }
     println "Check " + placeNames.size() + " place name occurrences  against " + placeList.size() + " authority list entries."
 
