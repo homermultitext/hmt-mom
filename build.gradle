@@ -1004,7 +1004,7 @@ task lex(dependsOn: [tokenize, initVerification]) {
 
 lex.doLast {
   // All tokens, as created by tokenize task:
-  File tokens = new File("${buildDir}/tokens/tokens.txt")
+  File tokens = new File("${buildDir}/tokens/tokens.csv")
 
   if (tokens.exists()) {
     // 2 data structures:
@@ -1021,13 +1021,13 @@ lex.doLast {
     File lexTokensFile = new File("${buildDir}/tokens/lextokens.txt")
 
 
-    def lexItems = tokens.readLines().findAll { l -> l ==~ /urn:cite:perseus:lextoken.+/}
+    def lexItems = tokens.readLines().findAll { l -> l ==~ /.+,urn:cite:hmt:tokentypes.lexical/}
     println "Unique lexical items: " + lexItems.unique().size() + " (${lexItems.size()} total)"
 
     lexItems.each { 
-      def cols = it.split(/\t/)
-      def lex = cols[0]
-      def psg = cols[1]
+      def cols = it.split(/,/)
+      def lex = cols[1]
+      def psg = cols[0]
       if (passageMap[lex]) {
 	def psgs = passageMap[lex]
 	psgs.add(psg)
