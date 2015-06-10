@@ -30,7 +30,8 @@ buildscript {
     }
 }
 
-import org.homermultitext.utils.HmtTokenizer
+//import org.homermultitext.utils.HmtTokenizer
+import org.homermultitext.utils.HmtEditorialTokenization
 
 import edu.harvard.chs.cite.CiteUrn
 import edu.harvard.chs.cite.CtsUrn
@@ -458,9 +459,8 @@ dse.doLast {
 		  
 		} else {
 		  // check for no Iliad text
-		  String iliad = "urn:cts:greekLit:tlg0012.tlg001.msA"
+		  String iliad = "urn:cts:greekLit:tlg0012.tlg001.msA:"
 		  def iMapKeys = dse.imageMapsByText(defaultImg).keySet()
-		  
 		  if (! iMapKeys.contains(iliad)) {
 		    td(style: "padding: 0.2em; background-color: #ffffcc;") {
 		      strong("Caution")
@@ -559,7 +559,11 @@ textsForSurface.doLast {
 
   // get relevant tabular data, and tokenize it:
   ArrayList tabData = dse.tabDataForSurface(folio, corpus, tabsDir)
-  
+
+  if (dse.debug > 5) {
+    println "dse.tabDataForSurface yields " + tabData.size() + " entries, from "
+    println "tabsDir: " + tabsDir
+  }
 
   File outputDir = new File(buildDir, "surfaceTabs")
   if (! outputDir.exists()) {
@@ -595,29 +599,47 @@ tokenize.doLast {
   if (! outputDir.exists()) {
     outputDir.mkdir()
   }
-  File tokensFile = new File(outputDir, "tokens.txt")
+  File tokensFile = new File(outputDir, "tokens.csv")
 
   String fldSeparator = "#"
-  HmtTokenizer hmtTokens = new HmtTokenizer(surfTabsDir, tokensFile, fldSeparator)
-  hmtTokens.tokenizeTabs()
+  //HmtTokenizer hmtTokens = new HmtTokenizer(surfTabsDir, tokensFile, fldSeparator)
+  //hmtTokens.tokenizeTabs()
+
+  File tabSrc = new File(surfTabsDir, "tab.txt")
+  HmtEditorialTokenization toker = new HmtEditorialTokenization()
+  def tokenizationResults = toker.tokenizeTabFile(tabSrc,"#")
+
+  tokenizationResults.each { res ->
+    tokensFile.append("${res[0]},${res[1]}\n")
+  }
+  println "Valid tokens: " + tokenizationResults.size()    
+  println "Tokenization data in " +  tokensFile
 }
 
+task initVerification(type: Copy) {
+  from "css"
+  into "${buildDir}/verification/css"
+}
 
-task persNames(dependsOn: [tokenize]) {
+task persNames(dependsOn: [tokenize, initVerification]) {
   description  = "Check that personal name identifiers are valid."
 }
 persNames.doLast {
   File summaries = new File(buildDir,"summaries.txt")
   File verificationDir = new File(buildDir, "verification")
 
-  File tokens = new File("${buildDir}/tokens/tokens.txt")
-  if (tokens.exists()) {
-    def persNames = tokens.readLines().findAll { l -> l ==~ /urn:cite:hmt:pers.+/}
+  File tokens = new File("${buildDir}/tokens/tokens.csv")
+  if (! tokens.exists()) {
+    println "HEY!  No tokens file ${tokens}!!!"
+
+  } else {
+    def persNames = tokens.readLines().findAll { l -> l ==~ /.+,urn:cite:hmt:pers.+/}
     def occurrenceMap = [:]
-    persNames.each { 
-      def cols = it.split(/\t/)
-      def pname = cols[0]
-      def psg = cols[1]
+    persNames.each { p ->
+      def cols = p.split(/,/)
+      println "Personame column : " + cols
+      def pname = cols[1]
+      def psg = cols[0]
       if (occurrenceMap[pname]) {
 	def psgs = occurrenceMap[pname]
 	psgs.add(psg)
@@ -708,27 +730,27 @@ persNames.doLast {
     persReport.setText(personsXml.toString())
     
 
-  } else {
-    println "No tokens file."
+    //  } else {
+    //println "No tokens file."
   }
 }
 
 
-task ethnics(dependsOn: [tokenize]) {
+task ethnics(dependsOn: [tokenize, initVerification]) {
   description  = "Check that ethnic adjective identifiers are valid."
 }
 ethnics.doLast {
   File summaries = new File(buildDir,"summaries.txt")
   File verificationDir = new File(buildDir, "verification")
 
-  File tokens = new File("${buildDir}/tokens/tokens.txt")
+  File tokens = new File("${buildDir}/tokens/tokens.csv")
   if (tokens.exists()) {
-    def ethnicNames = tokens.readLines().findAll { l -> l ==~ /urn:cite:hmt:peoples.+/}
+    def ethnicNames = tokens.readLines().findAll { l -> l ==~ /.+,urn:cite:hmt:peoples.+/}
     def occurrenceMap = [:]
     ethnicNames.each { 
-      def cols = it.split(/\t/)
-      def ename = cols[0]
-      def psg = cols[1]
+      def cols = it.split(/,/)
+      def ename = cols[1]
+      def psg = cols[0]
       if (occurrenceMap[ename]) {
 	def psgs = occurrenceMap[ename]
 	psgs.add(psg)
@@ -835,7 +857,7 @@ ethnics.doLast {
 
 
 
-task placeNames(dependsOn: [tokenize]) {
+task placeNames(dependsOn: [tokenize, initVerification]) {
   description  = "Check that place name identifiers are valid."
 }
 
@@ -843,23 +865,23 @@ placeNames.doLast {
 
   File summaries = new File(buildDir,"summaries.txt")
   File verificationDir = new File(buildDir, "verification")
-  File tokens = new File("${buildDir}/tokens/tokens.txt")
+  File tokens = new File("${buildDir}/tokens/tokens.csv")
   if (tokens.exists()) {
-    def placeNames = tokens.readLines().findAll { l -> l ==~ /urn:cite:hmt:place.+/}
+    def placeNames = tokens.readLines().findAll { l -> l ==~ /.+,urn:cite:hmt:place.+/}
     def placeList = []
     File placeFile = new File (placenames)
     placeFile.eachLine {
       def cols = it.split(/,/)
-      placeList.add(cols[0])
+      placeList.add(cols[1])
     }
     println "Check " + placeNames.size() + " place name occurrences  against " + placeList.size() + " authority list entries."
 
 
     def placeOccurrenceMap = [:]
     placeNames.each { 
-      def cols = it.split(/\t/)
-      def pname = cols[0]
-      def psg = cols[1]
+      def cols = it.split(/,/)
+      def pname = cols[1]
+      def psg = cols[0]
       if (placeOccurrenceMap[pname]) {
 	def psgs = placeOccurrenceMap[pname]
 	psgs.add(psg)
@@ -968,7 +990,7 @@ task copyCss(type: Copy) {
 
 
 //task lex(dependsOn: tokenize) {
-task lex {
+task lex(dependsOn: [tokenize, initVerification]) {
   description = "Analyzes lexical tokens."
 }
 
