@@ -497,7 +497,8 @@ task tabulate(dependsOn: dse) {
 tabulate.doLast {
   File tiFile = new File(textInventory)
   File archiveDir = new File(textArchive)
-
+  File schemaFile = new File(invSchema)
+  
   File tabDir = new File(buildDir,"tabulated")
   if (! buildDir.exists()) { 
     buildDir.mkdir()
@@ -506,7 +507,7 @@ tabulate.doLast {
     tabDir.mkdir()
   }
 
-  Corpus c = new Corpus(tiFile, archiveDir)
+  Corpus c = new Corpus(tiFile, archiveDir, schemaFile)
   c.debug = 5
   c.tabulateRepository(tabDir)
 }
@@ -522,7 +523,8 @@ textsForSurface.doLast {
   // Get a hocuspocus corpus for text repository:
   File archiveDir = new File(textArchive)
   File tiFile = new File(textInventory)
-  Corpus corpus = new Corpus(tiFile, archiveDir)
+  File schemaFile = new File(invSchema)
+  Corpus corpus = new Corpus(tiFile, archiveDir, schemaFile)
 
   // configure a DseManager:
   DseManager dse = new DseManager()
