@@ -998,7 +998,8 @@ task copyCss(type: Copy) {
 
 
 //task lex(dependsOn: tokenize) {
-task lex(dependsOn: [tokenize, initVerification]) {
+//task lex(dependsOn: [tokenize, initVerification]) {
+task lex() {
   description = "Analyzes lexical tokens."
 }
 
@@ -1028,6 +1029,7 @@ lex.doLast {
       def cols = it.split(/,/)
       def lex = cols[1]
       def psg = cols[0]
+      System.err.println "Lex cols " + cols 
       if (passageMap[lex]) {
 	def psgs = passageMap[lex]
 	psgs.add(psg)
@@ -1035,6 +1037,7 @@ lex.doLast {
       } else {
 	passageMap[lex] = [psg]
       }
+      
     }
 
     TransCoder tobeta = new TransCoder()
@@ -1130,7 +1133,7 @@ lex.doLast {
 	      tr {
 		th ("Reference")
 		th ("Valid?")
-		th ("Occurs in")
+		//		th ("Occurs in")
 	      }
 
 	      // cycle each token in status map
@@ -1148,19 +1151,22 @@ lex.doLast {
 		      img(src: "css/delete.png")
 		    }
 		  }
-		    
+		  /*
 		  td {
 		    def psgs =  passageMap[k]
-		    if (psgs.size() > 1) {
-		      ul {
-			psgs.each {
-			  li(it)
+		    
+		    if (psgs != null) {
+		      if (psgs.size() > 1) {
+			ul {
+			  psgs.each {
+			    li(it)
+			  }
 			}
+		      } else {
+			mkp.yield (psgs[0])
 		      }
-		    } else {
-		      mkp.yield (psgs[0])
 		    }
-		  }
+		  } */
 		}
 	      }
 	    }
