@@ -1069,10 +1069,11 @@ lex.doLast {
 
     lexItems.each { lex ->
       lexCount = lexCount + 1
-      def cols = lex.split(/\t/)
-      String tokenUrn = cols[0]
-      String token = tokenUrn.replace(/urn:cite:perseus:lextoken./,"")
+      def cols = lex.split(/,/)
+      CtsUrn tokenUrn = new CtsUrn(cols[0])
+      String token = tokenUrn.getSubref()
       String betaToken = tobeta.getString(token.toLowerCase())
+      
       if ((token.size() < 1) || (token == "⁑")){
 	println "${lexCount}: omit punctuation ${token}"
       } else if (orthoAuthorityList.contains(betaToken)) {
@@ -1083,7 +1084,7 @@ lex.doLast {
       } else {
 
 	def command = "${morpheus} ${betaToken}"
-	print "${lexCount}: Analyzing ${token}..."
+	print "${lexCount}: Analyzing ${token} with ${command}..."
 	def proc = command.execute()
 	proc.waitFor()
 	def reply = proc.in.text.readLines()
