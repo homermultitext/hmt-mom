@@ -9,24 +9,31 @@ import org.homermultitext.citemanager.DseManager
 //import groovy.xml.StreamingMarkupBuilder
 
 
-/** Class for verifying all material associated with a given Folio object.
+/** Class for validating all material associated with a given text-bearing surface (page of a MS, column of a papyrus...)
 */
-class Verifier {
+class Validator  {
 
   int debug = 0
 
-  /** The folio to verify. */
+
+  // Allow a range value?
+  /** The folio to validate. */
   CiteUrn urn
 
+
+
+  
+  DseManager dse
+  /*
   def imageToSurfaceFiles = []
   def textToImageFiles = []
   def textToSurfaceFiles = []
+  */
 
-
-  Verifier() {
+  Validator() {
   }
     
-
+  /*
   public static void main(String[] args) 
   throws Exception {
     DseManager dsemgr = new DseManager()
@@ -83,5 +90,6 @@ class Verifier {
       throw e
     }
   }
+  */
 }
 
