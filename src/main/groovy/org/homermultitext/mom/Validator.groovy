@@ -31,7 +31,7 @@ class Validator  {
   // need to know:
   // authlists dir
   // tokens
-  Validator(File tokens, File authListsDir) {
+  HmtValidator(File tokens, File authListsDir,  DseManager dseData) {
     persv = new PersNameValidation(tokens, new File(authListsDir, "hmtnames.csv"))
   }
 
