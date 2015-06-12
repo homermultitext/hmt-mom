@@ -15,7 +15,7 @@ package org.homermultitext.mom
 /** Trait for working with a HMT-MOM validation test. */
 
 
-public interface Validation {
+public interface HmtValidation {
 
   LinkedHashMap getValidationResults()
   boolean validates()

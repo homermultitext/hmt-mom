@@ -7,9 +7,9 @@ class PersNameValidation implements HmtValidation {
 
 
   // map of token URNs to CTS URNs w subref (occurrences)
-  LinkedHashMap tokensMap
+  LinkedHashMap tokensMap = [:]
   // map of the same token URNs to boolean (t = valid)
-  LinkedHashMap validationMap
+  LinkedHashMap validationMap = [:]
   Integer successes = 0
   Integer failures = 0
   Integer total = 0
@@ -58,7 +58,7 @@ class PersNameValidation implements HmtValidation {
     Integer bad = 0
     def scoreMap = [:]
     tokensMap.keySet().each { k ->
-      if (personsList.contains(k)) {
+      if (authList.contains(k)) {
 	this.successes++;
 	validationMap[k] = true
       } else {
@@ -71,10 +71,12 @@ class PersNameValidation implements HmtValidation {
 
   // add error checking...
   ArrayList populateAuthorityList(File srcFile) {
+    ArrayList validList = []
     srcFile.eachLine {
       def cols = it.split(/,/)
-      authList.add(cols[0])
+      validList.add(cols[0])
     }
+    return validList
   }
   
   
