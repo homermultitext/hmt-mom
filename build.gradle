@@ -143,8 +143,8 @@ palView.doLast {
   }
   File outputFile = new File(outputDir, "viewer.html")
 
-
-  String urnBase = "http://beta.hpcc.uh.edu/tomcat/hmt-digital/images?request=GetBinaryImage&w=9000&urn="
+  // == www.homermultitext.org
+  String urnBase = "http://amphoreus.hpcc.uh.edu/tomcat/hmt-digital/images?request=GetBinaryImage&w=9000&urn="
 
   File palFile = new File(paleo)
   CSVReader reader = new CSVReader(new FileReader(palFile))
@@ -1195,7 +1195,7 @@ cpCheck.doLast {
   //println "Validation of unicode code point usage not yet implemented."
 }
 
-
+/*
 task verify(dependsOn: [initReport, persNames, placeNames, lex, ethnics, copyCss, cpCheck]) {
     description = "Runs full verification suite on requested URN(s)"
 }
@@ -1284,9 +1284,67 @@ verify.doLast {
   System.out.println "Completed verification of ${folio}."
   System.out.println "See a summary of results in ${buildDir}/verification/index.html."
 
+}*/
+
+
+task dse2(dependsOn: [indexScholia, tokenize]) {
+  DseManager dse = new DseManager()
+
+  // Populate all three corners of triangle relation:
+  // 1.
+  folioToImage.split(/,/).each { idx ->
+    if (dse.tbsImageIndexFiles) {
+      dse.tbsImageIndexFiles.add(new File(idx))
+    } else {
+      dse.tbsImageIndexFiles = [new File(idx)]
+    }
+  }
+
+  // 2.
+  // Inlcude scholia composite created by indexScholia task:
+  dse.textImageIndexFiles.add(new File (buildDir, "scholiaToImage.csv"))
+  // plus individual files for Iliad, other texts:
+  textToImage.split(/,/).each { idx ->
+    if (dse.textImageIndexFiles) {
+      dse.textImageIndexFiles.add(new File(idx))
+    } else {
+      dse.textImageIndexFiles = [new File(idx)]
+    }
+  }
+  
+  // 3.
+  // Include scholia composite created by indexScholia task:
+  dse.textTbsIndexFiles.add(new File (buildDir, "scholiaToTbs.csv"))
+  // plus individual files for Iliad, other texts:
+  textToFolio.split(/,/).each { idx ->
+    if (dse.textTbsIndexFiles) {
+      dse.textTbsIndexFiles.add(new File(idx))
+    } else {
+      dse.textTbsIndexFiles = [new File(idx)]
+    }
+  }
+
+
+
+
+}
+
+task validate(dependsOn: [dse2, tokenize]) {
+
+  //File tokensFile = new File("${buildDir}/tokens/tokens.csv")
+  // File authLists = new File(authlists)
+  //Validator validator = new Validator(tokensFile,authLists, dse)
+  // call validator main with these 2 params
+  
 }
 
 
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 // for specs with concordion:
 sourceSets {
     main {
@@ -1375,3 +1433,5 @@ task conc(type: Copy, dependsOn: [test, addVersion]) {
   into "${buildDir}/concordion-formatted"
   filter(ReplaceTokens, tokens: tokenMap)
 }
+
+

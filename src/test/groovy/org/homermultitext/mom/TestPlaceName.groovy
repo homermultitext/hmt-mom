@@ -5,17 +5,17 @@ import static org.junit.Assert.*
 import org.junit.Test
 
 
-class TestPersName extends GroovyTestCase {
+class TestPlaceName extends GroovyTestCase {
 
   File tokens = new File("testdata/tokens/tokens.csv")
-  File namesList = new File("testdata/authlists/hmtnames.csv")
+  File namesList = new File("testdata/authlists/hmtplaces.csv")
   
   
-  Integer expectedCount = 17
+  Integer expectedCount = 2
   Integer expectedFails = 0
   
-  void testPersNameValidation() {
-    PersNameValidation pnv = new PersNameValidation(tokens, namesList)
+  void testPlaceNameValidation() {
+    PlaceNameValidation pnv = new PlaceNameValidation(tokens, namesList)
 
 
     // All valid tokens in this sampe, so:
