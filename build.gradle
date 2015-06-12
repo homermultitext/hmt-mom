@@ -47,9 +47,6 @@ import groovy.xml.StreamingMarkupBuilder
 
 import org.apache.tools.ant.filters.*
 
-//import org.homermultitext.mom.PersNameValidation
-
-
 apply plugin: "base"
 apply plugin:  "groovy"
 apply plugin:  "maven"

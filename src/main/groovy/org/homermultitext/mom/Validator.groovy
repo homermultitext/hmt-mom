@@ -20,19 +20,24 @@ class Validator  {
   /** The folio to validate. */
   CiteUrn urn
 
+  DseManager dse
+  PersNameValidation persv
+  //PlaceNameValidation placev
+  //EthnicValidation ethnicv
+  // LexicalValidation lexv
+
+
+
+  // need to know:
+  // authlists dir
+  // tokens
+  Validator(File tokens, File authListsDir) {
+    persv = new PersNameValidation(tokens, new File(authListsDir, "hmtnames.csv"))
+  }
+
 
 
   
-  DseManager dse
-  /*
-  def imageToSurfaceFiles = []
-  def textToImageFiles = []
-  def textToSurfaceFiles = []
-  */
-
-  Validator() {
-  }
-    
   /*
   public static void main(String[] args) 
   throws Exception {
