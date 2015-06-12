@@ -11,7 +11,7 @@ import org.homermultitext.citemanager.DseManager
 
 /** Class for validating all material associated with a given text-bearing surface (page of a MS, column of a papyrus...)
 */
-class Validator  {
+class HmtValidator  {
 
   int debug = 0
 
@@ -20,10 +20,10 @@ class Validator  {
   /** The folio to validate. */
   CiteUrn urn
 
-  DseManager dse
+
   PersNameValidation persv
-  //PlaceNameValidation placev
-  //EthnicValidation ethnicv
+  PlaceNameValidation placev
+  EthnicNameValidation ethnicv
   // LexicalValidation lexv
 
 
@@ -31,8 +31,10 @@ class Validator  {
   // need to know:
   // authlists dir
   // tokens
-  HmtValidator(File tokens, File authListsDir,  DseManager dseData) {
+  HmtValidator(File tokens, File authListsDir) {
     persv = new PersNameValidation(tokens, new File(authListsDir, "hmtnames.csv"))
+    placev = new PlaceNameValidation(tokens, new File(authListsDir, "hmtplaces.csv"))
+    ethnicv = new EthnicNameValidation(tokens, new File(authListsDir, "hmtplaces.csv"))
   }
 
 

@@ -17,7 +17,6 @@ class TestPersName extends GroovyTestCase {
   void testPersNameValidation() {
     PersNameValidation pnv = new PersNameValidation(tokens, namesList)
 
-
     // All valid tokens in this sampe, so:
     assert pnv.validates()
     assert pnv.tokensCount() == expectedCount

@@ -4,6 +4,7 @@ package org.homermultitext.mom
 import static org.junit.Assert.*
 import org.junit.Test
 
+import org.homermultitext.citemanager.DseManager
 
 class TestValidator extends GroovyTestCase {
 
@@ -13,8 +14,10 @@ class TestValidator extends GroovyTestCase {
   
   
   void testValidator() {
-    Validator v = new Validator(tokens,authSrc)
+    HmtValidator v = new HmtValidator(tokens,authSrc)
     assert v.persv.validates()
+    assert v.placev.validates()
+    assert v.ethnicv.validates()
   }
   
 }
