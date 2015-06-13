@@ -12,20 +12,20 @@ class TestLexical extends GroovyTestCase {
   
   String morphCmd = "../morpheus/bin/morpheus"
   
-  Integer expectedCount = 3
-  Integer expectedFails = 0
+  Integer expectedCount = 904
+  Integer expectedFails = 241
+  Integer expectedSuccesses = 663
   
   void testLexicalValidation() {
     LexicalValidation lexicalv = new LexicalValidation(tokens, byz, morphCmd)
-
-    /*
-    // All valid tokens in this sampe, so:
-    assert ethnicv.validates()
-    assert ethnicv.tokensCount() == expectedCount
-    assert ethnicv.successCount() == expectedCount
-    assert ethnicv.failureCount() == expectedFails
-    */
     
+    assertFalse lexicalv.validates()
+    assert lexicalv.tokensCount() == expectedCount
+    // all tokens accounted for:
+    assert lexicalv.successCount() + lexicalv.failureCount() == lexicalv.tokensCount()    
+    // break down as expected:
+    assert lexicalv.successCount() == expectedSuccesses
+    assert lexicalv.failureCount() == expectedFails
   }
   
 }

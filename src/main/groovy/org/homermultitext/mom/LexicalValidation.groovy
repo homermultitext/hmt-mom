@@ -91,16 +91,22 @@ class LexicalValidation implements HmtValidation {
       // report chain:
       if (! urnOk) {
 	System.err.println "${lexCount}: invalid URN value " + tokenUrn
+	validationMap[tokenUrn]  = "fail"
+	failures = failures + 1
+	
 	
       } else if ((token.size() < 1) || (token == "⁑")) {
 	System.err.println "${lexCount}: need to create punctuation token ${token}"
 	// NO: make this an punctuation token!
+	validationMap[tokenUrn]  = "fail"
+	failures = failures + 1
 
 	
       } else if (authList.contains(betaToken)) {
 	System.err.println "${lexCount}: Byzantine orthography ok: " + token
 	validationMap[tokenUrn] = "byz"
-
+	successes = successes + 1
+	
       } else {
 
 	def command = "${parserCmd} ${betaToken}"
