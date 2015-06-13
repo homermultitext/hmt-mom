@@ -52,10 +52,9 @@ class LexicalValidation implements HmtValidation {
 
   /// methods doing the validation work:
   
-  void computeScores(File srcFile, String parserCmd)
-  throws Exception {
+  void computeScores(File srcFile, String parserCmd) {
+
     def lextokens = srcFile.readLines().findAll { l -> l ==~ /.+,urn:cite:hmt:tokentypes.lexical/}
-    
     this.total = lextokens.size()
 
     TransCoder tobeta = new TransCoder()
@@ -64,57 +63,64 @@ class LexicalValidation implements HmtValidation {
 
     Integer lexCount = 0
     lextokens.each { lex ->
+      boolean urnOk = false
       lexCount++
     
       Integer good = 0
       Integer bad = 0
       def scoreMap = [:]
       def cols = lex.split(/,/)
-      if (debug > 0) {println "CtsUrn column[0]: " + cols[0]}
+
       CtsUrn tokenUrn
+      String token
+      String betaToken
       try {
 	tokenUrn = new CtsUrn(cols[0])
+	token = tokenUrn.getSubref()
+	betaToken = tobeta.getString(token.toLowerCase())
+	urnOk = true
+	
       } catch (Exception e) {
 	System.err.println ("LexicalValidation: failed to make CtsUrn: " + e)
-	throw e
       }
-      String token = tokenUrn.getSubref()
-      String betaToken = tobeta.getString(token.toLowerCase())
-
 
 
       // USE GREEKLANG TO CHECK ISPUCNT
-      if ((token.size() < 1) || (token == "⁑")){
-	println "${lexCount}: omit punctuation ${token}"
+      //
+
+      // report chain:
+      if (! urnOk) {
+	System.err.println "${lexCount}: invalid URN value " + tokenUrn
+	
+      } else if ((token.size() < 1) || (token == "⁑")) {
+	System.err.println "${lexCount}: need to create punctuation token ${token}"
 	// NO: make this an punctuation token!
 
 	
       } else if (authList.contains(betaToken)) {
-
-	println "${lexCount}: Byzantine orthography ok: " + token
+	System.err.println "${lexCount}: Byzantine orthography ok: " + token
 	validationMap[tokenUrn] = "byz"
 
       } else {
 
 	def command = "${parserCmd} ${betaToken}"
-	print "${lexCount}: Analyzing ${token} with ${command}..."
+	System.err.print "${lexCount}: Analyzing ${token} with ${command}..."
 	def proc = command.execute()
 	proc.waitFor()
 	def reply = proc.in.text.readLines()
 
 	if (reply[1] ==~ /.*unknown.+/) {
 	  validationMap[tokenUrn]  = "fail"
-	  fail = fail + 1
-	  println " fail."
+	  failures = failures + 1
+	  System.err.println " fail."
 	} else {
 	  validationMap[tokenUrn]  = "success"
-	  success = success + 1
-	  println " success."
+	  successes = successes + 1
+	  System.err.println " success."
 	}
       }
 
     }
-    
   }
 
 
@@ -127,33 +133,6 @@ class LexicalValidation implements HmtValidation {
     }
     return validList
   }
-  
-
-  /*
-  // read file, return contents as a map
-  LinkedHashMap populateTokensMap(File srcFile) {
-    LinkedHashMap occurrences = [:]
-    def lextokens = srcFile.readLines().findAll { l -> l ==~ /.+,urn:cite:hmt:tokentypes.lexical/}
-     lextokens.each { p ->
-      def cols = p.split(/,/)
-      def lex = cols[1]
-      def psg = cols[0]
-      if (occurrences[lex]) {
-	def psgs = occurrences[lex]
-	psgs.add(psg)
-	occurrences[lex] =  psgs
-      } else {
-	occurrences[lex] = [psg]
-      }
-
-      if (debug > 0) {
-       System.err.println "Lex ${lex} in ${psg} "
-       System.err.println "so entry is now " + occurrences[lex]
-     }
-
-    }
-     return occurrences
-  }*/
 
   
 }
