@@ -113,6 +113,8 @@ dependencies {
   compile group: 'org.homermultitext', name : 'citemgr' , version: citemgrVersion
   compile group: 'edu.harvard.chs', name : 'cite' , version: citeVersion
 
+  compile group : 'edu.unc.epidoc', name: 'transcoder', version : transcoderVersion
+  
   testCompile 'junit:junit:4.11'
   testCompile 'org.concordion:concordion:1.4.4'
   
@@ -1080,6 +1082,8 @@ lex.doLast {
       CtsUrn tokenUrn = new CtsUrn(cols[0])
       String token = tokenUrn.getSubref()
       String betaToken = tobeta.getString(token.toLowerCase())
+
+
       
       if ((token.size() < 1) || (token == "⁑")){
 	println "${lexCount}: omit punctuation ${token}"
@@ -1373,7 +1377,7 @@ task cpResources(type: Copy) {
 task setUpResources(dependsOn: cpResources) {
 }
 setUpResources.doLast {
-  println "READING FILE TREE FROM " + mdSrc
+  //println "READING FILE TREE FROM " + mdSrc
   FileTree tree = fileTree(mdSrc) {
     include "**/*.md"
   }

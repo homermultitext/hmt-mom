@@ -24,17 +24,18 @@ class HmtValidator  {
   PersNameValidation persv
   PlaceNameValidation placev
   EthnicNameValidation ethnicv
-  // LexicalValidation lexv
+  LexicalValidation lexv
 
 
 
   // need to know:
   // authlists dir
   // tokens
-  HmtValidator(File tokens, File authListsDir) {
+  HmtValidator(File tokens, File authListsDir, File byzOrtho, String morphCmd) {
     persv = new PersNameValidation(tokens, new File(authListsDir, "hmtnames.csv"))
     placev = new PlaceNameValidation(tokens, new File(authListsDir, "hmtplaces.csv"))
     ethnicv = new EthnicNameValidation(tokens, new File(authListsDir, "hmtplaces.csv"))
+    lexv = new LexicalValidation(tokens, byzOrtho, morphCmd)
   }
 
 
