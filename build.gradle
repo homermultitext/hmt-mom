@@ -1384,7 +1384,7 @@ setUpResources.doLast {
   tree.visit { f ->
     if (f.relativePath.isFile()) {
       File inFile = new File("${mdSrc}/${f.relativePath}")
-      println "Need to work on " + inFile
+      //println "Need to work on " + inFile
       def segs = f.relativePath.getSegments()
       String treePath = "${buildDir}/specs"
       Integer limit =  segs.size() - 1
@@ -1400,7 +1400,7 @@ setUpResources.doLast {
       File outDir = new File(treePath)
       String htmlFileName = f.relativePath.getLastName().replaceFirst(/.md$/,".html")
       File htmlFile = new File(outDir, htmlFileName)
-      println "Created ${htmlFile}"
+      //println "Created ${htmlFile}"
 
       String body = Processor.process(inFile.getText("UTF-8"),Configuration.DEFAULT)
       htmlFile.setText("${htmlPreface}${body}${htmlEnd}", "UTF-8")

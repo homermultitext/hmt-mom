@@ -119,7 +119,6 @@ class LexicalValidation implements HmtValidation {
 	  System.err.println " success."
 	}
       }
-
     }
   }
 
