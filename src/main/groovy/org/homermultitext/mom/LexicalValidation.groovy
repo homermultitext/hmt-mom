@@ -92,7 +92,7 @@ class LexicalValidation implements HmtValidation {
       } else if (authList.contains(betaToken)) {
 
 	println "${lexCount}: Byzantine orthography ok: " + token
-	statusMap[tokenUrn] = "byz"
+	validationMap[tokenUrn] = "byz"
 
       } else {
 
@@ -103,11 +103,11 @@ class LexicalValidation implements HmtValidation {
 	def reply = proc.in.text.readLines()
 
 	if (reply[1] ==~ /.*unknown.+/) {
-	  statusMap[tokenUrn]  = "fail"
+	  validationMap[tokenUrn]  = "fail"
 	  fail = fail + 1
 	  println " fail."
 	} else {
-	  statusMap[tokenUrn]  = "success"
+	  validationMap[tokenUrn]  = "success"
 	  success = success + 1
 	  println " success."
 	}
