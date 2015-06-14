@@ -629,11 +629,14 @@ task initVerification(type: Copy) {
   into "${buildDir}/verification/css"
 }
 
-task persNames(dependsOn: [tokenize, initVerification]) {
+
+
+/*task persNames(dependsOn: [tokenize, initVerification]) {
   description  = "Check that personal name identifiers are valid."
 }
-persNames.doLast {
-  File tokens = new File("${buildDir}/tokens/tokens.csv")
+*/
+//persNames.doLast {
+//  File tokens = new File("${buildDir}/tokens/tokens.csv")
   //PersNameValidation pnv = new PersNameValidation(tokens)
   //println "Made a persnames object"
   
@@ -747,8 +750,9 @@ persNames.doLast {
     //println "No tokens file."
   }
   */
-}
+//}
 
+/*
 
 task ethnics(dependsOn: [tokenize, initVerification]) {
   description  = "Check that ethnic adjective identifiers are valid."
@@ -983,6 +987,7 @@ placeNames.doLast {
     println "No tokens file."
   }
 }
+*/
 
 task initReport {
   description = "Initializes a new verification report."
@@ -1002,7 +1007,7 @@ task copyCss(type: Copy) {
   into "${buildDir}/verification/css"
 }
 
-
+/*
 //task lex(dependsOn: tokenize) {
 //task lex(dependsOn: [tokenize, initVerification]) {
 task lex() {
@@ -1159,7 +1164,7 @@ lex.doLast {
 		      img(src: "css/delete.png")
 		    }
 		  }
-		  /*
+
 		  td {
 		    def psgs =  passageMap[k]
 		    
@@ -1174,7 +1179,7 @@ lex.doLast {
 			mkp.yield (psgs[0])
 		      }
 		    }
-		  } */
+		  } 
 		}
 	      }
 	    }
@@ -1190,7 +1195,7 @@ lex.doLast {
 
 }
 
-
+*/
 
 task cpCheck(dependsOn: tabulate) {
   description = "Checks that unicode code point usage is valid for given document."
@@ -1350,6 +1355,9 @@ task validate(dependsOn: [dse2, tokenize]) {
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 // for specs with concordion:
+//
+/// MOVE ENTIRELY TO hmt-utils
+/*
 sourceSets {
     main {
         java {
@@ -1379,7 +1387,7 @@ task setUpResources(dependsOn: cpResources) {
 setUpResources.doLast {
   //println "READING FILE TREE FROM " + mdSrc
   FileTree tree = fileTree(mdSrc) {
-    include "**/*.md"
+    include "** / *.md"
   }
   tree.visit { f ->
     if (f.relativePath.isFile()) {
@@ -1437,5 +1445,5 @@ task conc(type: Copy, dependsOn: [test, addVersion]) {
   into "${buildDir}/concordion-formatted"
   filter(ReplaceTokens, tokens: tokenMap)
 }
-
+*/
 
