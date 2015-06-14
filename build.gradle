@@ -95,7 +95,7 @@ if (hasProperty('repoconf')) {
 if (hasProperty('baserepo')) {
   println "USE " + baserepo + " for repository base for DSE validation."
 } else {
-  println "NO base repository configured"
+  //println "NO base repository configured"
 }
 
 group = "org.homermultitext"
