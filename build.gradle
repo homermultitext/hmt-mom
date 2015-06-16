@@ -28,8 +28,9 @@ buildscript {
     }
 }
 
-//import org.homermultitext.utils.HmtTokenizer
+
 import org.homermultitext.utils.HmtEditorialTokenization
+import org.homermultitext.utils.HmtValidator
 
 import edu.harvard.chs.cite.CiteUrn
 import edu.harvard.chs.cite.CtsUrn
@@ -49,7 +50,6 @@ import org.apache.tools.ant.filters.*
 
 apply plugin: "base"
 apply plugin:  "groovy"
-apply plugin:  "maven"
 
 
 apply from: "versions.gradle"
@@ -99,7 +99,7 @@ if (hasProperty('baserepo')) {
 }
 
 group = "org.homermultitext"
-version = '1.0.test1'
+version = '1.0.test2'
 
 repositories {
     mavenCentral()
@@ -117,19 +117,11 @@ dependencies {
   
   testCompile 'junit:junit:4.11'
   testCompile 'org.concordion:concordion:1.4.4'
-  
   //testCompile group: 'junit', name: 'junit', version: junitVersion
 
 }
 
 
-
-task seeSettings() {
-}
-seeSettings.doLast () {
-  println "persnames ${persnames}"
-    println "placenames ${placenames}"
-}
 
 task palView() {
   description = "Creates HTML page displaying paleographic inventory data."
@@ -195,47 +187,15 @@ palView.doLast {
 /*end palView task */
 
 
-task setUpVisualInventory(type: Copy) {
-  description="Copy template files for visual inventory to build area."
-  from "visualinventory"
-  into "${buildDir}/visualinventory"
-}
-
 
 task indexScholia() {
   description = "Reads inventory of scholia, and creates separate indices for surfaces and images"
   //outputs.file "${buildDir}/scholiaToTbs.csv"
 }
-
-
-indexScholia.doLast {
-  
-  if (!buildDir.exists()) {
-    buildDir.mkdir()
-  }
-  File scholiaToTbs = new File(buildDir, "scholiaToTbs.csv")
-  File scholiaToImg = new File(buildDir,"scholiaToImage.csv")
-  //println "WORK FROM scholia inventories "  + scholiaInventories
-
-  scholiaInventories.split(/,/).each { inv ->
-    //String inv = it.replace(/#REPO#/,baserepo)
-    // println "repo prop ${baserepo} yields SCHOLIA INV " + inv
-    if (inv) {
-      File invFile = new File(inv)
-      //System.err.println "Copy contents of scholia index file " + inv
-      if (invFile) {
-	CSVReader reader = new CSVReader(new FileReader(invFile))
-	//System.err.println "Contents are " + invFile.getText("UTF-8")
-	reader.readAll().each { ln ->
-	  // Format: scholion, image, folio
-	  if (ln.size() >= 3) {
-	    scholiaToTbs.append(ln[0] + ',"' + ln[2] + '"\n')
-	    scholiaToImg.append(ln[0] + ',"' + ln[1] + '"\n')
-	  }
-	}
-      }
-    }
-  }
+task setUpVisualInventory(type: Copy) {
+  description="Copy template files for visual inventory to build area."
+  from "visualinventory"
+  into "${buildDir}/visualinventory"
 }
 
 
@@ -320,7 +280,6 @@ dse.doLast {
     File venAseq = new File(codexModel)
     println "Running DSE from folio " +startUrn + " to " + endUrn
     boolean inSeq = false
-
     Integer lineCount = 0
     venAseq.eachLine { l ->
       if (lineCount > 0) {
@@ -332,15 +291,12 @@ dse.doLast {
 	} catch (Exception e) {
 	  throw new Exception("Could not make URN from ${currUrnStr}")
 	}
-
 	if (cols[1] == startUrn) {
 	  inSeq = true
 	}
-
 	if (inSeq)  {
 	  def rept = dse.dseReport(currUrn)
 	  reptDetails[currUrn.toString()] = rept
-
 	  String xml =  dse.getVisualInventoryXml(currUrn)
 	  String fName = "${buildDir}/visualinventory/${urn.getCollection()}_${currUrn.getObjectId()}.xml"
 	  File visinv = new File(fName)
@@ -357,7 +313,6 @@ dse.doLast {
       }
       lineCount++;
     }
-
     */
 
 
@@ -489,11 +444,43 @@ dse.doLast {
   }
 
   
-  File totals = new File("${buildDir}/${urn.getObjectId()}.html")
+  File totals = new File("${buildDir}/dse-validation-${urn.getObjectId()}.html")
   totals.setText(xml.toString(), "UTF-8")
   
-  println ""
-  println "Results of DSE validation are in ${buildDir}/${urn.getObjectId()}.html"
+  println "\n===>"
+  println "1. Results of DSE validation are in ${buildDir}/dse-validation-${urn.getObjectId()}.html"
+  println "<==="
+}
+
+
+indexScholia.doLast {
+  
+  if (!buildDir.exists()) {
+    buildDir.mkdir()
+  }
+  File scholiaToTbs = new File(buildDir, "scholiaToTbs.csv")
+  File scholiaToImg = new File(buildDir,"scholiaToImage.csv")
+  //println "WORK FROM scholia inventories "  + scholiaInventories
+
+  scholiaInventories.split(/,/).each { inv ->
+    //String inv = it.replace(/#REPO#/,baserepo)
+    // println "repo prop ${baserepo} yields SCHOLIA INV " + inv
+    if (inv) {
+      File invFile = new File(inv)
+      //System.err.println "Copy contents of scholia index file " + inv
+      if (invFile) {
+	CSVReader reader = new CSVReader(new FileReader(invFile))
+	//System.err.println "Contents are " + invFile.getText("UTF-8")
+	reader.readAll().each { ln ->
+	  // Format: scholion, image, folio
+	  if (ln.size() >= 3) {
+	    scholiaToTbs.append(ln[0] + ',"' + ln[2] + '"\n')
+	    scholiaToImg.append(ln[0] + ',"' + ln[1] + '"\n')
+	  }
+	}
+      }
+    }
+  }
 }
 
 
@@ -520,18 +507,20 @@ tabulate.doLast {
   c.tabulateRepository(tabDir)
 }
 
+
 task textsForSurface(dependsOn: tabulate) {
   description="Selects tabulated text data for requested text-bearing surface."
 }
 
 textsForSurface.doLast {
-  // input and output files:
+  // output directory:
   File tabsDir = new File(buildDir, "tabulated")
-
-  // Get a hocuspocus corpus for text repository:
+  
+  // input files:
   File archiveDir = new File(textArchive)
   File tiFile = new File(textInventory)
   File schemaFile = new File(invSchema)
+  // Get a hocuspocus corpus for text repository:
   Corpus corpus = new Corpus(tiFile, archiveDir, schemaFile)
 
   // configure a DseManager:
@@ -562,7 +551,6 @@ textsForSurface.doLast {
     }
   }
   dse.textTbsIndexFiles.add(new File (buildDir, "scholiaToTbs.csv"))
-
   //dse.debug = 5
 
   // get relevant tabular data, and tokenize it:
@@ -586,16 +574,14 @@ textsForSurface.doLast {
   if (hasProperty('debug')) {
     println "debug is on."
   }
-    println "textsForSurface settings:"
-    println "\tcorpus built from " + textArchive + " with inventory " + textInventory
-    println "\ttabsDir was " + tabsDir 
-    //}
-
+  println "textsForSurface settings:"
+  println "\tcorpus built from " + textArchive + " with inventory " + textInventory
+  println "\ttabsDir was " + tabsDir 
 }
 
 
-  //task tokenize {
-task tokenize(dependsOn: textsForSurface) {
+
+task tokenize(dependsOn: [textsForSurface]) {
   description = "Creates HMT classified tokenization of texts for given page"
   
 }
@@ -610,12 +596,10 @@ tokenize.doLast {
   File tokensFile = new File(outputDir, "tokens.csv")
 
   String fldSeparator = "#"
-  //HmtTokenizer hmtTokens = new HmtTokenizer(surfTabsDir, tokensFile, fldSeparator)
-  //hmtTokens.tokenizeTabs()
 
   File tabSrc = new File(surfTabsDir, "tab.txt")
   HmtEditorialTokenization toker = new HmtEditorialTokenization()
-  def tokenizationResults = toker.tokenizeTabFile(tabSrc,"#")
+  def tokenizationResults = toker.tokenizeTabFile(tabSrc,fldSeparator)
 
   tokenizationResults.each { res ->
     tokensFile.append("${res[0]},${res[1]}\n")
@@ -624,678 +608,11 @@ tokenize.doLast {
   println "Tokenization data in " +  tokensFile
 }
 
-task initVerification(type: Copy) {
-  from "css"
-  into "${buildDir}/verification/css"
-}
 
 
 
-/*task persNames(dependsOn: [tokenize, initVerification]) {
-  description  = "Check that personal name identifiers are valid."
-}
-*/
-//persNames.doLast {
-//  File tokens = new File("${buildDir}/tokens/tokens.csv")
-  //PersNameValidation pnv = new PersNameValidation(tokens)
-  //println "Made a persnames object"
-  
-  /*  
-  File summaries = new File(buildDir,"summaries.txt")
-  File verificationDir = new File(buildDir, "verification")
-
-  File tokens = new File("${buildDir}/tokens/tokens.csv")
-  if (! tokens.exists()) {
-    println "HEY!  No tokens file ${tokens}!!!"
-
-  } else {
-    def persNames = tokens.readLines().findAll { l -> l ==~ /.+,urn:cite:hmt:pers.+/}
-    def occurrenceMap = [:]
-    persNames.each { p ->
-      def cols = p.split(/,/)
-      println "Personame column : " + cols
-      def pname = cols[1]
-      def psg = cols[0]
-      if (occurrenceMap[pname]) {
-	def psgs = occurrenceMap[pname]
-	psgs.add(psg)
-	occurrenceMap[pname] =  psgs
-      } else {
-	occurrenceMap[pname] = [psg]
-      }
-    }
-
-    def personsList = []
-    File personsFile = new File (persnames)
-    personsFile.eachLine {
-      def cols = it.split(/,/)
-      personsList.add(cols[0])
-    }
-    println "Check " + persNames.size() + " personal name occurrences  against " + personsList.size() + " authority list entries."
-    
-    Integer good = 0
-    Integer bad = 0
-    def scoreMap = [:]
-    occurrenceMap.keySet().each { k ->
-      if (personsList.contains(k)) {
-	good++
-	  
-      } else {
-	bad++
-      }
-    }
-    summaries.append("Personal names,${good},${bad},${occurrenceMap.keySet().size()},personalnames.html\n")
-    File persReport = new File(verificationDir, "personalnames.html")
-
-    def personsXml = new groovy.xml.StreamingMarkupBuilder().bind {
-      //mkp.pi("xml-stylesheet": "type='text/xsl' href='xslt/image.xsl'" )
-      html {
-	head {
-	  title ("Verification of personal names for ${folio}")
-	  link(type: "text/css", rel: "stylesheet", href: "css/hmt-core.css", title: "HMT CSS")
-	
-	}
-	body {
-	  header(role: "banner") {
-	    mkp.yield "HMT-MOM: "
-	    nav(role: "navigation") {
-	      ul {
-		li {
-		  a(href:"index.html", "summary")
-		}
-	      }
-	    }
-	  }
-	  article(role: "main") {
-	    h1("Personal names for ${folio}")
-	    table {
-	      tr {
-		th ("Reference")
-		th ("Valid?")
-		th ("Occurs in")
-	      }
-	      occurrenceMap.keySet().each { k ->
-		tr {
-		  td ("${k}")
-		  td {
-		    if (personsList.contains(k)) {
-		      img(src: "css/check.png")
-		    } else {
-		      img(src: "css/delete.png")
-		    }
-		  }
-		  td {
-		    def psgs = occurrenceMap[k]
-		    if (psgs.size() == 1) {
-		      mkp.yield "${psgs[0]}"
-		    } else {
-		      ul {
-			psgs.each { p ->
-			  li ("${p}")
-			}
-		      }
-		    }
-		  }
-		}
-	      }
-	    }
-	  }
-	}
-      }
-    }
-    persReport.setText(personsXml.toString())
-    
-
-    //  } else {
-    //println "No tokens file."
-  }
-  */
-//}
 
 /*
-
-task ethnics(dependsOn: [tokenize, initVerification]) {
-  description  = "Check that ethnic adjective identifiers are valid."
-}
-ethnics.doLast {
-  File summaries = new File(buildDir,"summaries.txt")
-  File verificationDir = new File(buildDir, "verification")
-
-  File tokens = new File("${buildDir}/tokens/tokens.csv")
-  if (tokens.exists()) {
-    def ethnicNames = tokens.readLines().findAll { l -> l ==~ /.+,urn:cite:hmt:peoples.+/}
-    def occurrenceMap = [:]
-    ethnicNames.each { 
-      def cols = it.split(/,/)
-      def ename = cols[1]
-      def psg = cols[0]
-      if (occurrenceMap[ename]) {
-	def psgs = occurrenceMap[ename]
-	psgs.add(psg)
-	occurrenceMap[ename] =  psgs
-      } else {
-	occurrenceMap[ename] = [psg]
-      }
-    }
-    println "Using placenames list in " + placenames
-    def ethnicsList = []
-    File ethnicsFile = new File(placenames)
-    ethnicsFile.eachLine {
-      def cols = it.split(/,/)
-      ethnicsList.add(cols[0])
-    }
-    println "Check " + ethnicNames.size() + " ethnic name occurrences  against " + ethnicsList.size() + " authority list entries."
-
-
-
-    Integer good = 0
-    Integer bad = 0
-    def scoreMap = [:]
-
-    occurrenceMap.keySet().each { k ->
-      String place = k.replace("hmt:peoples","hmt:place")
-      if (ethnicsList.contains(place)) {
-	good++
-
-      } else {
-	bad++
-      }
-    }
-    println "${good}/${bad}/${occurrenceMap.keySet().size()}"
-
-
-    summaries.append("Ethnic adjectives,${good},${bad},${occurrenceMap.keySet().size()},ethnics.html\n")
-    File ethnicReport = new File(verificationDir, "ethnics.html")
-
-    def ethnicsXml = new groovy.xml.StreamingMarkupBuilder().bind {
-      //mkp.pi("xml-stylesheet": "type='text/xsl' href='xslt/image.xsl'" )
-      html {
-	head {
-	  title ("Verification of ethnic adjectives for ${folio}")
-	  link(type: "text/css", rel: "stylesheet", href: "css/hmt-core.css", title: "HMT CSS")
-	
-	}
-	body {
-	  header(role: "banner") {
-	    mkp.yield "HMT-MOM: "
-	    nav(role: "navigation") {
-	      ul {
-		li {
-		  a(href:"index.html", "summary")
-		}
-	      }
-	    }
-	  }
-	  article(role: "main") {
-	    h1("Ethnic adjectives for ${folio}")
-	    table {
-	      tr {
-		th ("Reference")
-		th ("Valid?")
-		th ("Occurs in")
-	      }
-	      occurrenceMap.keySet().each { k ->
-		String place = k.replace("hmt:peoples","hmt:place")
-		tr {
-		  td ("${k}")
-		  td {
-		    if (ethnicsList.contains(place)) {
-		      img(src: "css/check.png")
-		    } else {
-		      img(src: "css/delete.png")
-		    }
-		  }
-		  td {
-		    def psgs = occurrenceMap[k]
-		    if (psgs.size() == 1) {
-		      mkp.yield "${psgs[0]}"
-		    } else {
-		      ul {
-			psgs.each { p ->
-			  li ("${p}")
-			}
-		      }
-		    }
-		  }
-		}
-	      }
-	    }
-	  }
-	}
-      }
-    }
-    ethnicReport.setText(ethnicsXml.toString())
-
-
-  } else {
-    println "No tokens file."
-  }
-}
-
-
-
-
-task placeNames(dependsOn: [tokenize, initVerification]) {
-  description  = "Check that place name identifiers are valid."
-}
-
-placeNames.doLast {
-
-  File summaries = new File(buildDir,"summaries.txt")
-  File verificationDir = new File(buildDir, "verification")
-  File tokens = new File("${buildDir}/tokens/tokens.csv")
-  if (tokens.exists()) {
-    def placeNames = tokens.readLines().findAll { l -> l ==~ /.+,urn:cite:hmt:place.+/}
-    def placeList = []
-    File placeFile = new File (placenames)
-    placeFile.eachLine {
-      def cols = it.split(/,/)
-      placeList.add(cols[0])
-    }
-    println "Check " + placeNames.size() + " place name occurrences  against " + placeList.size() + " authority list entries."
-
-
-    def placeOccurrenceMap = [:]
-    placeNames.each { 
-      def cols = it.split(/,/)
-      def pname = cols[1]
-      def psg = cols[0]
-      if (placeOccurrenceMap[pname]) {
-	def psgs = placeOccurrenceMap[pname]
-	psgs.add(psg)
-	placeOccurrenceMap[pname] =  psgs
-      } else {
-	placeOccurrenceMap[pname] = [psg]
-      }
-    }
-
-
-
-
-    Integer goodPlace = 0
-    Integer badPlace = 0
-    placeOccurrenceMap.keySet().each { k ->
-      if (placeList.contains(k)) {
-	goodPlace++
-      } else {
-	badPlace++
-      }
-    }
-
-    summaries.append("Place names,${goodPlace},${badPlace},${placeOccurrenceMap.keySet().size()},placenames.html\n")
-    File placeReport = new File(verificationDir, "placenames.html")
-
-    def placesXml = new groovy.xml.StreamingMarkupBuilder().bind {
-      //mkp.pi("xml-stylesheet": "type='text/xsl' href='xslt/image.xsl'" )
-      html {
-	head {
-	  title ("Verification of place names for ${folio}")
-	  link(type: "text/css", rel: "stylesheet", href: "css/hmt-core.css", title: "HMT CSS")
-	
-	}
-	body {
-	  header(role: "banner") {
-	    mkp.yield "HMT-MOM: "
-	    nav(role: "navigation") {
-	      ul {
-		li {
-		  a(href:"index.html", "summary")
-		}
-	      }
-	    }
-	  }
-	  article (role: "main") {
-	    h1("Place names for ${folio}")
-	    table {
-	      tr {
-		th ("Reference")
-		th ("Valid?")
-		th ("Occurs in")
-	      }
-	      placeOccurrenceMap.keySet().each { k ->
-		tr {
-		  td ("${k}")
-		  td {
-		    if (placeList.contains(k)) {
-		      img(src: "css/check.png")
-		    } else {
-		      img(src: "css/delete.png")
-		    }
-		  }
-		  td {
-		    def psgs = placeOccurrenceMap[k]
-		    if (psgs.size() == 1) {
-		      mkp.yield "${psgs[0]}"
-		    } else {
-		      ul {
-			psgs.each { p ->
-			  li ("${p}")
-			}
-		      }
-		    }
-		  }
-		}
-	      }
-	    }
-	  }
-	}
-      }
-    }
-    placeReport.setText(placesXml.toString())
-
-  } else {
-    println "No tokens file."
-  }
-}
-*/
-
-task initReport {
-  description = "Initializes a new verification report."
-  if (! buildDir.exists()) {
-    buildDir.mkdir()
-  }
-  File summaries = new File(buildDir,"summaries.txt")
-  summaries.setText("label,success,failure,total,link\n")
-  File verificationDir = new File(buildDir, "verification")
-  if (! verificationDir.exists()) {
-    verificationDir.mkdir()
-  }
-}
-
-task copyCss(type: Copy) {
-  from "css"
-  into "${buildDir}/verification/css"
-}
-
-/*
-//task lex(dependsOn: tokenize) {
-//task lex(dependsOn: [tokenize, initVerification]) {
-task lex() {
-  description = "Analyzes lexical tokens."
-}
-
-lex.doLast {
-  // All tokens, as created by tokenize task:
-  File tokens = new File("${buildDir}/tokens/tokens.csv")
-
-  if (tokens.exists()) {
-    // 2 data structures:
-    // 1. Map of unique tokens to passages:
-    def passageMap = [:]
-
-    // 2. record of analysis:  analyze each token as one of 
-    // a) byz (appears in byz ortho list), 
-    // b) success (morpheus parses), 
-    // c) fail (neither of the preceding)
-    def statusMap = [:]
-
-    // Lexical tokens for morpheus to analyze:
-    File lexTokensFile = new File("${buildDir}/tokens/lextokens.txt")
-
-
-    def lexItems = tokens.readLines().findAll { l -> l ==~ /.+,urn:cite:hmt:tokentypes.lexical/}
-    println "Unique lexical items: " + lexItems.unique().size() + " (${lexItems.size()} total)"
-
-    lexItems.each { 
-      def cols = it.split(/,/)
-      def lex = cols[1]
-      def psg = cols[0]
-      System.err.println "Lex cols " + cols 
-      if (passageMap[lex]) {
-	def psgs = passageMap[lex]
-	psgs.add(psg)
-	passageMap[lex] =  psgs
-      } else {
-	passageMap[lex] = [psg]
-      }
-      
-    }
-
-    TransCoder tobeta = new TransCoder()
-    tobeta.setConverter("BetaCode")
-    tobeta.setParser("Unicode")
-
-    File summaries = new File(buildDir,"summaries.txt")
-    File verificationDir = new File(buildDir, "verification")
-
-    println "Use byz ortho in " + byzortho
-    File byzorth = new File( byzortho)
-
-    def orthoAuthorityList = []
-    Integer count = 0
-    byzorth.eachLine { l ->
-      if (count > 0) {
-	def cols = l.split(/,/)
-	if (l.size() == 0) {
-	  // omit
-	} else {
-	  if (cols[3] != "rejected") {
-	    orthoAuthorityList.add( tobeta.getString(cols[1]) )
-	  }
-	}
-      }
-      count = count + 1
-    }
-
-    Integer success = 0
-    Integer fail = 0
-    Integer lexCount = 0
-
-    lexItems.each { lex ->
-      lexCount = lexCount + 1
-      def cols = lex.split(/,/)
-      CtsUrn tokenUrn = new CtsUrn(cols[0])
-      String token = tokenUrn.getSubref()
-      String betaToken = tobeta.getString(token.toLowerCase())
-
-
-      
-      if ((token.size() < 1) || (token == "⁑")){
-	println "${lexCount}: omit punctuation ${token}"
-      } else if (orthoAuthorityList.contains(betaToken)) {
-
-	println "${lexCount}: Byzantine orthography ok: " + token
-	statusMap[tokenUrn] = "byz"
-
-      } else {
-
-	def command = "${morpheus} ${betaToken}"
-	print "${lexCount}: Analyzing ${token} with ${command}..."
-	def proc = command.execute()
-	proc.waitFor()
-	def reply = proc.in.text.readLines()
-
-	if (reply[1] ==~ /.*unknown.+/) {
-	  statusMap[tokenUrn]  = "fail"
-	  fail = fail + 1
-	  println " fail."
-	} else {
-	  statusMap[tokenUrn]  = "success"
-	  success = success + 1
-	  println " success."
-	}
-      }
-    }
-
-
-    summaries.append("Lexical tokens,${success},${fail},${success + fail},lextokens.html\n")  
-
-    File lexReport = new File(verificationDir, "lextokens.html")
-    def lexXml = new groovy.xml.StreamingMarkupBuilder().bind {
-      //mkp.pi("xml-stylesheet": "type='text/xsl' href='xslt/image.xsl'" )
-      html {
-	head {
-	  title ("Verification of lexical tokens for ${folio}")
-	  link(type: "text/css", rel: "stylesheet", href: "css/hmt-core.css", title: "HMT CSS")
-	
-	}
-	body {
-	  header(role: "banner") {
-	    mkp.yield "HMT-MOM: "
-	    nav(role: "navigation") {
-	      ul {
-		li {
-		  a(href:"index.html", "summary")
-		}
-	      }
-	    }
-	  }
-	  article (role: "main") {
-	    h1("Lexical tokens for ${folio}")
-	    table {
-	      tr {
-		th ("Reference")
-		th ("Valid?")
-		//		th ("Occurs in")
-	      }
-
-	      // cycle each token in status map
-	      // report its passages from occurrence map
-	      statusMap.keySet().each { k ->
-		tr {
-		  td(k)
-		  td {
-		    if (statusMap[k] == "byz") {
-		      img(src: "css/check.png")
-		      
-		    } else if (statusMap[k] == "success") {
-		      img(src: "css/check.png")
-		    } else {
-		      img(src: "css/delete.png")
-		    }
-		  }
-
-		  td {
-		    def psgs =  passageMap[k]
-		    
-		    if (psgs != null) {
-		      if (psgs.size() > 1) {
-			ul {
-			  psgs.each {
-			    li(it)
-			  }
-			}
-		      } else {
-			mkp.yield (psgs[0])
-		      }
-		    }
-		  } 
-		}
-	      }
-	    }
-	  }
-	}
-      }
-    }
-    lexReport.setText(lexXml.toString())
-
-  } else {
-    println "No tokens file."
-  }
-
-}
-
-*/
-
-task cpCheck(dependsOn: tabulate) {
-  description = "Checks that unicode code point usage is valid for given document."
-}
-cpCheck.doLast {
-  //println "Validation of unicode code point usage not yet implemented."
-}
-
-/*
-task verify(dependsOn: [initReport, persNames, placeNames, lex, ethnics, copyCss, cpCheck]) {
-    description = "Runs full verification suite on requested URN(s)"
-}
-verify.doFirst {
-  System.out.println "Preparing report on folio ${folio}\n"
-}
-verify.doLast {
-  DseManager dse = new DseManager()
-  dse.debug = 0
-  
-  File summaries = new File(buildDir, "summaries.txt")
-
-  def reportXml = new groovy.xml.StreamingMarkupBuilder().bind {
-    //mkp.pi("xml-stylesheet": "type='text/xsl' href='xslt/image.xsl'" )
-    html {
-      head {
-	title ("Summary of verification for ${folio}")
-	link(type: "text/css", rel: "stylesheet", href: "css/hmt-core.css", title: "HMT CSS")
-      }
-      body {
-	header(role: "banner") {
-	  mkp.yield "HMT-MOM: "
-	  nav(role: "navigation") {
-	    ul {
-	      li {
-		a(href:"index.html", "summary")
-	      }
-	    }
-	  }
-	}
-	article (role: "main") {
-	  h1 ("Page ${folio} — summary of verification")
-	  p {
-	    strong("MOM version: ${version}")
-	  }
-	  p("DSE reports are not yet integrated in this web page:  see separate feedback in terminal.")
-	  p {
-	    mkp.yield "Also see a "
-	    a(href: "../visualinventory/", "visual inventory")
-	    mkp.yield " of indexed text passages. "
-	    mkp.yield "(Open with Safari or Firefox.)"
-	  }
-
-
-	  table {
-	    tr {
-	      th("Report")
-	      th("Success/Failure/Total")
-	      th("Details")
-	    }
-	    Integer reportCount = 0
-	    summaries.eachLine { ln ->
-	      reportCount++
-		if (reportCount > 1) {
-		  def cols = ln.split(/,/)
-		  Integer success = cols[1].toInteger()
-		  Integer fail = cols[2].toInteger()
-		  Integer total = cols[3].toInteger()
-		  tr {
-		    td {
-		      if  (success == total) {
-			img(src: "css/check.png")
-			mkp.yield(cols[0])
-		      } else {
-			img(src: "css/delete.png")
-			mkp.yield(cols[0])
-		      }
-
-		    }
-		    td("${cols[1]}/${cols[2]}/${cols[3]}")
-		    td {
-		      a(href : "${cols[4]}", "details")
-		    }
-		  }
-		}
-	    }
-	  }
-	}
-      }
-    }
-  }
-
-  File summaryReport = new File("${buildDir}/verification/index.html")
-  summaryReport.setText(reportXml.toString())
-
-  System.out.println "Completed verification of ${folio}."
-  System.out.println "See a summary of results in ${buildDir}/verification/index.html."
-
-}*/
-
-
 task dse2(dependsOn: [indexScholia, tokenize]) {
   DseManager dse = new DseManager()
 
@@ -1332,118 +649,31 @@ task dse2(dependsOn: [indexScholia, tokenize]) {
       dse.textTbsIndexFiles = [new File(idx)]
     }
   }
-
-
-
-
 }
 
-task validate(dependsOn: [dse2, tokenize]) {
-
-  //File tokensFile = new File("${buildDir}/tokens/tokens.csv")
-  // File authLists = new File(authlists)
-  //Validator validator = new Validator(tokensFile,authLists, dse)
-  // call validator main with these 2 params
-  
-}
-
-
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-// for specs with concordion:
-//
-/// MOVE ENTIRELY TO hmt-utils
-/*
-sourceSets {
-    main {
-        java {
-            srcDir 'src'
-        }
-        resources {
-            srcDir 'src'
-        }
-    }
-    test {
-        java {
-	  srcDir "specs/java"
-        }
-        resources {
-	  srcDir "${buildDir}/specs"
-        }
-    }
-}
-
-task cpResources(type: Copy) {
-  from "specs/resources"
-  into "${buildDir}/specs"
-}
-
-task setUpResources(dependsOn: cpResources) {
-}
-setUpResources.doLast {
-  //println "READING FILE TREE FROM " + mdSrc
-  FileTree tree = fileTree(mdSrc) {
-    include "** / *.md"
-  }
-  tree.visit { f ->
-    if (f.relativePath.isFile()) {
-      File inFile = new File("${mdSrc}/${f.relativePath}")
-      //println "Need to work on " + inFile
-      def segs = f.relativePath.getSegments()
-      String treePath = "${buildDir}/specs"
-      Integer limit =  segs.size() - 1
-      segs.eachWithIndex { s, i ->
-	if (i < limit) {
-	  treePath = "${treePath}/${s}"
-	  File nxtDir = new File(treePath)
-	  if (! nxtDir.exists()) {
-	    nxtDir.mkdir()
-	  }
-	}
-      }
-      File outDir = new File(treePath)
-      String htmlFileName = f.relativePath.getLastName().replaceFirst(/.md$/,".html")
-      File htmlFile = new File(outDir, htmlFileName)
-      //println "Created ${htmlFile}"
-
-      String body = Processor.process(inFile.getText("UTF-8"),Configuration.DEFAULT)
-      htmlFile.setText("${htmlPreface}${body}${htmlEnd}", "UTF-8")
-    }
-  }
-}
-
-
-test.dependsOn setUpResources
-test {
-    systemProperties 'concordion.output.dir': file("${buildDir}/concordion-results")
-
-}
-
-task addVersion(){
-}
-addVersion.doLast {
-  tokenMap["version"] = version
-  tokenMap["deps"] = """
-    <tr><td><a href="http://cite-architecture.github.io/cite/">cite</a></td><td>${citeVersion}</td></tr>
-  <tr><td><a href="http://cite-architecture.github.io/citemgr/">citemgr</a></td><td>${citemgrVersion}</td></tr>
-
-  <tr><td><a href="http://homermultitext.github.io/hmt-utils/">hmt-utils</a></td><td>${hmtutilsVersion}</td></tr>
-  
-  <tr><td><a href="http://cite-architecture.github.io/hocuspocus/">hocuspocus</a></td><td>${hocuspocusVersion}</td></tr>
-  <tr><td>greekutils</td><td>${greekutilsVersion}</td></tr>
-  <tr><td>Epidoc transcoder</td><td>${transcoderVersion}</td></tr>
-""".toString() 
-}
-
-task conc(type: Copy, dependsOn: [test, addVersion]) {
-//task conc(type: Copy) {
-  from "${buildDir}/concordion-results"
-  into "${buildDir}/concordion-formatted"
-  filter(ReplaceTokens, tokens: tokenMap)
-}
 */
+
+task validate(dependsOn: [dse, tokenize]) {
+  description "Runs complete suite of DSE and HMT validation tests."
+}
+
+validate.doLast {
+  println "Validate compliance with HMT standards for " + folio
+  CiteUrn urn = new CiteUrn(folio)
+  String pg = urn.getObjectId()
+  
+  File tokensFile = new File("${buildDir}/tokens/tokens.csv")
+  File authLists = new File(authlists)
+  File byz = new File(byzortho)
+
+  HmtValidator v = new HmtValidator(tokensFile, authLists, byz, morpheus)
+  v.writeReports(new File(buildDir, "hmt-validation-${pg}"), pg)
+
+  
+  println "\n===>"
+  println "2. Results of HMT validation are in ${buildDir}/${urn.getObjectId()}"
+  println "\n<==="
+  
+}
+
 
