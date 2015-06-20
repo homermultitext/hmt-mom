@@ -165,7 +165,7 @@ palView.doLast {
 		String urnVal
 		try {
 		  urn = new CtsUrn(ln[1])
-		  urnVal = urn.getSubref1()
+		  urnVal = urn.getSubref()
 		  td (urnVal)
 		  td {
 		    img(src : "${urnBase}${ln[2]}")
@@ -665,8 +665,9 @@ validate.doLast {
   File tokensFile = new File("${buildDir}/tokens/tokens.csv")
   File authLists = new File(authlists)
   File byz = new File(byzortho)
-
-  HmtValidator v = new HmtValidator(tokensFile, authLists, byz, morpheus)
+  File lexMapFile = new File(lexmapping)
+  
+  HmtValidator v = new HmtValidator(tokensFile, authLists, byz, lexMapFile, morpheus)
   v.writeReports(new File(buildDir, "hmt-validation-${pg}"), pg)
 
   

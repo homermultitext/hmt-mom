@@ -5,6 +5,7 @@
 
 ext {
     byzortho = "../byzortho/orthoequivs.csv"
+    lexmapping = "../lexmapping/orthoequivs.csv"	
     persnames = "../hmt-authlists/data/hmtnames.csv"
     placenames = "../hmt-authlists/data/hmtplaces.csv"
 
