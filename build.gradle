@@ -24,7 +24,8 @@ buildscript {
       classpath group: 'edu.harvard.chs', name : 'greekutils' , version: greekutilsVersion
 
       classpath group : 'edu.unc.epidoc', name: 'transcoder', version : transcoderVersion
-      classpath group: 'net.sf.opencsv', name: 'opencsv', version: opencsvVersion
+      //classpath group: 'net.sf.opencsv', name: 'opencsv', version: opencsvVersion
+      classpath group: 'edu.holycross.shot', name: 'safecsv', version: safecsvVersion
     }
 }
 
@@ -44,6 +45,9 @@ import edu.harvard.chs.f1k.GreekNode
 import edu.unc.epidoc.transcoder.TransCoder
 
 import au.com.bytecode.opencsv.CSVReader
+//import edu.holycross.shot.safecsv.SafeCsvReader
+
+
 import groovy.xml.StreamingMarkupBuilder
 
 import org.apache.tools.ant.filters.*
@@ -141,8 +145,10 @@ palView.doLast {
   String urnBase = "http://amphoreus.hpcc.uh.edu/tomcat/hmt-digital/images?request=GetBinaryImage&w=9000&urn="
 
   File palFile = new File(paleo)
-  CSVReader reader = new CSVReader(new FileReader(palFile))
+  //SafeCsvReader reader = new SafeCsvReader(palFile)
 
+  CSVReader reader = new CSVReader(new FileReader(palFile))
+  
   StreamingMarkupBuilder xml = new StreamingMarkupBuilder()
   xml.encoding = "UTF-8"
 
@@ -150,6 +156,7 @@ palView.doLast {
     mkp.xmlDeclaration()
     html {
       head () {
+	meta(charset: "UTF-8")
       }
       body{
 
@@ -158,8 +165,10 @@ palView.doLast {
 	    th ("Reading")
 	    th ("Image")
 	  }
+	  Integer count = 0
 	  reader.readAll().each { ln ->
-	    if (ln.size() >= 3) {
+
+	    if ((ln.size() >= 3) && (count > 0)) {
 	      tr {
 		CtsUrn urn
 		String urnVal
@@ -176,6 +185,7 @@ palView.doLast {
 		}
 	      }
 	    }
+	    count++
 	  }
 	}
       }
@@ -470,6 +480,8 @@ indexScholia.doLast {
       //System.err.println "Copy contents of scholia index file " + inv
       if (invFile) {
 	CSVReader reader = new CSVReader(new FileReader(invFile))
+
+	//SafeCsvReader reader = new SafeCsvReader(invFile)
 	//System.err.println "Contents are " + invFile.getText("UTF-8")
 	reader.readAll().each { ln ->
 	  // Format: scholion, image, folio

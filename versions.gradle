@@ -2,7 +2,7 @@ ext {
 
     groovyVersion = "2.0.6"
     junitVersion =  '4.8.2'
-    opencsvVersion = '2.3'
+    //opencsvVersion = '2.3'
     
     // register these:
     citeVersion = "0.14.2"
@@ -11,4 +11,5 @@ ext {
     hocuspocusVersion =  '0.7.27'
     greekutilsVersion = '0.8.5'
     transcoderVersion = '1.2-SNAPSHOT'
+    safecsvVersion = '0.0.2j7'
 }
