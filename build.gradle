@@ -602,7 +602,7 @@ tokenize.doLast {
   def tokenizationResults = toker.tokenizeTabFile(tabSrc,fldSeparator)
 
   tokenizationResults.each { res ->
-    tokensFile.append("${res[0]},${res[1]}\n")
+    tokensFile.append('"' + res[0] + '","' + res[1] + '"\n')
   }
   println "Valid tokens: " + tokenizationResults.size()    
   println "Tokenization data in " +  tokensFile
