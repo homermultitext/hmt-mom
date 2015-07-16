@@ -209,6 +209,12 @@ task setUpVisualInventory(type: Copy) {
 }
 
 
+task echoParams {
+}
+echoParams.doLast {
+  System.err.println "Work with ${folio} and use config ${conf}"
+}
+
 /* DSE analysis for a physical surface, or a range
  * of physical surfaces, identified by URN value
  * of the project property "folio".
@@ -216,8 +222,8 @@ task setUpVisualInventory(type: Copy) {
 task dse(dependsOn : [setUpVisualInventory, indexScholia]) {
 }
 dse.doLast {
-
-  Integer debugDse = 0
+  System.err.println "Validate folio " + folio
+  Integer debugDse = 5
   
   CiteUrn urn
   try {
@@ -496,7 +502,8 @@ indexScholia.doLast {
 }
 
 
-task tabulate(dependsOn: dse) {
+//task tabulate(dependsOn: dse) {
+task tabulate() {
   description = "Writes tabulated form of all inventoried texts in ${buildDir}/tabulated."
 }
 
@@ -563,7 +570,7 @@ textsForSurface.doLast {
     }
   }
   dse.textTbsIndexFiles.add(new File (buildDir, "scholiaToTbs.csv"))
-  //dse.debug = 5
+  dse.debug = 5
 
   // get relevant tabular data, and tokenize it:
   ArrayList tabData = dse.tabDataForSurface(folio, corpus, tabsDir)
