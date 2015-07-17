@@ -685,8 +685,10 @@ validate.doLast {
   File authLists = new File(authlists)
   File byz = new File(byzortho)
   File lexMapFile = new File(lexmapping)
+
+  File logFile = new File("${buildDir}/validator-log.txt")
   
-  HmtValidator v = new HmtValidator(tokensFile, authLists, byz, lexMapFile, morpheus)
+  HmtValidator v = new HmtValidator(tokensFile, authLists, byz, lexMapFile, morpheus, logFile)
   v.writeReports(new File(buildDir, "hmt-validation-${pg}"), pg)
 
   
