@@ -5,6 +5,10 @@
 import com.github.rjeschke.txtmark.*
 import org.apache.tools.ant.filters.*
 
+
+
+import edu.holycross.shot.hocuspocus.TabUtil
+
 buildscript {
   apply from: "versions.gradle"
     repositories {
@@ -267,8 +271,9 @@ dse.doLast {
       dse.textImageIndexFiles = [new File(idx)]
     }
   }
+  
   dse.textImageIndexFiles.add(new File (buildDir, "scholiaToImage.csv"))
-
+  System.err.println "Files indexing image to text: " + dse.textImageIndexFiles
   
   textToFolio.split(/,/).each { idx ->
     // String idx = it.replace(/#REPO#/,baserepo)
@@ -279,7 +284,8 @@ dse.doLast {
     }
   }
   dse.textTbsIndexFiles.add(new File (buildDir, "scholiaToTbs.csv"))
-
+  System.err.println "Files indexing image to page: " + dse.textTbsIndexFiles
+  
   if (debugDse > 0) {println "Created DSE Manager"}
 
 
@@ -502,13 +508,10 @@ indexScholia.doLast {
 }
 
 
-//task tabulate(dependsOn: dse) {
-task tabulate() {
-  description = "Writes tabulated form of all inventoried texts in ${buildDir}/tabulated."
+task tabsimple() {
+  description = "Simple tabulation of inventoried texts in ${buildDir}/tabulated."
 }
-
-
-tabulate.doLast {
+tabsimple.doLast {
   File tiFile = new File(textInventory)
   File archiveDir = new File(textArchive)
   File schemaFile = new File(invSchema)
@@ -522,12 +525,19 @@ tabulate.doLast {
   }
 
   Corpus c = new Corpus(tiFile, archiveDir, schemaFile)
-  c.debug = 5
+  c.debug = 10
   c.tabulateRepository(tabDir)
 }
 
 
+task tabulate(dependsOn: [dse, tabsimple]) {
+  description = "Full HMT tabulation, depending on DSE anlaysis, and writing tabulated form of all inventoried texts in ${buildDir}/tabulated."
+}
+
+
+
 task textsForSurface(dependsOn: tabulate) {
+//task textsForSurface() {
   description="Selects tabulated text data for requested text-bearing surface."
 }
 
@@ -570,8 +580,10 @@ textsForSurface.doLast {
     }
   }
   dse.textTbsIndexFiles.add(new File (buildDir, "scholiaToTbs.csv"))
-  dse.debug = 5
+  dse.debug = 0
 
+  System.err.println "Get tabs for ${folio} from files in ${tabsDir}"
+  
   // get relevant tabular data, and tokenize it:
   ArrayList tabData = dse.tabDataForSurface(folio, corpus, tabsDir)
 
@@ -598,6 +610,34 @@ textsForSurface.doLast {
   println "\ttabsDir was " + tabsDir 
 }
 
+
+task tabTokenize(dependsOn: tabulate) {
+  //task tabTokenize() {
+  description = "Creates HMT classified tokenization of all tabulated files"
+}
+
+tabTokenize.doLast {
+  File outputDir = new File(buildDir, "tokens")
+  if (! outputDir.exists()) {
+    outputDir.mkdir()
+  }
+  File tokensFile = new File(outputDir, "tokens.csv")
+
+  File tabsDir = new File(buildDir,"tabulated")
+  
+  String fldSeparator = "#"
+  
+  HmtEditorialTokenization toker = new HmtEditorialTokenization()
+  tabsDir.eachFileMatch(~/.*.txt/) { tabFile ->
+    System.err.println "Tokenizing " + tabFile
+    def tokenizationResults = toker.tokenizeTabFile(tabFile,fldSeparator)
+    tokenizationResults.each { res ->
+      tokensFile.append('"' + res[0] + '","' + res[1] + '"\n')
+    }
+    println "Valid tokens in ${tabFile}: " + tokenizationResults.size()    
+  }
+  println "Composite tokenization data in " +  tokensFile  
+}
 
 
 task tokenize(dependsOn: [textsForSurface]) {
@@ -696,6 +736,129 @@ validate.doLast {
   println "2. Results of HMT validation are in ${buildDir}/${urn.getObjectId()}"
   println "\n<==="
   
+}
+
+
+Corpus configureCorpus() {
+  // input files:
+  File archiveDir = new File(textArchive)
+  File tiFile = new File(textInventory)
+  File schemaFile = new File(invSchema)
+  Corpus corpus = new Corpus(tiFile, archiveDir, schemaFile)
+  return corpus
+}
+
+
+DseManager configureDse() {
+  DseManager dse = new DseManager()
+
+  folioToImage.split(/,/).each { idx ->
+    if (dse.tbsImageIndexFiles) {
+      dse.tbsImageIndexFiles.add(new File(idx))
+    } else {
+      dse.tbsImageIndexFiles = [new File(idx)]
+    }
+  }
+
+  textToImage.split(/,/).each { idx ->
+    if (dse.textImageIndexFiles) {
+      dse.textImageIndexFiles.add(new File(idx))
+    } else {
+      dse.textImageIndexFiles = [new File(idx)]
+    }
+  }
+  dse.textImageIndexFiles.add(new File(buildDir, "scholiaToImage.csv"))
+
+  textToFolio.split(/,/).each { idx ->
+    if (dse.textTbsIndexFiles) {
+      dse.textTbsIndexFiles.add(new File(idx))
+    } else {
+      dse.textTbsIndexFiles = [new File(idx)]
+    }
+  }
+  dse.textTbsIndexFiles.add(new File (buildDir, "scholiaToTbs.csv"))
+
+  return dse
+}
+
+String tabEntryForUrn(File tabSrc, String urnStr) {
+  String entry  = ""
+  entry = tabSrc.readLines().find { ln ->
+    String q = urnStr + "#.*"
+    ln ==~ /${q}/
+  }
+  return entry
+}
+task debugHp() {
+}
+
+debugHp.doLast {
+  // output directory:
+  File tabsDir = new File(buildDir, "tabulated")
+  // Get a hocuspocus corpus for text repository:
+  Corpus corpus = configureCorpus()
+  DseManager dse = configureDse()
+
+  def txtNodes =  dse.textNodesForSurface(folio)
+  println "Folio " + folio + " has ${txtNodes.size()} text nodes."
+  
+  def tabList = tabsDir.list({d, f-> f ==~ /.*.txt/ } as FilenameFilter )?.toList() 
+  tabList.each { f ->
+    File tabFile = new File(tabsDir, f)
+    println "Inspect " + tabFile
+
+    // in each file, look for each urn
+    txtNodes.each { urn ->
+      println "for ${urn} - " + tabEntryForUrn(tabFile, urn)
+    }
+  }
+
+
+}
+
+
+task debugDse() {
+}
+debugDse.doLast {
+  // output directory:
+  File tabsDir = new File(buildDir, "tabulated")
+  
+  // input files:
+  File archiveDir = new File(textArchive)
+  File tiFile = new File(textInventory)
+  File schemaFile = new File(invSchema)
+  // Get a hocuspocus corpus for text repository:
+  Corpus corpus = new Corpus(tiFile, archiveDir, schemaFile)
+
+  // configure a DseManager:
+  DseManager dse = configureDse()
+
+  System.err.println "Get tabs for ${folio} from files in ${tabsDir}"
+  
+  // get relevant tabular data, and tokenize it:
+  ArrayList tabData = dse.tabDataForSurface(folio, corpus, tabsDir)
+
+  if (dse.debug > 5) {
+    println "dse.tabDataForSurface yields " + tabData.size() + " entries, from "
+    println "tabsDir: " + tabsDir
+  }
+
+  File outputDir = new File(buildDir, "surfaceTabs")
+  if (! outputDir.exists()) {
+    outputDir.mkdir()
+  }
+
+  File tabDataFile = new File(outputDir, "tab.txt")
+  tabData.each {
+    tabDataFile.append(it + "\n", "UTF-8")
+  }
+  
+  if (hasProperty('debug')) {
+    println "debug is on."
+  }
+  println "textsForSurface settings:"
+  println "\tcorpus built from " + textArchive + " with inventory " + textInventory
+  println "\ttabsDir was " + tabsDir 
 }
 
 
