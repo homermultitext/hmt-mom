@@ -37,6 +37,8 @@ buildscript {
 import org.homermultitext.utils.HmtEditorialTokenization
 import org.homermultitext.utils.HmtValidator
 
+import org.homermultitext.utils.ParseableStringOrca
+
 import edu.harvard.chs.cite.CiteUrn
 import edu.harvard.chs.cite.CtsUrn
 
@@ -529,6 +531,28 @@ tabsimple.doLast {
   c.tabulateRepository(tabDir)
 }
 
+//task parseable (dependsOn: [tabsimple]) {
+task parseable (){
+  description = "Generate parseable ORCA from tab files"
+}
+parseable.doLast {
+  String coll = "urn:cite:hmt:parseable"
+  File byz = new File("/vagrant/byzortho/orthoequivs.csv")
+  File alt = new File("/vagrant/lexmapping/orthoequivs.csv")
+  String morph = "/vagrant/morpheus/bin/morpheus"
+  
+  ParseableStringOrca pso = new ParseableStringOrca(coll, byz, alt, morph)
+
+  File tabsDir = new File("${buildDir}/tabulated")
+  def tabList =  tabsDir.list([accept:{d, f-> f ==~ /.*txt/ }] as FilenameFilter
+			    ).toList()
+  tabList.each { fName ->
+    println "${fName} (${fName.getClass()})"
+  }
+
+  
+  
+}
 
 task tabulate(dependsOn: [dse, tabsimple]) {
   description = "Full HMT tabulation, depending on DSE anlaysis, and writing tabulated form of all inventoried texts in ${buildDir}/tabulated."
