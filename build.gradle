@@ -540,14 +540,26 @@ parseable.doLast {
   File byz = new File("/vagrant/byzortho/orthoequivs.csv")
   File alt = new File("/vagrant/lexmapping/orthoequivs.csv")
   String morph = "/vagrant/morpheus/bin/morpheus"
+
+  File output = new File(buildDir, "parseable.txt")
   
   ParseableStringOrca pso = new ParseableStringOrca(coll, byz, alt, morph)
 
   File tabsDir = new File("${buildDir}/tabulated")
   def tabList =  tabsDir.list([accept:{d, f-> f ==~ /.*txt/ }] as FilenameFilter
 			    ).toList()
+
+  Integer orcaIndex = 0
   tabList.each { fName ->
-    println "${fName} (${fName.getClass()})"
+    File f = new File(tabsDir, fName)
+    pso.orcafyTabFile(f, orcaIndex + 1)
+    pso.analysisList.each { orca ->
+      String val = orca.analysisRecord.toString() + "\t" + orca.passageAnalyzed.toString() + "\t" + orca.transformedText + "\n"
+      System.err.println val
+      output.append(val, "UTF-8")
+      
+    }
+    orcaIndex = pso.analysisList.size() + orcaIndex
   }
 
   
