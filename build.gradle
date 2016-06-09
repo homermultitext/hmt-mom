@@ -1,13 +1,8 @@
 /* HMT project:  Mandatory Ongoing Maintenance.
 */
 
-
 import com.github.rjeschke.txtmark.*
 import org.apache.tools.ant.filters.*
-
-
-
-//import edu.holycross.shot.hocuspocus.TabUtil
 
 buildscript {
   apply from: "versions.gradle"
@@ -19,6 +14,7 @@ buildscript {
     }
     dependencies {
       classpath group: 'com.github.rjeschke', name: 'txtmark', version: '0.11'
+
       classpath group: 'org.homermultitext', name : 'citemgr' , version: citemgrVersion
       classpath group: 'org.homermultitext', name : 'hmt-utils' , version: hmtutilsVersion
 
@@ -28,7 +24,6 @@ buildscript {
       classpath group: 'edu.harvard.chs', name : 'greekutils' , version: greekutilsVersion
 
       classpath group : 'edu.unc.epidoc', name: 'transcoder', version : transcoderVersion
-      //classpath group: 'net.sf.opencsv', name: 'opencsv', version: opencsvVersion
       classpath group: 'edu.holycross.shot', name: 'safecsv', version: safecsvVersion
     }
 }
@@ -50,8 +45,8 @@ import edu.harvard.chs.f1k.GreekNode
 
 import edu.unc.epidoc.transcoder.TransCoder
 
-import au.com.bytecode.opencsv.CSVReader
-//import edu.holycross.shot.safecsv.SafeCsvReader
+//import au.com.bytecode.opencsv.CSVReader
+import edu.holycross.shot.safecsv.SafeCsvReader
 
 
 import groovy.xml.StreamingMarkupBuilder
@@ -151,9 +146,8 @@ palView.doLast {
   String urnBase = "http://amphoreus.hpcc.uh.edu/tomcat/hmt-digital/images?request=GetBinaryImage&w=9000&urn="
 
   File palFile = new File(paleo)
-  //SafeCsvReader reader = new SafeCsvReader(palFile)
-
-  CSVReader reader = new CSVReader(new FileReader(palFile))
+  SafeCsvReader reader = new SafeCsvReader(palFile)
+  //CSVReader reader = new CSVReader(new FileReader(palFile))
 
   StreamingMarkupBuilder xml = new StreamingMarkupBuilder()
   xml.encoding = "UTF-8"
@@ -201,7 +195,6 @@ palView.doLast {
   System.err.println "Paleography observations in ${outputDir}/viewer.html"
 }
 /*end palView task */
-
 
 
 task indexScholia() {
@@ -359,109 +352,112 @@ dse.doLast {
   }
 
 
-  /*def xml = new groovy.xml.StreamingMarkupBuilder().bind {
 
+  StreamingMarkupBuilder smb = new StreamingMarkupBuilder()
+  smb.encoding = "UTF-8"
+
+
+
+
+  def doc = smb.bind {
+    mkp.xmlDeclaration()
     html {
-	head {
-	  title("DSE validation for ${urn.getCollection()}, pages ${urn.getObjectId()}")
+      head () {
+	meta(charset: "UTF-8")
+	title("DSE validation for ${urn.getCollection()}, pages ${urn.getObjectId()}")
+      }
+      body {
+	h1("DSE validation for ${urn.getCollection()}, pages ${urn.getObjectId()}")
+	h2("Summary")
+	p {
+	  mkp.yield "Totals:  "
+	  strong "${scorecard.size()}"
+	  mkp.yield " pages examined, "
+	  strong "${totalGood}"
+	  mkp.yield " pages pass DSE validation."
 	}
-	body {
-	  h1("DSE validation for ${urn.getCollection()}, pages ${urn.getObjectId()}")
-	  h2("Summary")
-	  p {
-	    mkp.yield "Totals:  "
-	    strong "${scorecard.size()}"
-	    mkp.yield " pages examined, "
-	    strong "${totalGood}"
-	    mkp.yield " pages pass DSE validation."
+	h2("Page-by-page record")
+	p {
+	  mkp.yield "Visual inventories for individual pages are in the "
+	  code("visualinventory")
+	  mkp.yield "subdirectory."
+	}
+	table {
+	  tr {
+	    th("Page")
+	    th("Summary")
+	    th("See visual inventory")
+	    th("Default image")
+	    th("Same texts indexed to image and surface")
+	    th("Notes")
 	  }
-	  h2("Page-by-page record")
-	  p {
-	    mkp.yield "Visual inventories for individual pages are in the "
-	    code("visualinventory")
-	    mkp.yield "subdirectory."
-	  }
+	  scorecard.each { pair ->
+	    CiteUrn pg = pair[0]
+	    String defaultImg = "none found"
 
-
-	  table {
-
+	    String bgcolor = "#ffb0b0"
+	    String summary = "Failed one or more tests."
+	    if (pair[1]) {
+	      bgcolor = "#afa"
+	      summary = "Passed all tests."
+	    }
+	    
 	    tr {
-	      th("Page")
-	      th("Summary")
-	      th("See visual inventory")
-	      th("Default image")
-	      th("Same texts indexed to image and surface")
-	      th("Notes")
-
-	    }
-	    scorecard.each { pair ->
-	      CiteUrn pg = pair[0]
-	      String defaultImg = "none found"
-
-	      String bgcolor = "#ffb0b0"
-	      String summary = "Failed one or more tests."
-	      if (pair[1]) {
-		bgcolor = "#afa"
-		summary = "Passed all tests."
+	      td("${pg}")
+	      td(style: "padding: 0.2em; background-color: ${bgcolor};",summary)
+	      td {
+		a (href: "visualinventory/${pg.getCollection()}_${pg.getObjectId()}.xml", "inventory for ${pg.getObjectId()}")
 	      }
-	      tr {
-		td("${pg}")
-		td(style: "padding: 0.2em; background-color: ${bgcolor};",summary)
-		td {
 
-		  a (href: "visualinventory/${pg.getCollection()}_${pg.getObjectId()}.xml", "inventory for ${pg.getObjectId()}")
-		}
+	      def details = reptDetails[pg.toString()]
+	      bgcolor = "#ffb0b0"
 
-		def details = reptDetails[pg.toString()]
-		def imgRept = details[0]
-		def mappingRept = details[1]
+	      
+	      def imgRept = details[0]
+	      
+	      if (imgRept.success) {
+		bgcolor = "#afa"
+		defaultImg = imgRept.summary
+	      } 
+	      td(style: "padding: 0.2em; background-color: ${bgcolor};",defaultImg)
 
-		bgcolor = "#ffb0b0"
+	      
+	      def mappingRept = details[1]
 
-		if (imgRept[0]) {
-		  bgcolor = "#afa"
-		  defaultImg = imgRept[1]
-		}
-		td(style: "padding: 0.2em; background-color: ${bgcolor};",defaultImg)
-
-		bgcolor = "#ffb0b0"
-		if (mappingRept[0]) {
-		  bgcolor = "#afa"
-		}
-		td(style: "padding: 0.2em; background-color: ${bgcolor};",mappingRept[1])
+	     
+	      bgcolor = "#ffb0b0"
+	      if (mappingRept.success) {
+		bgcolor = "#afa"
+	      }
+	      td(style: "padding: 0.2em; background-color: ${bgcolor};",mappingRept.summary)
 
 
-		def txtCheck = dse.textNodesForSurface(pg)
-		if (txtCheck.size() == 0) {
-		  td(style: "padding: 0.2em; background-color: #ffffcc;", "Caution: no text units found for this page.")
-
-
-		} else {
-		  // check for no Iliad text
-		  String iliad = "urn:cts:greekLit:tlg0012.tlg001.msA:"
-		  def iMapKeys = dse.imageMapsByText(defaultImg).keySet()
-		  if (! iMapKeys.contains(iliad)) {
-		    td(style: "padding: 0.2em; background-color: #ffffcc;") {
-		      strong("Caution")
-		      mkp.yield ": no "
-		      em("Iliad")
-		      mkp.yield (" text found for this page.")
-		    }
-
-		  } else {
-		    td("")
+	      def txtCheck = dse.textNodesForSurface(pg)
+	      if (txtCheck.size() == 0) {
+		td(style: "padding: 0.2em; background-color: #ffffcc;", "Caution: no text units found for this page.")
+	      } else {
+		// check for no Iliad text
+		String iliad = "urn:cts:greekLit:tlg0012.tlg001.msA:"
+		def iMapKeys = dse.imageMapsByText(defaultImg).keySet()
+		if (! iMapKeys.contains(iliad)) {
+		  td(style: "padding: 0.2em; background-color: #ffffcc;") {
+		    strong("Caution")
+		    mkp.yield ": no "
+		    em("Iliad")
+		    mkp.yield (" text found for this page.")
 		  }
+		} else {
+		  td("")
 		}
 	      }
 	    }
 	  }
 	}
+      }
     }
-  } */
-
-
+  }
   File totals = new File("${buildDir}/dse-validation-${urn.getObjectId()}.html")
-  //totals.setText(xml.toString(), "UTF-8")
+  totals.setText(doc.toString(), "UTF-8")
 
   println "\n===>"
   println "1. Results of DSE validation are in ${buildDir}/dse-validation-${urn.getObjectId()}.html"
@@ -486,9 +482,8 @@ indexScholia.doLast {
       File invFile = new File(inv)
       //System.err.println "Copy contents of scholia index file " + inv
       if (invFile) {
-	CSVReader reader = new CSVReader(new FileReader(invFile))
-
-	//SafeCsvReader reader = new SafeCsvReader(invFile)
+	//CSVReader reader = new CSVReader(new FileReader(invFile))
+	SafeCsvReader reader = new SafeCsvReader(invFile)
 	//System.err.println "Contents are " + invFile.getText("UTF-8")
 	reader.readAll().each { ln ->
 	  // Format: scholion, image, folio
@@ -567,20 +562,15 @@ parseable.doLast {
 
 task tabulate(dependsOn: [dse, tabsimple]) {
   description = "Full HMT tabulation, depending on DSE anlaysis, and writing tabulated form of all inventoried texts in ${buildDir}/tabulated."
-
-
-
 }
 
 
 
 task textsForSurface(dependsOn: tabulate) {
-//task textsForSurface() {
   description="Selects tabulated text data for requested text-bearing surface."
 
-  inputs.dir "${buildDir}/tabulated"
-  outputs.dir "${buildDir}/surfaceTabs"
-
+  //inputs.dir "${buildDir}/tabulated"
+  //outputs.dir "${buildDir}/surfaceTabs"
 }
 
 textsForSurface.doLast {
@@ -598,7 +588,6 @@ textsForSurface.doLast {
   // configure a DseManager with
   // files identified by configuration values
   DseManager dse = new DseManager()
-  //dse.debug = 10
 
   // array of file names with folio-image indexing
   folioToImage.split(/,/).each { idx ->
