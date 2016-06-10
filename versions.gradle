@@ -3,13 +3,12 @@ ext {
     groovyVersion = "2.+"
     junitVersion =  '4.8.2'
 
-
     citeVersion = "1.+"
     hocuspocusVersion =  '1.+'
     citemgrVersion = '1.+'
 
+    hmtutilsVersion = '0.9.+'
 
-    hmtutilsVersion = '0.7.23j7'
 
     greekutilsVersion = '0.8.5'
     transcoderVersion = '1.2-SNAPSHOT'

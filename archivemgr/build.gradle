@@ -1,0 +1,70 @@
+
+if (hasProperty('conf')) {
+    System.err.println "Using configuration data from ${conf}"
+    File confFile = new File(conf)
+    if (! confFile.exists()) {
+        throw new Exception("No configuration file ${conf} found.")
+    }
+    apply from: conf
+
+} else {
+    File confFile = new File("${rootProject.rootDir}/conf.gradle")
+    if (! confFile.exists()) {
+        throw new Exception("No configuration file ${conf} found.")
+    }
+    System.err.println "Using conf.gradle for configuration"
+    apply from: "${rootProject.rootDir}/conf.gradle"
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+	maven {
+	  url "http://beta.hpcc.uh.edu/nexus/content/groups/public"
+	}
+    }
+    dependencies {
+      classpath group: 'edu.harvard.chs', name : 'cite' , version: citeVersion
+      classpath group: 'edu.holycross.shot', name: 'hocuspocus', version : hocuspocusVersion
+    }
+}
+
+import edu.holycross.shot.hocuspocus.Corpus
+
+task tabsimple() {
+  description = "Simple tabulation of inventoried texts in ${buildDir}/tabulated."
+
+  println "This is archivemgr. Work with " + textArchive
+}
+tabsimple.doLast {
+  println "This is still archivemgr"
+}
+
+task tabsimpleX() {
+  description = "Simple tabulation of inventoried texts in ${buildDir}/tabulated."
+
+  inputs.dir textArchive
+  outputs.dir "${buildDir}/tabulated"
+}
+tabsimpleX.doLast {
+  /*
+  File tiFile = new File(textInventory)
+  File textConf = new File(textConfig)
+  File archiveDir = new File(textArchive)
+  // optional:
+  //File schemaFile = new File(invSchema)
+
+  File tabDir = new File(buildDir,"tabulated")
+  if (! buildDir.exists()) {
+    buildDir.mkdir()
+  }
+  if (! tabDir.exists()) {
+    tabDir.mkdir()
+  }
+*/
+  //Corpus c = new Corpus(tiFile, textConf, archiveDir)//, schemaFile)
+  //c.debug = 10
+  //println "Made a corpus with settings " + tiFile + ", " + textConf + ", " + confDir
+  //c.tabulateRepository(tabDir)
+
+}

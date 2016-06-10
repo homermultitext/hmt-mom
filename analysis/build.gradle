@@ -1,11 +1,106 @@
-
-apply plugin: "base"
-apply plugin: "java"
-apply plugin: "groovy"
-
-task hello {
-  description = "Greet from subproject."
+buildscript {
+    repositories {
+        mavenCentral()
+	       maven {
+	          url "http://beta.hpcc.uh.edu/nexus/content/groups/public"
+	         }
+    }
+    dependencies {
+      classpath group: 'org.homermultitext', name : 'hmt-utils' , version: hmtutilsVersion
+    }
 }
-hello.doLast {
-  println description
+
+import org.homermultitext.utils.ParseableStringOrca
+import org.homermultitext.utils.HmtEditorialTokenization
+/*
+
+task tabTokenize(dependsOn: ":dse:tabulate") {
+  //task tabTokenize() {
+  description = "Creates HMT classified tokenization of all tabulated files"
 }
+
+tabTokenize.doLast {
+  File outputDir = new File(buildDir, "tokens")
+  if (! outputDir.exists()) {
+    outputDir.mkdir()
+  }
+  File tokensFile = new File(outputDir, "tokens.csv")
+
+  File tabsDir = new File(buildDir,"tabulated")
+
+  String fldSeparator = "#"
+
+  HmtEditorialTokenization toker = new HmtEditorialTokenization()
+  tabsDir.eachFileMatch(~/.*.txt/) { tabFile ->
+    System.err.println "Tokenizing " + tabFile
+    def tokenizationResults = toker.tokenizeTabFile(tabFile,fldSeparator)
+    tokenizationResults.each { res ->
+      tokensFile.append('"' + res[0] + '","' + res[1] + '"\n')
+    }
+    println "Valid tokens in ${tabFile}: " + tokenizationResults.size()
+  }
+  println "Composite tokenization data in " +  tokensFile
+}
+
+
+task tokenize(dependsOn: [textsForSurface]) {
+  description = "Creates HMT classified tokenization of texts for given page"
+
+}
+
+tokenize.doLast {
+  // input and output files:
+  File surfTabsDir = new File(buildDir, "surfaceTabs")
+  File outputDir = new File(buildDir, "tokens")
+  if (! outputDir.exists()) {
+    outputDir.mkdir()
+  }
+  File tokensFile = new File(outputDir, "tokens.csv")
+
+  String fldSeparator = "#"
+
+  File tabSrc = new File(surfTabsDir, "tab.txt")
+  HmtEditorialTokenization toker = new HmtEditorialTokenization()
+  def tokenizationResults = toker.tokenizeTabFile(tabSrc,fldSeparator)
+
+  tokenizationResults.each { res ->
+    tokensFile.append('"' + res[0] + '","' + res[1] + '"\n')
+  }
+  println "Valid tokens: " + tokenizationResults.size()
+  println "Tokenization data in " +  tokensFile
+}
+
+
+
+//task parseable (dependsOn: [tabsimple]) {
+task parseable (){
+  description = "Generate parseable ORCA from tab files"
+}
+parseable.doLast {
+  String coll = "urn:cite:hmt:parseable"
+  File byz = new File("/vagrant/byzortho/orthoequivs.csv")
+  File alt = new File("/vagrant/lexmapping/orthoequivs.csv")
+  String morph = "/vagrant/morpheus/bin/morpheus"
+
+  File output = new File(buildDir, "parseable.txt")
+
+  ParseableStringOrca pso = new ParseableStringOrca(coll, byz, alt, morph)
+
+  File tabsDir = new File("${buildDir}/tabulated")
+  def tabList =  tabsDir.list([accept:{d, f-> f ==~ /.*txt/ }] as FilenameFilter
+			    ).toList()
+
+  Integer orcaIndex = 0
+  tabList.each { fName ->
+    File f = new File(tabsDir, fName)
+    pso.orcafyTabFile(f, orcaIndex + 1)
+    pso.analysisList.each { orca ->
+      String val = orca.analysisRecord.toString() + "\t" + orca.passageAnalyzed.toString() + "\t" + orca.transformedText + "\n"
+      System.err.println val
+      output.append(val, "UTF-8")
+
+    }
+    orcaIndex = pso.analysisList.size() + orcaIndex
+  }
+}
+*/

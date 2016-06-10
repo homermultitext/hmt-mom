@@ -9,3 +9,157 @@ task hello {
 hello.doLast {
   println description
 }
+
+/*
+task validate(dependsOn: [dse, tokenize]) {
+  description "Runs complete suite of DSE and HMT validation tests."
+}
+
+validate.doLast {
+  println "Validate compliance with HMT standards for " + folio
+  CiteUrn urn = new CiteUrn(folio)
+  String pg = urn.getObjectId()
+
+  File tokensFile = new File("${buildDir}/tokens/tokens.csv")
+  File authLists = new File(authlists)
+  File byz = new File(byzortho)
+  File lexMapFile = new File(lexmapping)
+
+  File logFile = new File("${buildDir}/validator-log.txt")
+
+  HmtValidator v = new HmtValidator(tokensFile, authLists, byz, lexMapFile, morpheus, logFile)
+  v.writeReports(new File(buildDir, "hmt-validation-${pg}"), pg)
+
+
+  println "\n===>"
+  println "2. Results of HMT validation are in ${buildDir}/${urn.getObjectId()}"
+  println "\n<==="
+
+}
+
+
+Corpus configureCorpus() {
+  // input files:
+  File archiveDir = new File(textArchive)
+  File tiFile = new File(textInventory)
+  File textConf = new File(textConfig)
+
+  File schemaFile = new File(invSchema)
+  Corpus corpus = new Corpus(tiFile, textConf, archiveDir) //, schemaFile)
+  return corpus
+}
+
+
+DseManager configureDse() {
+  DseManager dse = new DseManager()
+
+  folioToImage.split(/,/).each { idx ->
+    if (dse.tbsImageIndexFiles) {
+      dse.tbsImageIndexFiles.add(new File(idx))
+    } else {
+      dse.tbsImageIndexFiles = [new File(idx)]
+    }
+  }
+
+  textToImage.split(/,/).each { idx ->
+    if (dse.textImageIndexFiles) {
+      dse.textImageIndexFiles.add(new File(idx))
+    } else {
+      dse.textImageIndexFiles = [new File(idx)]
+    }
+  }
+  dse.textImageIndexFiles.add(new File(buildDir, "scholiaToImage.csv"))
+
+  textToFolio.split(/,/).each { idx ->
+    if (dse.textTbsIndexFiles) {
+      dse.textTbsIndexFiles.add(new File(idx))
+    } else {
+      dse.textTbsIndexFiles = [new File(idx)]
+    }
+  }
+  dse.textTbsIndexFiles.add(new File (buildDir, "scholiaToTbs.csv"))
+
+  return dse
+}
+
+String tabEntryForUrn(File tabSrc, String urnStr) {
+  String entry  = ""
+  entry = tabSrc.readLines().find { ln ->
+    String q = urnStr + "#.*"
+    ln ==~ /${q}/
+  }
+  return entry
+}
+task debugHp() {
+}
+
+debugHp.doLast {
+  // output directory:
+  File tabsDir = new File(buildDir, "tabulated")
+  // Get a hocuspocus corpus for text repository:
+  Corpus corpus = configureCorpus()
+  DseManager dse = configureDse()
+
+  def txtNodes =  dse.textNodesForSurface(folio)
+  println "Folio " + folio + " has ${txtNodes.size()} text nodes."
+
+  def tabList = tabsDir.list({d, f-> f ==~ /.*.txt/ } as FilenameFilter )?.toList()
+  tabList.each { f ->
+    File tabFile = new File(tabsDir, f)
+    println "Inspect " + tabFile
+
+    // in each file, look for each urn
+    txtNodes.each { urn ->
+      println "for ${urn} - " + tabEntryForUrn(tabFile, urn)
+    }
+  }
+
+
+}
+
+
+task debugDse() {
+}
+debugDse.doLast {
+  // output directory:
+  File tabsDir = new File(buildDir, "tabulated")
+
+  // input files:
+  File archiveDir = new File(textArchive)
+  File tiFile = new File(textInventory)
+  File textConf = new File(textConfig)
+  File schemaFile = new File(invSchema)
+  // Get a hocuspocus corpus for text repository:
+  Corpus corpus = new Corpus(tiFile, textConf, archiveDir) //, schemaFile)
+
+  // configure a DseManager:
+  DseManager dse = configureDse()
+
+  System.err.println "Get tabs for ${folio} from files in ${tabsDir}"
+
+  // get relevant tabular data, and tokenize it:
+  ArrayList tabData = dse.tabDataForSurface(folio, corpus, tabsDir)
+
+  if (dse.debug > 5) {
+    println "dse.tabDataForSurface yields " + tabData.size() + " entries, from "
+    println "tabsDir: " + tabsDir
+  }
+
+  File outputDir = new File(buildDir, "surfaceTabs")
+  if (! outputDir.exists()) {
+    outputDir.mkdir()
+  }
+
+  File tabDataFile = new File(outputDir, "tab.txt")
+  tabData.each {
+    tabDataFile.append(it + "\n", "UTF-8")
+  }
+
+  if (hasProperty('debug')) {
+    println "debug is on."
+  }
+  println "textsForSurface settings:"
+  println "\tcorpus built from " + textArchive + " with inventory " + textInventory
+  println "\ttabsDir was " + tabsDir
+}
+*/

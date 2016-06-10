@@ -1,3 +1,5 @@
-include 'analysis'
+include 'archivemgr'
 include 'dse'
 include 'hmtvalidation'
+include 'paleography'
+include 'analysis'

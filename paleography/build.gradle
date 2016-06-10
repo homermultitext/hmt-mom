@@ -1,0 +1,91 @@
+
+
+buildscript {
+    repositories {
+        mavenCentral()
+	maven {
+	  url "http://beta.hpcc.uh.edu/nexus/content/groups/public"
+	}
+    }
+    dependencies {
+
+
+      classpath group: 'edu.harvard.chs', name : 'cite' , version: citeVersion
+      classpath group: 'edu.holycross.shot', name: 'safecsv', version: safecsvVersion
+
+
+    }
+}
+
+import edu.harvard.chs.cite.CiteUrn
+import edu.harvard.chs.cite.CtsUrn
+import groovy.xml.StreamingMarkupBuilder
+import edu.holycross.shot.safecsv.SafeCsvReader
+
+task palView() {
+  description = "Creates HTML page displaying paleographic inventory data."
+}
+
+palView.doLast {
+  if (! buildDir.exists()) {
+    buildDir.mkdir()
+  }
+  File outputDir = new File(buildDir, "paleography")
+  if (! outputDir.exists()) {
+    outputDir.mkdir()
+  }
+  File outputFile = new File(outputDir, "viewer.html")
+
+  // == www.homermultitext.org
+  String urnBase = "http://amphoreus.hpcc.uh.edu/tomcat/hmt-digital/images?request=GetBinaryImage&w=9000&urn="
+
+  File palFile = new File(paleo)
+  SafeCsvReader reader = new SafeCsvReader(palFile)
+  //CSVReader reader = new CSVReader(new FileReader(palFile))
+
+  StreamingMarkupBuilder xml = new StreamingMarkupBuilder()
+  xml.encoding = "UTF-8"
+
+  def doc = xml.bind {
+    mkp.xmlDeclaration()
+    html {
+      head () {
+	meta(charset: "UTF-8")
+      }
+      body{
+
+	table {
+	  tr {
+	    th ("Reading")
+	    th ("Image")
+	  }
+	  Integer count = 0
+	  reader.readAll().each { ln ->
+
+	    if ((ln.size() >= 3) && (count > 0)) {
+	      tr {
+		CtsUrn urn
+		String urnVal
+		try {
+		  urn = new CtsUrn(ln[1])
+		  urnVal = urn.getSubref()
+		  td (urnVal)
+		  td {
+		    img(src : "${urnBase}${ln[2]}")
+		  }
+
+		} catch (Exception e) {
+		  System.err.println "Bad CTS URN: " + ln[1]
+		}
+	      }
+	    }
+	    count++
+	  }
+	}
+      }
+    }
+  }
+  outputFile.setText(doc.toString(), "UTF-8")
+  System.err.println "Paleography observations in ${outputDir}/viewer.html"
+}
+/*end palView task */

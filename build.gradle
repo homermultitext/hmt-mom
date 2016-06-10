@@ -24,20 +24,17 @@ buildscript {
       classpath group: 'edu.harvard.chs', name : 'greekutils' , version: greekutilsVersion
 
       classpath group : 'edu.unc.epidoc', name: 'transcoder', version : transcoderVersion
-      classpath group: 'edu.holycross.shot', name: 'safecsv', version: safecsvVersion
+
     }
 }
 
 
-import org.homermultitext.utils.HmtEditorialTokenization
 import org.homermultitext.utils.HmtValidator
 
-import org.homermultitext.utils.ParseableStringOrca
 
 import edu.harvard.chs.cite.CiteUrn
 import edu.harvard.chs.cite.CtsUrn
 
-import edu.holycross.shot.hocuspocus.Corpus
 
 import org.homermultitext.citemanager.DseManager
 
@@ -49,34 +46,16 @@ import edu.unc.epidoc.transcoder.TransCoder
 import edu.holycross.shot.safecsv.SafeCsvReader
 
 
-import groovy.xml.StreamingMarkupBuilder
+
 
 import org.apache.tools.ant.filters.*
 
 apply plugin: "base"
 apply plugin:  "groovy"
 
-
 apply from: "versions.gradle"
 
 
-if (hasProperty('conf')) {
-    System.err.println "Using configuration data from ${conf}"
-    File confFile = new File(conf)
-    if (! confFile.exists()) {
-        throw new Exception("No configuration file ${conf} found.")
-    }
-    apply from: conf
-
-} else {
-    File confFile = new File("conf.gradle")
-    if (! confFile.exists()) {
-        throw new Exception("No configuration file ${conf} found.")
-    }
-    System.err.println "Using conf.gradle for configuration"
-    apply from: "conf.gradle"
-
-}
 
 
 
@@ -103,8 +82,37 @@ if (hasProperty('baserepo')) {
   //println "NO base repository configured"
 }
 
-group = "org.homermultitext"
-version = '1.0.0'
+
+
+allprojects {
+  group = "org.homermultitext"
+  version = "2.0.0"
+
+  apply from: "${rootProject.rootDir}/versions.gradle"
+
+
+  apply plugin: "base"
+  apply plugin:  "groovy"
+  
+
+
+
+  task vmap << { task ->
+    println "\nDependencies for ${version} in ${task.project.name}:"
+    versionMap.keySet().sort().each { k ->
+      print k
+      Integer spaces = 15 - k.size()
+      Integer idx = 0
+      while(idx < spaces) {
+	print " "
+	idx++
+	  }
+      println versionMap[k]
+    }
+    println ""
+  }
+}
+
 
 repositories {
     mavenCentral()
@@ -126,590 +134,18 @@ dependencies {
 
 }
 
-
-
-task palView() {
-  description = "Creates HTML page displaying paleographic inventory data."
-}
-
-palView.doLast {
-  if (! buildDir.exists()) {
-    buildDir.mkdir()
-  }
-  File outputDir = new File(buildDir, "paleography")
-  if (! outputDir.exists()) {
-    outputDir.mkdir()
-  }
-  File outputFile = new File(outputDir, "viewer.html")
-
-  // == www.homermultitext.org
-  String urnBase = "http://amphoreus.hpcc.uh.edu/tomcat/hmt-digital/images?request=GetBinaryImage&w=9000&urn="
-
-  File palFile = new File(paleo)
-  SafeCsvReader reader = new SafeCsvReader(palFile)
-  //CSVReader reader = new CSVReader(new FileReader(palFile))
-
-  StreamingMarkupBuilder xml = new StreamingMarkupBuilder()
-  xml.encoding = "UTF-8"
-
-  def doc = xml.bind {
-    mkp.xmlDeclaration()
-    html {
-      head () {
-	meta(charset: "UTF-8")
-      }
-      body{
-
-	table {
-	  tr {
-	    th ("Reading")
-	    th ("Image")
-	  }
-	  Integer count = 0
-	  reader.readAll().each { ln ->
-
-	    if ((ln.size() >= 3) && (count > 0)) {
-	      tr {
-		CtsUrn urn
-		String urnVal
-		try {
-		  urn = new CtsUrn(ln[1])
-		  urnVal = urn.getSubref()
-		  td (urnVal)
-		  td {
-		    img(src : "${urnBase}${ln[2]}")
-		  }
-
-		} catch (Exception e) {
-		  System.err.println "Bad CTS URN: " + ln[1]
-		}
-	      }
-	    }
-	    count++
-	  }
-	}
-      }
-    }
-  }
-  outputFile.setText(doc.toString(), "UTF-8")
-  System.err.println "Paleography observations in ${outputDir}/viewer.html"
-}
-/*end palView task */
-
-
-task indexScholia() {
-  description = "Reads inventory of scholia, and creates separate indices for surfaces and images"
-  //outputs.file "${buildDir}/scholiaToTbs.csv"
-}
-task setUpVisualInventory(type: Copy) {
-  description="Copy template files for visual inventory to build area."
-  from "visualinventory"
-  into "${buildDir}/visualinventory"
-}
-
-
-/* DSE analysis for a physical surface, or a range
- * of physical surfaces, identified by URN value
- * of the project property "folio".
- */
-task dse(dependsOn : [setUpVisualInventory, indexScholia]) {
-}
-dse.doLast {
-  System.err.println "Validate folio " + folio
-  Integer debugDse = 5
-
-  CiteUrn urn
-  try {
-    urn  = new CiteUrn(folio)
-  } catch (Exception e) {
-    System.err.println "Unable to make urn for ${folio}"
-    throw e
-  }
-
-  System.err.println "DSE analysis for URN " + urn
-
-  def scorecard = []
-  def reptDetails = [:]
-  Integer totalGood = 0
-
-
-  DseManager dse = new DseManager()
-
-  if (dse.debug > 0) {
-    System.err.println "DSE configuration:"
-    System.err.println "FolioToImage: " + folioToImage
-    System.err.println "TextToImage: " + textToImage
-
-  }
-
-  folioToImage.split(/,/).each { idx ->
-    //String idx = it.replace(/#REPO#/,baserepo)
-    if (dse.tbsImageIndexFiles) {
-      dse.tbsImageIndexFiles.add(new File(idx))
-    } else {
-      dse.tbsImageIndexFiles = [new File(idx)]
-    }
-  }
-
-
-  textToImage.split(/,/).each { idx ->
-    //String idx = it.replace(/#REPO#/,baserepo)
-    if (dse.textImageIndexFiles) {
-      dse.textImageIndexFiles.add(new File(idx))
-    } else {
-      dse.textImageIndexFiles = [new File(idx)]
-    }
-  }
-
-  dse.textImageIndexFiles.add(new File (buildDir, "scholiaToImage.csv"))
-  System.err.println "Files indexing image to text: " + dse.textImageIndexFiles
-
-  textToFolio.split(/,/).each { idx ->
-    // String idx = it.replace(/#REPO#/,baserepo)
-    if (dse.textTbsIndexFiles) {
-      dse.textTbsIndexFiles.add(new File(idx))
-    } else {
-      dse.textTbsIndexFiles = [new File(idx)]
-    }
-  }
-  dse.textTbsIndexFiles.add(new File (buildDir, "scholiaToTbs.csv"))
-  System.err.println "Files indexing image to page: " + dse.textTbsIndexFiles
-
-
-
-
-  def range = urn.getObjectId().split(/-/)
-  if (range.size() == 2) {
-    System.err.println "Pages ranges are not currently suppored.  Please validate one page at a time."
-
-
-    /*
-    String startUrn = "urn:cite:${urn.getNs()}:${urn.getCollection()}.${range[0]}"
-    String endUrn = "urn:cite:${urn.getNs()}:${urn.getCollection()}.${range[1]}"
-    File venAseq = new File(codexModel)
-    println "Running DSE from folio " +startUrn + " to " + endUrn
-    boolean inSeq = false
-    Integer lineCount = 0
-    venAseq.eachLine { l ->
-      if (lineCount > 0) {
-	def cols = l.split(/,/)
-	String currUrnStr = cols[1]
-	CiteUrn currUrn
-	try {
-	  currUrn = new CiteUrn(currUrnStr)
-	} catch (Exception e) {
-	  throw new Exception("Could not make URN from ${currUrnStr}")
-	}
-	if (cols[1] == startUrn) {
-	  inSeq = true
-	}
-	if (inSeq)  {
-	  def rept = dse.dseReport(currUrn)
-	  reptDetails[currUrn.toString()] = rept
-	  String xml =  dse.getVisualInventoryXml(currUrn)
-	  String fName = "${buildDir}/visualinventory/${urn.getCollection()}_${currUrn.getObjectId()}.xml"
-	  File visinv = new File(fName)
-	  visinv.setText(xml,"UTF-8")
-	  boolean passfail = dse.verifyTbs(currUrn)
-	  if (passfail) { totalGood++ }
-	  def score = [currUrn,passfail]
-	  scorecard.add(score)
-	}
-
-	if (cols[1] == endUrn) {
-	  inSeq = false
-	}
-      }
-      lineCount++;
-    }
-    */
-
-
-  } else {
-
-    System.err.println "Found ${dse.textNodesForSurface(urn).size()} text nodes, breaking down as follows: "
-    dse.textTbsIndexFiles.each { f ->
-      System.err.println "\tin the index ${f}, " + dse.textNodesForSurface(urn, f).size() + " nodes"
-    }
-    System.err.println "Using default image " + dse.imageForTbs(urn)  + ", found ${dse.textNodesForImage(dse.imageForTbs(urn)).size()} text nodes"
-
-
-
-
-    def rept = dse.dseReport(urn)
-
-    reptDetails[urn.toString()] = rept
-
-    String xml =  dse.getVisualInventoryXml(urn)
-    String fName = "${buildDir}/visualinventory/${urn.getCollection()}_${urn.getObjectId()}.xml"
-    File visinv = new File(fName)
-    visinv.setText(xml,"UTF-8")
-    boolean passfail = dse.verifyTbs(urn)
-    if (passfail) { totalGood++ }
-    def score = [urn,passfail]
-    scorecard.add(score)
-
-  }
-
-
-
-  StreamingMarkupBuilder smb = new StreamingMarkupBuilder()
-  smb.encoding = "UTF-8"
-
-
-
-
-  def doc = smb.bind {
-    mkp.xmlDeclaration()
-    html {
-      head () {
-	meta(charset: "UTF-8")
-	title("DSE validation for ${urn.getCollection()}, pages ${urn.getObjectId()}")
-      }
-      body {
-	h1("DSE validation for ${urn.getCollection()}, pages ${urn.getObjectId()}")
-	h2("Summary")
-	p {
-	  mkp.yield "Totals:  "
-	  strong "${scorecard.size()}"
-	  mkp.yield " pages examined, "
-	  strong "${totalGood}"
-	  mkp.yield " pages pass DSE validation."
-	}
-	h2("Page-by-page record")
-	p {
-	  mkp.yield "Visual inventories for individual pages are in the "
-	  code("visualinventory")
-	  mkp.yield "subdirectory."
-	}
-	table {
-	  tr {
-	    th("Page")
-	    th("Summary")
-	    th("See visual inventory")
-	    th("Default image")
-	    th("Same texts indexed to image and surface")
-	    th("Notes")
-	  }
-	  scorecard.each { pair ->
-	    CiteUrn pg = pair[0]
-	    String defaultImg = "none found"
-
-	    String bgcolor = "#ffb0b0"
-	    String summary = "Failed one or more tests."
-	    if (pair[1]) {
-	      bgcolor = "#afa"
-	      summary = "Passed all tests."
-	    }
-	    
-	    tr {
-	      td("${pg}")
-	      td(style: "padding: 0.2em; background-color: ${bgcolor};",summary)
-	      td {
-		a (href: "visualinventory/${pg.getCollection()}_${pg.getObjectId()}.xml", "inventory for ${pg.getObjectId()}")
-	      }
-
-	      def details = reptDetails[pg.toString()]
-	      bgcolor = "#ffb0b0"
-
-	      
-	      def imgRept = details[0]
-	      
-	      if (imgRept.success) {
-		bgcolor = "#afa"
-		defaultImg = imgRept.summary
-	      } 
-	      td(style: "padding: 0.2em; background-color: ${bgcolor};",defaultImg)
-
-	      
-	      def mappingRept = details[1]
-
-	     
-	      bgcolor = "#ffb0b0"
-	      if (mappingRept.success) {
-		bgcolor = "#afa"
-	      }
-	      td(style: "padding: 0.2em; background-color: ${bgcolor};",mappingRept.summary)
-
-
-	      def txtCheck = dse.textNodesForSurface(pg)
-	      if (txtCheck.size() == 0) {
-		td(style: "padding: 0.2em; background-color: #ffffcc;", "Caution: no text units found for this page.")
-	      } else {
-		// check for no Iliad text
-		String iliad = "urn:cts:greekLit:tlg0012.tlg001.msA:"
-		def iMapKeys = dse.imageMapsByText(defaultImg).keySet()
-		if (! iMapKeys.contains(iliad)) {
-		  td(style: "padding: 0.2em; background-color: #ffffcc;") {
-		    strong("Caution")
-		    mkp.yield ": no "
-		    em("Iliad")
-		    mkp.yield (" text found for this page.")
-		  }
-		} else {
-		  td("")
-		}
-	      }
-	    }
-	  }
-	}
-      }
-    }
-  }
-  File totals = new File("${buildDir}/dse-validation-${urn.getObjectId()}.html")
-  totals.setText(doc.toString(), "UTF-8")
-
-  println "\n===>"
-  println "1. Results of DSE validation are in ${buildDir}/dse-validation-${urn.getObjectId()}.html"
-  println "<==="
-}
-
-
-
-indexScholia.doLast {
-
-  if (!buildDir.exists()) {
-    buildDir.mkdir()
-  }
-  File scholiaToTbs = new File(buildDir, "scholiaToTbs.csv")
-  File scholiaToImg = new File(buildDir,"scholiaToImage.csv")
-  //println "WORK FROM scholia inventories "  + scholiaInventories
-
-  scholiaInventories.split(/,/).each { inv ->
-    //String inv = it.replace(/#REPO#/,baserepo)
-    // println "repo prop ${baserepo} yields SCHOLIA INV " + inv
-    if (inv) {
-      File invFile = new File(inv)
-      //System.err.println "Copy contents of scholia index file " + inv
-      if (invFile) {
-	//CSVReader reader = new CSVReader(new FileReader(invFile))
-	SafeCsvReader reader = new SafeCsvReader(invFile)
-	//System.err.println "Contents are " + invFile.getText("UTF-8")
-	reader.readAll().each { ln ->
-	  // Format: scholion, image, folio
-	  if (ln.size() >= 3) {
-	    scholiaToTbs.append(ln[0] + ',"' + ln[2] + '"\n')
-	    scholiaToImg.append(ln[0] + ',"' + ln[1] + '"\n')
-	  }
-	}
-      }
-    }
-  }
-}
-
-
-task tabsimple() {
-  description = "Simple tabulation of inventoried texts in ${buildDir}/tabulated."
-
-  inputs.dir textArchive
-  outputs.dir "${buildDir}/tabulated"
-}
-tabsimple.doLast {
-  File tiFile = new File(textInventory)
-  File textConf = new File(textConfig)
-  File archiveDir = new File(textArchive)
-  //File schemaFile = new File(invSchema)
-
-  File tabDir = new File(buildDir,"tabulated")
-  if (! buildDir.exists()) {
-    buildDir.mkdir()
-  }
-  if (! tabDir.exists()) {
-    tabDir.mkdir()
-  }
-
-  Corpus c = new Corpus(tiFile, textConf, archiveDir)//, schemaFile)
-  c.debug = 10
-  c.tabulateRepository(tabDir)
-
-
-}
-
-//task parseable (dependsOn: [tabsimple]) {
-task parseable (){
-  description = "Generate parseable ORCA from tab files"
-}
-parseable.doLast {
-  String coll = "urn:cite:hmt:parseable"
-  File byz = new File("/vagrant/byzortho/orthoequivs.csv")
-  File alt = new File("/vagrant/lexmapping/orthoequivs.csv")
-  String morph = "/vagrant/morpheus/bin/morpheus"
-
-  File output = new File(buildDir, "parseable.txt")
-
-  ParseableStringOrca pso = new ParseableStringOrca(coll, byz, alt, morph)
-
-  File tabsDir = new File("${buildDir}/tabulated")
-  def tabList =  tabsDir.list([accept:{d, f-> f ==~ /.*txt/ }] as FilenameFilter
-			    ).toList()
-
-  Integer orcaIndex = 0
-  tabList.each { fName ->
-    File f = new File(tabsDir, fName)
-    pso.orcafyTabFile(f, orcaIndex + 1)
-    pso.analysisList.each { orca ->
-      String val = orca.analysisRecord.toString() + "\t" + orca.passageAnalyzed.toString() + "\t" + orca.transformedText + "\n"
-      System.err.println val
-      output.append(val, "UTF-8")
-
-    }
-    orcaIndex = pso.analysisList.size() + orcaIndex
-  }
-
-
-
-}
-
-task tabulate(dependsOn: [dse, tabsimple]) {
-  description = "Full HMT tabulation, depending on DSE anlaysis, and writing tabulated form of all inventoried texts in ${buildDir}/tabulated."
-}
-
-
-
-task textsForSurface(dependsOn: tabulate) {
-  description="Selects tabulated text data for requested text-bearing surface."
-
-  //inputs.dir "${buildDir}/tabulated"
-  //outputs.dir "${buildDir}/surfaceTabs"
-}
-
-textsForSurface.doLast {
-  // output directory:
-  File tabsDir = new File(buildDir, "tabulated")
-
+/*
+Corpus configureCorpus() {
   // input files:
   File archiveDir = new File(textArchive)
   File tiFile = new File(textInventory)
   File textConf = new File(textConfig)
+
   File schemaFile = new File(invSchema)
-  // Get a hocuspocus corpus for text repository:
   Corpus corpus = new Corpus(tiFile, textConf, archiveDir) //, schemaFile)
-
-  // configure a DseManager with
-  // files identified by configuration values
-  DseManager dse = new DseManager()
-
-  // array of file names with folio-image indexing
-  folioToImage.split(/,/).each { idx ->
-    if (dse.tbsImageIndexFiles) {
-      dse.tbsImageIndexFiles.add(new File(idx))
-    } else {
-      dse.tbsImageIndexFiles = [new File(idx)]
-    }
-  }
-
-  // array of file names with text-image indexing
-  textToImage.split(/,/).each { idx ->
-    if (dse.textImageIndexFiles) {
-      dse.textImageIndexFiles.add(new File(idx))
-    } else {
-      dse.textImageIndexFiles = [new File(idx)]
-    }
-  }
-  dse.textImageIndexFiles.add(new File(buildDir, "scholiaToImage.csv"))
-
-
-  // array of file names with text-folio indexing
-  textToFolio.split(/,/).each { idx ->
-    if (dse.textTbsIndexFiles) {
-      dse.textTbsIndexFiles.add(new File(idx))
-    } else {
-      dse.textTbsIndexFiles = [new File(idx)]
-    }
-  }
-  dse.textTbsIndexFiles.add(new File (buildDir, "scholiaToTbs.csv"))
-
-
-  System.err.println "Get tabs for ${folio} from files in ${tabsDir}"
-  // get relevant tabular data, and tokenize it:
-  //dse.debug = 10
-  ArrayList tabData = dse.tabDataForSurface(folio, corpus, tabsDir)
-  System.err.println ("Results in tabData " + tabData)
-
-  if (dse.debug > 5) {
-    System.err.println "dse.tabDataForSurface yields " + tabData.size() + " entries, from "
-    System.err.println "tabsDir: " + tabsDir + " for folio " + folio
-    System.err.println "corpus built from " + textArchive + " with inventory " + textInventory
-  }
-
-  File outputDir = new File(buildDir, "surfaceTabs")
-  if (! outputDir.exists()) {
-    outputDir.mkdir()
-  }
-
-  File tabDataFile = new File(outputDir, "tab.txt")
-  tabData.each {
-    tabDataFile.append(it + "\n", "UTF-8")
-  }
-
-  if (dse.debug > 0) {
-    println "textsForSurface settings:"
-    println "\tcorpus built from " + textArchive + " with inventory " + textInventory
-    println "\ttabsDir was " + tabsDir
-  }
+  return corpus
 }
-
-
-task tabTokenize(dependsOn: tabulate) {
-  //task tabTokenize() {
-  description = "Creates HMT classified tokenization of all tabulated files"
-}
-
-tabTokenize.doLast {
-  File outputDir = new File(buildDir, "tokens")
-  if (! outputDir.exists()) {
-    outputDir.mkdir()
-  }
-  File tokensFile = new File(outputDir, "tokens.csv")
-
-  File tabsDir = new File(buildDir,"tabulated")
-
-  String fldSeparator = "#"
-
-  HmtEditorialTokenization toker = new HmtEditorialTokenization()
-  tabsDir.eachFileMatch(~/.*.txt/) { tabFile ->
-    System.err.println "Tokenizing " + tabFile
-    def tokenizationResults = toker.tokenizeTabFile(tabFile,fldSeparator)
-    tokenizationResults.each { res ->
-      tokensFile.append('"' + res[0] + '","' + res[1] + '"\n')
-    }
-    println "Valid tokens in ${tabFile}: " + tokenizationResults.size()
-  }
-  println "Composite tokenization data in " +  tokensFile
-}
-
-
-task tokenize(dependsOn: [textsForSurface]) {
-  description = "Creates HMT classified tokenization of texts for given page"
-
-}
-
-tokenize.doLast {
-  // input and output files:
-  File surfTabsDir = new File(buildDir, "surfaceTabs")
-  File outputDir = new File(buildDir, "tokens")
-  if (! outputDir.exists()) {
-    outputDir.mkdir()
-  }
-  File tokensFile = new File(outputDir, "tokens.csv")
-
-  String fldSeparator = "#"
-
-  File tabSrc = new File(surfTabsDir, "tab.txt")
-  HmtEditorialTokenization toker = new HmtEditorialTokenization()
-  def tokenizationResults = toker.tokenizeTabFile(tabSrc,fldSeparator)
-
-  tokenizationResults.each { res ->
-    tokensFile.append('"' + res[0] + '","' + res[1] + '"\n')
-  }
-  println "Valid tokens: " + tokenizationResults.size()
-  println "Tokenization data in " +  tokensFile
-}
-
-
-
-
-
+*/
 /*
 task dse2(dependsOn: [indexScholia, tokenize]) {
   DseManager dse = new DseManager()
@@ -750,155 +186,3 @@ task dse2(dependsOn: [indexScholia, tokenize]) {
 }
 
 */
-
-task validate(dependsOn: [dse, tokenize]) {
-  description "Runs complete suite of DSE and HMT validation tests."
-}
-
-validate.doLast {
-  println "Validate compliance with HMT standards for " + folio
-  CiteUrn urn = new CiteUrn(folio)
-  String pg = urn.getObjectId()
-
-  File tokensFile = new File("${buildDir}/tokens/tokens.csv")
-  File authLists = new File(authlists)
-  File byz = new File(byzortho)
-  File lexMapFile = new File(lexmapping)
-
-  File logFile = new File("${buildDir}/validator-log.txt")
-
-  HmtValidator v = new HmtValidator(tokensFile, authLists, byz, lexMapFile, morpheus, logFile)
-  v.writeReports(new File(buildDir, "hmt-validation-${pg}"), pg)
-
-
-  println "\n===>"
-  println "2. Results of HMT validation are in ${buildDir}/${urn.getObjectId()}"
-  println "\n<==="
-
-}
-
-
-Corpus configureCorpus() {
-  // input files:
-  File archiveDir = new File(textArchive)
-  File tiFile = new File(textInventory)
-  File textConf = new File(textConfig)
-
-  File schemaFile = new File(invSchema)
-  Corpus corpus = new Corpus(tiFile, textConf, archiveDir) //, schemaFile)
-  return corpus
-}
-
-
-DseManager configureDse() {
-  DseManager dse = new DseManager()
-
-  folioToImage.split(/,/).each { idx ->
-    if (dse.tbsImageIndexFiles) {
-      dse.tbsImageIndexFiles.add(new File(idx))
-    } else {
-      dse.tbsImageIndexFiles = [new File(idx)]
-    }
-  }
-
-  textToImage.split(/,/).each { idx ->
-    if (dse.textImageIndexFiles) {
-      dse.textImageIndexFiles.add(new File(idx))
-    } else {
-      dse.textImageIndexFiles = [new File(idx)]
-    }
-  }
-  dse.textImageIndexFiles.add(new File(buildDir, "scholiaToImage.csv"))
-
-  textToFolio.split(/,/).each { idx ->
-    if (dse.textTbsIndexFiles) {
-      dse.textTbsIndexFiles.add(new File(idx))
-    } else {
-      dse.textTbsIndexFiles = [new File(idx)]
-    }
-  }
-  dse.textTbsIndexFiles.add(new File (buildDir, "scholiaToTbs.csv"))
-
-  return dse
-}
-
-String tabEntryForUrn(File tabSrc, String urnStr) {
-  String entry  = ""
-  entry = tabSrc.readLines().find { ln ->
-    String q = urnStr + "#.*"
-    ln ==~ /${q}/
-  }
-  return entry
-}
-task debugHp() {
-}
-
-debugHp.doLast {
-  // output directory:
-  File tabsDir = new File(buildDir, "tabulated")
-  // Get a hocuspocus corpus for text repository:
-  Corpus corpus = configureCorpus()
-  DseManager dse = configureDse()
-
-  def txtNodes =  dse.textNodesForSurface(folio)
-  println "Folio " + folio + " has ${txtNodes.size()} text nodes."
-
-  def tabList = tabsDir.list({d, f-> f ==~ /.*.txt/ } as FilenameFilter )?.toList()
-  tabList.each { f ->
-    File tabFile = new File(tabsDir, f)
-    println "Inspect " + tabFile
-
-    // in each file, look for each urn
-    txtNodes.each { urn ->
-      println "for ${urn} - " + tabEntryForUrn(tabFile, urn)
-    }
-  }
-
-
-}
-
-
-task debugDse() {
-}
-debugDse.doLast {
-  // output directory:
-  File tabsDir = new File(buildDir, "tabulated")
-
-  // input files:
-  File archiveDir = new File(textArchive)
-  File tiFile = new File(textInventory)
-  File textConf = new File(textConfig)
-  File schemaFile = new File(invSchema)
-  // Get a hocuspocus corpus for text repository:
-  Corpus corpus = new Corpus(tiFile, textConf, archiveDir) //, schemaFile)
-
-  // configure a DseManager:
-  DseManager dse = configureDse()
-
-  System.err.println "Get tabs for ${folio} from files in ${tabsDir}"
-
-  // get relevant tabular data, and tokenize it:
-  ArrayList tabData = dse.tabDataForSurface(folio, corpus, tabsDir)
-
-  if (dse.debug > 5) {
-    println "dse.tabDataForSurface yields " + tabData.size() + " entries, from "
-    println "tabsDir: " + tabsDir
-  }
-
-  File outputDir = new File(buildDir, "surfaceTabs")
-  if (! outputDir.exists()) {
-    outputDir.mkdir()
-  }
-
-  File tabDataFile = new File(outputDir, "tab.txt")
-  tabData.each {
-    tabDataFile.append(it + "\n", "UTF-8")
-  }
-
-  if (hasProperty('debug')) {
-    println "debug is on."
-  }
-  println "textsForSurface settings:"
-  println "\tcorpus built from " + textArchive + " with inventory " + textInventory
-  println "\ttabsDir was " + tabsDir
-}
