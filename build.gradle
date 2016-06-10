@@ -15,7 +15,7 @@ buildscript {
     dependencies {
       classpath group: 'com.github.rjeschke', name: 'txtmark', version: '0.11'
 
-      classpath group: 'org.homermultitext', name : 'citemgr' , version: citemgrVersion
+
       classpath group: 'org.homermultitext', name : 'hmt-utils' , version: hmtutilsVersion
 
       classpath group: 'edu.harvard.chs', name : 'cite' , version: citeVersion
@@ -93,7 +93,7 @@ allprojects {
 
   apply plugin: "base"
   apply plugin:  "groovy"
-  
+
 
 
 

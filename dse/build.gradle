@@ -1,35 +1,81 @@
+if (hasProperty('conf')) {
+    System.err.println "Using configuration data from ${conf}"
+    File confFile = new File(conf)
+    if (! confFile.exists()) {
+        throw new Exception("No configuration file ${conf} found.")
+    }
+    apply from: conf
 
-apply plugin: "base"
-apply plugin: "java"
-apply plugin: "groovy"
-
-task hello {
-  description = "Greet from subproject."
+} else {
+    File confFile = new File("${rootProject.rootDir}/conf.gradle")
+    if (! confFile.exists()) {
+        throw new Exception("No configuration file ${conf} found.")
+    }
+    System.err.println "Using conf.gradle for configuration"
+    apply from: "${rootProject.rootDir}/conf.gradle"
 }
-hello.doLast {
-  println description
+
+
+buildscript {
+  repositories {
+    maven {
+      url "http://beta.hpcc.uh.edu/nexus/content/groups/public"
+    }
+  }
+  dependencies {
+    classpath group: 'edu.holycross.shot', name: 'hocuspocus', version : hocuspocusVersion
+    classpath group: 'edu.holycross.shot', name: 'safecsv', version: safecsvVersion
+    classpath group: 'org.homermultitext', name : 'citemgr' , version: citemgrVersion
+  }
 }
 
+import org.homermultitext.citemanager.DseManager
+import edu.holycross.shot.hocuspocus.Corpus
+import edu.holycross.shot.safecsv.SafeCsvReader
+import edu.harvard.chs.cite.CiteUrn
+import edu.harvard.chs.cite.CtsUrn
 
 
 task setUpVisualInventory(type: Copy) {
-  description="Copy template files for visual inventory to build area."
+  description = "Copy template files for visual inventory to build area."
   from "visualinventory"
   into "${buildDir}/visualinventory"
 }
 
 
+DseManager initDse (String folioToImage, String textToImage ) {
+  DseManager dse = new DseManager()
+  folioToImage.split(/,/).each { idx ->
+    if (dse.tbsImageIndexFiles) {
+      dse.tbsImageIndexFiles.add(new File(idx))
+    } else {
+      dse.tbsImageIndexFiles = [new File(idx)]
+    }
+  }
+  dse.tbsImageIndexFiles.add(new File("${rootProject.rootDir}/archivemg/build/scholia/scholiaToTbs.csv"))
+
+  textToImage.split(/,/).each { idx ->
+    if (dse.textImageIndexFiles) {
+      dse.textImageIndexFiles.add(new File(idx))
+    } else {
+      dse.textImageIndexFiles = [new File(idx)]
+    }
+  }
+  dse.textImageIndexFiles.add(new File ("${rootProject.rootDir}/archivemg/build/scholia/scholiaToImage.csv"))
+
+  return dse
+}
+
 /* DSE analysis for a physical surface, or a range
  * of physical surfaces, identified by URN value
  * of the project property "folio".
  */
-
- /*
-task dse(dependsOn : [setUpVisualInventory, indexScholia]) {
+task dse(dependsOn : [setUpVisualInventory, ":archivemgr:prepareArchive"]) {
+  description = "Does DSE analysis of material for one folio"
 }
 dse.doLast {
-  System.err.println "Validate folio " + folio
-  Integer debugDse = 5
+  println "Validating DSE structure for folio " + folio
+
 
   CiteUrn urn
   try {
@@ -39,115 +85,29 @@ dse.doLast {
     throw e
   }
 
-  System.err.println "DSE analysis for URN " + urn
-
+  /*
   def scorecard = []
   def reptDetails = [:]
   Integer totalGood = 0
+  */
 
 
-  DseManager dse = new DseManager()
+  println "DSE configuration:"
+  println "\tfolioToImage index: " + folioToImage
+  println "\ttextToImage index: " + textToImage
 
-  if (dse.debug > 0) {
-    System.err.println "DSE configuration:"
-    System.err.println "FolioToImage: " + folioToImage
-    System.err.println "TextToImage: " + textToImage
+  DseManager dse = initDse(folioToImage,textToImage)
+  println "Text img index files: " + dse.textImageIndexFiles
 
+  /*
+  System.err.println "Found ${dse.textNodesForSurface(urn).size()} text nodes, breaking down as follows: "
+  dse.textTbsIndexFiles.each { f ->
+    System.err.println "\tin the index ${f}, " + dse.textNodesForSurface(urn, f).size() + " nodes"
   }
-
-  folioToImage.split(/,/).each { idx ->
-    //String idx = it.replace(/#REPO#/,baserepo)
-    if (dse.tbsImageIndexFiles) {
-      dse.tbsImageIndexFiles.add(new File(idx))
-    } else {
-      dse.tbsImageIndexFiles = [new File(idx)]
-    }
-  }
-
-
-  textToImage.split(/,/).each { idx ->
-    //String idx = it.replace(/#REPO#/,baserepo)
-    if (dse.textImageIndexFiles) {
-      dse.textImageIndexFiles.add(new File(idx))
-    } else {
-      dse.textImageIndexFiles = [new File(idx)]
-    }
-  }
-
-  dse.textImageIndexFiles.add(new File (buildDir, "scholiaToImage.csv"))
-  System.err.println "Files indexing image to text: " + dse.textImageIndexFiles
-
-  textToFolio.split(/,/).each { idx ->
-    // String idx = it.replace(/#REPO#/,baserepo)
-    if (dse.textTbsIndexFiles) {
-      dse.textTbsIndexFiles.add(new File(idx))
-    } else {
-      dse.textTbsIndexFiles = [new File(idx)]
-    }
-  }
-  dse.textTbsIndexFiles.add(new File (buildDir, "scholiaToTbs.csv"))
-  System.err.println "Files indexing image to page: " + dse.textTbsIndexFiles
-
-
-
-
-  def range = urn.getObjectId().split(/-/)
-  if (range.size() == 2) {
-    System.err.println "Pages ranges are not currently suppored.  Please validate one page at a time."
-
+  System.err.println "Using default image " + dse.imageForTbs(urn)  + ", found ${dse.textNodesForImage(dse.imageForTbs(urn)).size()} text nodes"
 */
-    /*
-    String startUrn = "urn:cite:${urn.getNs()}:${urn.getCollection()}.${range[0]}"
-    String endUrn = "urn:cite:${urn.getNs()}:${urn.getCollection()}.${range[1]}"
-    File venAseq = new File(codexModel)
-    println "Running DSE from folio " +startUrn + " to " + endUrn
-    boolean inSeq = false
-    Integer lineCount = 0
-    venAseq.eachLine { l ->
-      if (lineCount > 0) {
-	def cols = l.split(/,/)
-	String currUrnStr = cols[1]
-	CiteUrn currUrn
-	try {
-	  currUrn = new CiteUrn(currUrnStr)
-	} catch (Exception e) {
-	  throw new Exception("Could not make URN from ${currUrnStr}")
-	}
-	if (cols[1] == startUrn) {
-	  inSeq = true
-	}
-	if (inSeq)  {
-	  def rept = dse.dseReport(currUrn)
-	  reptDetails[currUrn.toString()] = rept
-	  String xml =  dse.getVisualInventoryXml(currUrn)
-	  String fName = "${buildDir}/visualinventory/${urn.getCollection()}_${currUrn.getObjectId()}.xml"
-	  File visinv = new File(fName)
-	  visinv.setText(xml,"UTF-8")
-	  boolean passfail = dse.verifyTbs(currUrn)
-	  if (passfail) { totalGood++ }
-	  def score = [currUrn,passfail]
-	  scorecard.add(score)
-	}
 
-	if (cols[1] == endUrn) {
-	  inSeq = false
-	}
-      }
-      lineCount++;
-    }
-    */
 /*
-
-  } else {
-
-    System.err.println "Found ${dse.textNodesForSurface(urn).size()} text nodes, breaking down as follows: "
-    dse.textTbsIndexFiles.each { f ->
-      System.err.println "\tin the index ${f}, " + dse.textNodesForSurface(urn, f).size() + " nodes"
-    }
-    System.err.println "Using default image " + dse.imageForTbs(urn)  + ", found ${dse.textNodesForImage(dse.imageForTbs(urn)).size()} text nodes"
-
-
-
 
     def rept = dse.dseReport(urn)
 
@@ -271,7 +231,7 @@ dse.doLast {
   }
   File totals = new File("${buildDir}/dse-validation-${urn.getObjectId()}.html")
   totals.setText(doc.toString(), "UTF-8")
-
+*/
   println "\n===>"
   println "1. Results of DSE validation are in ${buildDir}/dse-validation-${urn.getObjectId()}.html"
   println "<==="
@@ -279,7 +239,7 @@ dse.doLast {
 
 
 
-*/
+
 
 
 /*
@@ -370,5 +330,54 @@ textsForSurface.doLast {
     println "\tcorpus built from " + textArchive + " with inventory " + textInventory
     println "\ttabsDir was " + tabsDir
   }
+}
+*/
+
+
+
+/*
+def range = urn.getObjectId().split(/-/)
+if (range.size() == 2) {
+System.err.println "Pages ranges are not currently suppored.  Please validate one page at a time."
+
+
+
+String startUrn = "urn:cite:${urn.getNs()}:${urn.getCollection()}.${range[0]}"
+String endUrn = "urn:cite:${urn.getNs()}:${urn.getCollection()}.${range[1]}"
+File venAseq = new File(codexModel)
+println "Running DSE from folio " +startUrn + " to " + endUrn
+boolean inSeq = false
+Integer lineCount = 0
+venAseq.eachLine { l ->
+  if (lineCount > 0) {
+def cols = l.split(/,/)
+String currUrnStr = cols[1]
+CiteUrn currUrn
+try {
+currUrn = new CiteUrn(currUrnStr)
+} catch (Exception e) {
+throw new Exception("Could not make URN from ${currUrnStr}")
+}
+if (cols[1] == startUrn) {
+inSeq = true
+}
+if (inSeq)  {
+def rept = dse.dseReport(currUrn)
+reptDetails[currUrn.toString()] = rept
+String xml =  dse.getVisualInventoryXml(currUrn)
+String fName = "${buildDir}/visualinventory/${urn.getCollection()}_${currUrn.getObjectId()}.xml"
+File visinv = new File(fName)
+visinv.setText(xml,"UTF-8")
+boolean passfail = dse.verifyTbs(currUrn)
+if (passfail) { totalGood++ }
+def score = [currUrn,passfail]
+scorecard.add(score)
+}
+
+if (cols[1] == endUrn) {
+inSeq = false
+}
+  }
+  lineCount++;
 }
 */
