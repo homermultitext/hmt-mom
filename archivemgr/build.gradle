@@ -1,0 +1,109 @@
+if (hasProperty('conf')) {
+    System.err.println "Using configuration data from ${conf}"
+    File confFile = new File(conf)
+    if (! confFile.exists()) {
+        throw new Exception("No configuration file ${conf} found.")
+    }
+    apply from: conf
+
+} else {
+    File confFile = new File("${rootProject.rootDir}/conf.gradle")
+    if (! confFile.exists()) {
+        throw new Exception("No configuration file ${conf} found.")
+    }
+    System.err.println "Using conf.gradle for configuration"
+    apply from: "${rootProject.rootDir}/conf.gradle"
+}
+
+
+buildscript {
+  repositories {
+    maven {
+      url "http://beta.hpcc.uh.edu/nexus/content/groups/public"
+    }
+  }
+  dependencies {
+    classpath group: 'edu.holycross.shot', name: 'hocuspocus', version : hocuspocusVersion
+    classpath group: 'edu.holycross.shot', name: 'safecsv', version: safecsvVersion
+  }
+}
+import edu.holycross.shot.hocuspocus.Corpus
+import edu.holycross.shot.safecsv.SafeCsvReader
+
+
+
+
+
+task tabs() {
+  description = "Creates tabulation of inventoried texts in ${buildDir}/tabulated."
+
+  inputs.dir textArchive
+  outputs.dir "${buildDir}/tabulated"
+}
+
+tabs.doLast {
+  File tiFile = new File(textInventory)
+  File textConf = new File(textConfig)
+  File archiveDir = new File(textArchive)
+  // optional:
+  //File schemaFile = new File(invSchema)
+
+  if (! buildDir.exists()) {
+    buildDir.mkdir()
+  }
+  File tabsDir = new File(buildDir, "tabulated")
+  if (! tabsDir.exists()) {
+    tabsDir.mkdir()
+  }
+
+  Corpus c = new Corpus(tiFile, textConf, archiveDir)//, schemaFile)
+  c.tabulateRepository(tabsDir)
+}
+
+
+task indexScholia() {
+  description = "Reads inventory of scholia, and creates separate indices for surfaces and images"
+
+  outputs.dir "${buildDir}/scholia"
+}
+
+
+indexScholia.doLast {
+  if (scholiaInventories.split(/,/).size() == 0) {
+    println "NO SCHOLIA INVENTORIES DEFINED."
+  }
+
+
+  if (! buildDir.exists()) {
+    buildDir.mkdir()
+  }
+  File scholiaDir = new File(buildDir,"scholia")
+  if (! scholiaDir.exists()) {
+    scholiaDir.mkdir()
+  }
+  File scholiaToTbs = new File(scholiaDir, "scholiaToTbs.csv")
+  File scholiaToImg = new File(scholiaDir,"scholiaToImage.csv")
+
+  scholiaInventories.split(/,/).each { inv ->
+    if (inv) {
+      File invFile = new File(inv)
+      if (invFile) {
+        SafeCsvReader reader = new SafeCsvReader(invFile)
+	reader.readAll().each { ln ->
+	  // Format: scholion, image, folio
+	  if (ln.size() >= 3) {
+	    scholiaToTbs.append(ln[0] + ',"' + ln[2] + '"\n')
+	    scholiaToImg.append(ln[0] + ',"' + ln[1] + '"\n')
+	  }
+	}
+      }
+    }
+  }
+}
+
+task prepareArchive(dependsOn: [tabs, indexScholia]) {
+  description = "Assembles archival material in ${buildDir}"
+}
+prepareArchive.doLast {
+  println("Archive prepared in " + buildDir)
+}
