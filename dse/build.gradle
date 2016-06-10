@@ -12,10 +12,6 @@ hello.doLast {
 
 
 
-task indexScholia() {
-  description = "Reads inventory of scholia, and creates separate indices for surfaces and images"
-  //outputs.file "${buildDir}/scholiaToTbs.csv"
-}
 task setUpVisualInventory(type: Copy) {
   description="Copy template files for visual inventory to build area."
   from "visualinventory"
@@ -283,36 +279,6 @@ dse.doLast {
 
 
 
-indexScholia.doLast {
-
-  if (!buildDir.exists()) {
-    buildDir.mkdir()
-  }
-  File scholiaToTbs = new File(buildDir, "scholiaToTbs.csv")
-  File scholiaToImg = new File(buildDir,"scholiaToImage.csv")
-  //println "WORK FROM scholia inventories "  + scholiaInventories
-
-  scholiaInventories.split(/,/).each { inv ->
-    //String inv = it.replace(/#REPO#/,baserepo)
-    // println "repo prop ${baserepo} yields SCHOLIA INV " + inv
-    if (inv) {
-      File invFile = new File(inv)
-      //System.err.println "Copy contents of scholia index file " + inv
-      if (invFile) {
-	//CSVReader reader = new CSVReader(new FileReader(invFile))
-	SafeCsvReader reader = new SafeCsvReader(invFile)
-	//System.err.println "Contents are " + invFile.getText("UTF-8")
-	reader.readAll().each { ln ->
-	  // Format: scholion, image, folio
-	  if (ln.size() >= 3) {
-	    scholiaToTbs.append(ln[0] + ',"' + ln[2] + '"\n')
-	    scholiaToImg.append(ln[0] + ',"' + ln[1] + '"\n')
-	  }
-	}
-      }
-    }
-  }
-}
 */
 
 
