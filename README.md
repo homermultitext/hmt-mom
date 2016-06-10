@@ -38,7 +38,7 @@ and discussion of future development plans.
 
 ## Subprojects
 
-1. archivemgr : unifies HMT archive
+1. tabulation : creates tabular representation of CTS texts
 2. dse
 3. hmtvalidation
 4. paleography

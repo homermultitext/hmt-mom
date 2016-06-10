@@ -31,23 +31,16 @@ buildscript {
 
 import edu.holycross.shot.hocuspocus.Corpus
 
+
+
 task tabsimple() {
-  description = "Simple tabulation of inventoried texts in ${buildDir}/tabulated."
-
-  println "This is archivemgr. Work with " + textArchive
-}
-tabsimple.doLast {
-  println "This is still archivemgr"
-}
-
-task tabsimpleX() {
   description = "Simple tabulation of inventoried texts in ${buildDir}/tabulated."
 
   inputs.dir textArchive
   outputs.dir "${buildDir}/tabulated"
 }
-tabsimpleX.doLast {
-  /*
+tabsimple.doLast {
+
   File tiFile = new File(textInventory)
   File textConf = new File(textConfig)
   File archiveDir = new File(textArchive)
@@ -61,10 +54,10 @@ tabsimpleX.doLast {
   if (! tabDir.exists()) {
     tabDir.mkdir()
   }
-*/
-  //Corpus c = new Corpus(tiFile, textConf, archiveDir)//, schemaFile)
+
+  Corpus c = new Corpus(tiFile, textConf, archiveDir)//, schemaFile)
   //c.debug = 10
-  //println "Made a corpus with settings " + tiFile + ", " + textConf + ", " + confDir
-  //c.tabulateRepository(tabDir)
+  println "Made a corpus with settings " + tiFile + ", " + textConf + ", " + archiveDir
+  c.tabulateRepository(tabDir)
 
 }
