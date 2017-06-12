@@ -7,5 +7,9 @@ import scala.scalajs.js
 import js.annotation.JSExport
 
 
-@JSExport case class TestReport (before: String, after: String, success: Boolean) {
+@JSExport case class TestResult (before: String, after: String, success: Boolean)
+
+
+@JSExport case class TestReport
+  (testIdentifier: TestIdentifier, results: Vector[TestResult]) {
 }
