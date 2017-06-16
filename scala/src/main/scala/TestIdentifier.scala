@@ -3,12 +3,6 @@ package edu.holycross.shot.hmtmom
 import edu.holycross.shot.cite._
 
 
-import scala.scalajs.js
-import js.annotation.JSExport
-
-
-@JSExport case class TestIdentifier(urn: Cite2Urn, label: String, testUnit: String)
-
 
 
 object TestIdentifier {
