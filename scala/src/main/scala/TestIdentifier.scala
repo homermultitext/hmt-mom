@@ -3,7 +3,7 @@ package edu.holycross.shot.hmtmom
 import edu.holycross.shot.cite._
 
 
-
+case class TestIdentifier(urn:Cite2Urn,label: String,testUnit: String) {}
 
 object TestIdentifier {
 
