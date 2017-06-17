@@ -40,25 +40,20 @@ object Validator {
 
   def repo: TestReport = {
     println("Check on " + baseDir )
-    val inventory = baseDir + "/catalog/inventory.xml"
-    val configFile = baseDir + "/catalog/configuration.xml"
+    val inventory = baseDir + "/editions/catalog/textinventory.xml"
+    val configFile = baseDir + "/editions/catalog/textconfig.xml"
 
 
     val repoTestSuite = TestIdentifier(Cite2Urn("urn:cite2:hmt:editorstests.2017a:textrepo"), "Test for correctly configured repositories of data", "repository/ies")
     val textRepoResult =  try {
       val textRepo = TextRepositorySource.fromFiles(inventory,configFile,baseDir)
-      TestResult(s"Repository conifgured in ${baseDir}", "Success",true)
+      TestResult(s"Repository configured in ${baseDir}", s"Created repository with ${textRepo.corpus.size} citable nodes",true)
 
     } catch {
-      case e: Exception => TestResult(s"Repository conifgured in ${baseDir}", s"Failed for baseDir ${baseDir}: ${e.getMessage()}", false)
+      case e: Exception => TestResult(s"Repository configured in ${baseDir}", s"Failed for baseDir ${baseDir}: ${e.getMessage()}", false)
     }
 
     TestReport(repoTestSuite,Vector(textRepoResult))
-
-    //(invFileName: String,
-    // configFileName: String,
-    // baseDirectoryName: String,
-    //outputDelimiter: String = "#")
 
   }
 

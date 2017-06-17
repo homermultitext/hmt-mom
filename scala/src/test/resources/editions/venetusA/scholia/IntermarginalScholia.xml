@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/css" href="../css/tei-scholia.css"?>
+<?xml-stylesheet type="text/css" href="../css/tei-scholia.css"?>
+<?xml-model href="http://www.tei-c.org/release/xml/tei/custom/schema/relaxng/tei_all.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<?xml-model href="http://www.tei-c.org/release/xml/tei/custom/schema/relaxng/tei_all.rng" type="application/xml"
+schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<!DOCTYPE TEI PUBLIC "-//TEI P5//DTD Main Document Type//EN" "http://www.tei-c.org/release/xml/tei/custom/schema/dtd/tei_all.dtd">
+
+
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+    <teiHeader>
+        <fileDesc>
+            <titleStmt>
+                <title>Venetus A Inter-marginal Scholia</title>
+                <author>YOUR NAME HERE</author>
+            </titleStmt>
+            <publicationStmt>
+                <p>Unpublished</p>
+            </publicationStmt>
+            <sourceDesc>
+                <p>Transcribed from Venetus A MS</p>
+            </sourceDesc>
+        </fileDesc>
+    </teiHeader>
+    <text>
+        <group n="22">
+            <text n="msAim">
+                <body>
+                    <div n="1" type="scholion">
+                        <div type="lemma">
+                            <p/>
+                        </div>
+                        <div type="ref">
+                            <p>urn:cts:greekLit:tlg0012.tlg001.msA:22.6</p>
+                        </div>
+                        <div type="comment">
+                            <p>προς τας σκαιάς⁑</p>
+                        </div>
+                    </div>
+                    <div n="2" type="scholion">
+                        <div type="lemma">
+                            <p/>
+                        </div>
+                        <div type="ref">
+                            <p>urn:cts:greekLit:tlg0012.tlg001.msA:22.20</p>
+                        </div>
+                        <div type="comment">
+                            <p>ἀπ' ἀλλης ἀρχῆς τοῦτο <choice><abbr>ἀναγνωστ</abbr><expan>ἀναγνωστέον</expan></choice> τοῦ η ψιλουμενον⁑</p>
+                        </div>
+                    </div>
+                    <div n="3" type="scholion">
+                        <div type="lemma">
+                            <p/>
+                        </div>
+                        <div type="ref">
+                            <p>urn:cts:greekLit:tlg0012.tlg001.msA:22.23</p>
+                        </div>
+                        <div type="comment">
+                            <p><choice><abbr>ουτ</abbr><expan>οὕτως</expan></choice> λείπει ἡ δι ᾱ δια πεδιου⁑</p>
+                        </div>
+                    </div>
+                    <div n="4" type="scholion">
+                        <div type="lemma">
+                            <p/>
+                        </div>
+                        <div type="ref">
+                            <p>urn:cts:greekLit:tlg0012.tlg001.msA:22.29</p>
+                        </div>
+                        <div type="comment">
+                            <p><choice><abbr>οτ</abbr><expan>ὅτι</expan></choice> περισσὸς ὁ τὲ σύνδεσμος⁑</p>
+                        </div>
+                    </div>
+                </body>
+            </text>
+        </group>
+    </text>
+</TEI>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model href="schemas/CitationConfiguration.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<!-- On-line configuration for inventory in testinventory2.xml -->
+<CitationConfiguration xmlns="http://chs.harvard.edu/xmlns/hocuspocus" tiversion="6.0.0">
+    <online urn="urn:cts:greekLit:tlg0012.tlg001.msA:" type="xml" docname="editions/venetusA/Iliad/VenetusA-Iliad.xml">
+
+        <namespaceMapping abbreviation="tei" nsURI="http://www.tei-c.org/ns/1.0"/>
+        <citationMapping>
+            <citation label="book" scope="/tei:TEI/tei:text/tei:body" xpath="/tei:div[@n = '?']">
+                <citation label="line" scope="/tei:TEI/tei:text/tei:body/tei:div[@n = '?']"
+                    xpath="/tei:l[@n = '?']"/>
+            </citation>
+        </citationMapping>
+    </online>
+
+
+    <online urn="urn:cts:greekLit:tlg5026.msA.hmt:" type="xml" docname="editions/venetusA/scholia/MainScholia.xml">
+
+        <namespaceMapping abbreviation="tei" nsURI="http://www.tei-c.org/ns/1.0"/>
+        <citationMapping>
+            <citation label="book" scope="/tei:TEI/tei:text" xpath="/tei:group[@n = '?']">
+                <citation label="scholion" scope="/tei:TEI/tei:text/tei:group[@n = '?']/tei:text/tei:body"
+                    xpath="/tei:div[@n = '?']"/>
+            </citation>
+        </citationMapping>
+    </online>
+
+
+    <online urn="urn:cts:greekLit:tlg5026.msAil.hmt:"  type="xml"  docname="editions/venetusA/scholia/InterlinearScholia.xml">
+
+        <namespaceMapping abbreviation="tei" nsURI="http://www.tei-c.org/ns/1.0"/>
+        <citationMapping>
+            <citation label="book" scope="/tei:TEI/tei:text" xpath="/tei:group[@n = '?']">
+                <citation label="scholion" scope="/tei:TEI/tei:text/tei:group[@n = '?']/tei:text/tei:body"
+                    xpath="/tei:div[@n = '?']"/>
+            </citation>
+        </citationMapping>
+    </online>
+
+
+    <online urn="urn:cts:greekLit:tlg5026.msAim.hmt:"  type="xml"  docname="editions/venetusA/scholia/IntermarginalScholia.xml">
+
+        <namespaceMapping abbreviation="tei" nsURI="http://www.tei-c.org/ns/1.0"/>
+        <citationMapping>
+            <citation label="book" scope="/tei:TEI/tei:text" xpath="/tei:group[@n = '?']">
+                <citation label="scholion" scope="/tei:TEI/tei:text/tei:group[@n = '?']/tei:text/tei:body"
+                    xpath="/tei:div[@n = '?']"/>
+            </citation>
+        </citationMapping>
+    </online>
+
+    <online urn="urn:cts:greekLit:tlg5026.msAint.hmt:"  type="xml"  docname="editions/venetusA/scholia/InteriorScholia.xml">
+
+        <namespaceMapping abbreviation="tei" nsURI="http://www.tei-c.org/ns/1.0"/>
+        <citationMapping>
+            <citation label="book" scope="/tei:TEI/tei:text" xpath="/tei:group[@n = '?']">
+                <citation label="scholion" scope="/tei:TEI/tei:text/tei:group[@n = '?']/tei:text/tei:body"
+                    xpath="/tei:div[@n = '?']"/>
+            </citation>
+        </citationMapping>
+    </online>
+
+
+
+</CitationConfiguration>
