@@ -16,13 +16,8 @@ object HmtMom {
 
 
   /** Build a TextRepository from editorial source.
-  *
-  * @param dir Path to root of editorial file tree.
   */
-  def texts(dir: String): Option[TextRepository] = {
-    //val catalog = Catalog(s"{dir}/editions/catalog.csv",",")
-
-    // use TextRepositorySource.fromFiles
+  def texts: Option[TextRepository] = {
     None
   }
 
@@ -55,7 +50,7 @@ object HmtMom {
 
 
     CiteLibrary(library,libraryUrn,license,namespaces,
-      texts(dir),collections,images,indexes
+      texts,collections,images,indexes
     )
   }
 

@@ -35,19 +35,42 @@ import edu.holycross.shot.cite._
 import edu.holycross.shot.hmtmom._
 import edu.holycross.shot.scm._
 import edu.holycross.shot.ohco2._
+import edu.holycross.shot.citeobj._
+
+import scala.io.Source
 
 object Validator {
 
   def repo: TestReport = {
     println("Check on " + baseDir )
-    val inventory = baseDir + "/editions/catalog/textinventory.xml"
-    val configFile = baseDir + "/editions/catalog/textconfig.xml"
 
 
     val repoTestSuite = TestIdentifier(Cite2Urn("urn:cite2:hmt:editorstests.2017a:textrepo"), "Test for correctly configured repositories of data", "repository/ies")
+
+
+
     val textRepoResult =  try {
+      val inventory = baseDir + "/editions/catalog/textinventory.xml"
+      val configFile = baseDir + "/editions/catalog/textconfig.xml"
+
       val textRepo = TextRepositorySource.fromFiles(inventory,configFile,baseDir)
       TestResult(s"Repository configured in ${baseDir}", s"Created repository with ${textRepo.corpus.size} citable nodes",true)
+
+    } catch {
+      case e: Exception => TestResult(s"Repository configured in ${baseDir}", s"Failed for baseDir ${baseDir}: ${e.getMessage()}", false)
+    }
+
+    val collRepoResult =  try {
+      val inventoryFile = baseDir + "/collections/catalog/citecatalog.cex"
+      val inventoryString = Source.fromFile(inventoryFile).getLines.mkString("\n")
+
+      val dataFile  = baseDir + "/collections/venetusA.cex"
+      val dataString = Source.fromFile(dataFile).getLines.mkString("\n")
+
+
+
+      val collRepo = CiteCollectionRepository(s"${inventoryString}\n${dataString}")
+      TestResult(s"Repository configured in ${baseDir}", s"Created collection repository with ${collRepo.data.size} citable objects",true)
 
     } catch {
       case e: Exception => TestResult(s"Repository configured in ${baseDir}", s"Failed for baseDir ${baseDir}: ${e.getMessage()}", false)
