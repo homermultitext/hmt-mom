@@ -76,12 +76,17 @@ object Validator {
       case e: Exception => TestResult(s"Repository configured in ${baseDir}", s"Failed for baseDir ${baseDir}: ${e.getMessage()}", false)
     }
 
-    TestReport(repoTestSuite,Vector(textRepoResult))
+    TestReport(repoTestSuite,Vector(textRepoResult, collRepoResult))
 
   }
 
-}
 
+  def test1 = {
+    val inventoryFile = baseDir + "/collections/catalog/citecatalog.cex"
+    val inventoryString = Source.fromFile(inventoryFile).getLines.mkString("\n")
+    val cat = CiteCatalog(inventoryString)
+  }
+}
 
 
 /*

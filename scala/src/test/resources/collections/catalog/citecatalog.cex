@@ -1,9 +1,10 @@
 #!citecatalog
 
 
-collection#urn:cite2hmt:msA.2017a:#Pagination of the Venetus A manuscriptscript#urn:cite2hmt:msA.2017a:label#CC-attribution-share-alike
+collection#urn:cite2:hmt:msA.2017a:#Pagination of the Venetus A manuscriptscript#urn:cite2:hmt:msA.2017a.label:##CC-attribution-share-alike
 
-property#urn:cite2hmt:msA.2017a:urn#Page URN#Cite2Urn#
-property#urn:cite2hmt:msA.2017a:sequence#Page sequence#number#
-property#urn:cite2hmt:msA.2017a:rv#Recto or verso#string#recto,verso
-property#urn:cite2hmt:msA.2017a:label#Label#string#
+
+property#urn:cite2:hmt:msA.2017a.urn:#Page URN#Cite2Urn#
+property#urn:cite2:hmt:msA.2017a.sequence:#Page sequence#number#
+property#urn:cite2:hmt:msA.2017a.rv:#Recto or verso#string#recto,verso
+property#urn:cite2:hmt:msA.2017a.label:#Label#string#
