@@ -70,7 +70,7 @@ object Validator {
 
 
       val collRepo = CiteCollectionRepository(s"${inventoryString}\n${dataString}")
-      TestResult(s"Repository configured in ${baseDir}", s"Created collection repository with ${collRepo.data.size} citable objects",true)
+      TestResult(s"Repository configured in ${baseDir}", s"Created collection repository with ${collRepo.citableObjects.size} citable objects",true)
 
     } catch {
       case e: Exception => TestResult(s"Repository configured in ${baseDir}", s"Failed for baseDir ${baseDir}: ${e.getMessage()}", false)
