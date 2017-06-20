@@ -42,10 +42,10 @@ import scala.io.Source
 object Validator {
 
   def repo: TestReport = {
-    println("Check on " + baseDir )
-
-
-    val repoTestSuite = TestIdentifier(Cite2Urn("urn:cite2:hmt:editorstests.2017a:textrepo"), "Test for correctly configured repositories of data", "repository/ies")
+    val repoTestSuite = TestIdentifier(
+      Cite2Urn("urn:cite2:hmt:editorstests.2017a:textrepo"),
+      "Test for correctly configured repositories of data",
+      "repository/ies")
 
 
 
@@ -64,8 +64,11 @@ object Validator {
       val inventoryFile = baseDir + "/collections/catalog/citecatalog.cex"
       val inventoryString = Source.fromFile(inventoryFile).getLines.mkString("\n")
 
-      val dataFile  = baseDir + "/collections/venetusA.cex"
-      val dataString = Source.fromFile(dataFile).getLines.mkString("\n")
+      val dataFile1  = baseDir + "/collections/venetusA.cex"
+      val dataFile2 = baseDir + "/collections/vaimages.cex"
+
+      val dataString = Source.fromFile(dataFile1).getLines.mkString("\n") +
+        Source.fromFile(dataFile2).getLines.mkString("\n")
 
 
 
@@ -76,15 +79,10 @@ object Validator {
       case e: Exception => TestResult(s"Repository configured in ${baseDir}", s"Failed for baseDir ${baseDir}: ${e.getMessage()}", false)
     }
 
+
+
     TestReport(repoTestSuite,Vector(textRepoResult, collRepoResult))
 
-  }
-
-
-  def test1 = {
-    val inventoryFile = baseDir + "/collections/catalog/citecatalog.cex"
-    val inventoryString = Source.fromFile(inventoryFile).getLines.mkString("\n")
-    val cat = CiteCatalog(inventoryString)
   }
 }
 
