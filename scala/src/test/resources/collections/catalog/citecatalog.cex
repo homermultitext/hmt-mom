@@ -12,6 +12,6 @@ property#urn:cite2:hmt:msA.2017a.label:#Label#string#
 
 collection#urn:cite2:hmt:vaimg.2017a:#Images of the Venetus A manuscriptscript#urn:cite2:hmt:vaimg.2017a.label:##CC-attribution-share-alike
 
-property#urn:cite2:hmt:msA.2017a.urn:#Image URN#Cite2Urn#
-property#urn:cite2:hmt:msA.2017a.rights:#License#string#
-property#urn:cite2:hmt:msA.2017a.label:#Caption#string#
+property#urn:cite2:hmt:vaimg.2017a.urn:#Image URN#Cite2Urn#
+property#urn:cite2:hmt:vaimg.2017a.rights:#License#string#
+property#urn:cite2:hmt:vaimg.2017a.label:#Caption#string#
