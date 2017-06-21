@@ -38,55 +38,78 @@ import edu.holycross.shot.ohco2._
 import edu.holycross.shot.citeobj._
 
 import scala.io.Source
+import java.io.File
+
+
+
+val textInventory = baseDir + "/editions/catalog/textinventory.xml"
+val textInvFile = new File(textInventory)
+require(textInvFile.exists(), s"==>Could not find text inventory file ${textInventory} ")
+
+val textConfig = baseDir + "/editions/catalog/textconfig.xml"
+val textConfigFile = new File(textConfig)
+require(textConfigFile.exists(), s"==>Could not find text configuration file ${textConfig} ")
+
+val collInventory = baseDir + "/collections/catalog/citecatalog.cex"
+val collInventoryFile = new File(collInventory)
+require(collInventoryFile.exists(), s"==>Could not find collections inventory file ${collInventory} ")
+
+
+val vaFolio  = baseDir + "/collections/venetusA.cex"
+val vaFolioFile = new File(vaFolio)
+require(vaFolioFile.exists(), s"==>Could not find Venetus A folio data ${vaFolio} ")
+
+
+val vaImages = baseDir + "/collections/vaimages.cex"
+val vaImagesFile = new File(vaImages)
+require(vaImagesFile.exists(), s"==>Could not find Venetus A image data ${vaImages} ")
+
+val inventoryString = Source.fromFile(collInventory).getLines.mkString("\n")
+val dataString = Source.fromFile(vaFolio).getLines.mkString("\n") +   Source.fromFile(vaImages).getLines.mkString("\n")
+
+val collRepoOption =  try {
+  val ccr = CiteCollectionRepository(s"${inventoryString}\n${dataString}")
+  Some(ccr)
+ } catch {
+ case e: Exception => {
+   println(s"==>Failed to make collection repository configured in ${baseDir}")
+     None
+   }
+ }
 
 object Validator {
 
   def repo: TestReport = {
-    val repoTestSuite = TestIdentifier(
+    val filesTestSuite = TestIdentifier(
       Cite2Urn("urn:cite2:hmt:editorstests.2017a:textrepo"),
       "Test for correctly configured repositories of data",
       "repository/ies")
 
-
-
     val textRepoResult =  try {
-      val inventory = baseDir + "/editions/catalog/textinventory.xml"
-      val configFile = baseDir + "/editions/catalog/textconfig.xml"
-
-      val textRepo = TextRepositorySource.fromFiles(inventory,configFile,baseDir)
+      val textRepo = TextRepositorySource.fromFiles(textInventory,textConfig,baseDir)
       TestResult(s"Repository configured in ${baseDir}", s"Created repository with ${textRepo.corpus.size} citable nodes",true)
 
     } catch {
       case e: Exception => TestResult(s"Repository configured in ${baseDir}", s"Failed for baseDir ${baseDir}: ${e.getMessage()}", false)
     }
 
-    val collRepoResult =  try {
-      val inventoryFile = baseDir + "/collections/catalog/citecatalog.cex"
-      val inventoryString = Source.fromFile(inventoryFile).getLines.mkString("\n")
-
-      val dataFile1  = baseDir + "/collections/venetusA.cex"
-      val dataFile2 = baseDir + "/collections/vaimages.cex"
-
-      val dataString = Source.fromFile(dataFile1).getLines.mkString("\n") +
-        Source.fromFile(dataFile2).getLines.mkString("\n")
-
-
-
-      val collRepo = CiteCollectionRepository(s"${inventoryString}\n${dataString}")
-      TestResult(s"Repository configured in ${baseDir}", s"Created collection repository with ${collRepo.citableObjects.size} citable objects",true)
-
-    } catch {
-      case e: Exception => TestResult(s"Repository configured in ${baseDir}", s"Failed for baseDir ${baseDir}: ${e.getMessage()}", false)
+    val collRepoResult =
+      collRepoOption match {
+        case collRepo: Some[CiteCollectionRepository] =>  TestResult(s"Repository configured in ${baseDir}", s"Created collection repository with ${collRepo.get} citable objects",true)
+      case None =>     TestResult(s"Repository configured in ${baseDir}", s"Failed to create collection repository in ${baseDir}",false)
     }
 
-
-
-    TestReport(repoTestSuite,Vector(textRepoResult, collRepoResult))
+    TestReport(filesTestSuite,Vector(textRepoResult, collRepoResult))
 
   }
 }
 
-
+object Verifier {
+  def paleography = {
+  }
+  def namedEntities = {}
+  
+}
 /*
 
 object Paleography {
