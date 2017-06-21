@@ -1,6 +1,13 @@
 /*
 Mandatory On-going Maintenance.
+
+Two imortant objects:
+
+1. Validator
+2. Verifier
+
 */
+
 
 // Settings
 
@@ -15,21 +22,10 @@ val imgService = "http://www.homermultitext.org/hmt-digital/images?request=GetBi
 val baseDir = "src/test/resources"
 
 
-/*
-// Location of data files:
-val iliadDataFile = "collections/paleography-iliad.csv"
-val scholiaDataFile = "collections/paleography-scholia.csv"
-val iliadReportFile = "validation/paleography-iliad.md"
-val scholiaReportFile = "validation/paleography-scholia.md"
 
+//import com.github.tototoshi.csv._
+//import java.io.PrintWriter
 
-
-
-
-import com.github.tototoshi.csv._
-import java.io.File
-import java.io.PrintWriter
-*/
 
 import edu.holycross.shot.cite._
 import edu.holycross.shot.hmtmom._
@@ -41,52 +37,22 @@ import scala.io.Source
 import java.io.File
 
 
+val repo = EditorsRepo(baseDir)
 
-val textInventory = baseDir + "/editions/catalog/textinventory.xml"
-val textInvFile = new File(textInventory)
-require(textInvFile.exists(), s"==>Could not find text inventory file ${textInventory} ")
-
-val textConfig = baseDir + "/editions/catalog/textconfig.xml"
-val textConfigFile = new File(textConfig)
-require(textConfigFile.exists(), s"==>Could not find text configuration file ${textConfig} ")
-
-val collInventory = baseDir + "/collections/catalog/citecatalog.cex"
-val collInventoryFile = new File(collInventory)
-require(collInventoryFile.exists(), s"==>Could not find collections inventory file ${collInventory} ")
+/*
 
 
-val vaFolio  = baseDir + "/collections/venetusA.cex"
-val vaFolioFile = new File(vaFolio)
-require(vaFolioFile.exists(), s"==>Could not find Venetus A folio data ${vaFolio} ")
 
-
-val vaImages = baseDir + "/collections/vaimages.cex"
-val vaImagesFile = new File(vaImages)
-require(vaImagesFile.exists(), s"==>Could not find Venetus A image data ${vaImages} ")
-
-val inventoryString = Source.fromFile(collInventory).getLines.mkString("\n")
-val dataString = Source.fromFile(vaFolio).getLines.mkString("\n") +   Source.fromFile(vaImages).getLines.mkString("\n")
-
-val collRepoOption =  try {
-  val ccr = CiteCollectionRepository(s"${inventoryString}\n${dataString}")
-  Some(ccr)
- } catch {
- case e: Exception => {
-   println(s"==>Failed to make collection repository configured in ${baseDir}")
-     None
-   }
- }
-
-object Validator {
+case class Validator(repo: EditorsRepo) = {
 
   def repo: TestReport = {
     val filesTestSuite = TestIdentifier(
-      Cite2Urn("urn:cite2:hmt:editorstests.2017a:textrepo"),
+      Cite2Urn("urn:cite2:hmt:editorstests.2017a:repoformat"),
       "Test for correctly configured repositories of data",
       "repository/ies")
 
     val textRepoResult =  try {
-      val textRepo = TextRepositorySource.fromFiles(textInventory,textConfig,baseDir)
+      val textRepo = TextRepositorySource.fromFiles(repo.textInventory,repo.textConfig,baseDir)
       TestResult(s"Repository configured in ${baseDir}", s"Created repository with ${textRepo.corpus.size} citable nodes",true)
 
     } catch {
@@ -94,7 +60,7 @@ object Validator {
     }
 
     val collRepoResult =
-      collRepoOption match {
+      repo.collRepoOption match {
         case collRepo: Some[CiteCollectionRepository] =>  TestResult(s"Repository configured in ${baseDir}", s"Created collection repository with ${collRepo.get} citable objects",true)
       case None =>     TestResult(s"Repository configured in ${baseDir}", s"Failed to create collection repository in ${baseDir}",false)
     }
@@ -104,12 +70,18 @@ object Validator {
   }
 }
 
+val repo = new EditorsRepo(baseDir)
+val validator = Validator(repo)
+
 object Verifier {
   def paleography = {
   }
   def namedEntities = {}
-  
+  def textMapping = {} // two ways: by text passage (extracted image), by TBS (overlay all)
+
+
 }
+*/
 /*
 
 object Paleography {
