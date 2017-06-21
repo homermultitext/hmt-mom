@@ -36,38 +36,45 @@ import edu.holycross.shot.citeobj._
 import scala.io.Source
 import java.io.File
 
+println("\nCreating library from repository data.  Please be patient...")
 
-val repo = EditorsRepo(baseDir)
+
+val coll =  {
+  val collInventory = baseDir + "/collections/catalog/citecatalog.cex"
+  val vaFolio  = baseDir + "/collections/venetusA.cex"
+  val vaImages = baseDir + "/collections/vaimages.cex"
+
+  try {
+    val inventoryString = Source.fromFile(collInventory).getLines.mkString("\n")
+    val dataString = Source.fromFile(vaFolio).getLines.mkString("\n") +   Source.fromFile(vaImages).getLines.mkString("\n")
+    val ccr = CiteCollectionRepository(s"${inventoryString}\n${dataString}")
+    Some(ccr)
+  } catch {
+   case e: Exception => {
+    println(s"==>Failed to make collection repository configured in ${baseDir}: ${e.getMessage}")
+    None
+   }
+  }
+}
+
+
+
+
+
+val repo = EditorsRepo(baseDir,coll)
+
+val validator = Validator(repo)
+
+
+println("\n\nValidator ready to use.\n")
 
 /*
 
 
 
-case class Validator(repo: EditorsRepo) = {
+case class Validator(repo: EditorsRepo)  {
 
-  def repo: TestReport = {
-    val filesTestSuite = TestIdentifier(
-      Cite2Urn("urn:cite2:hmt:editorstests.2017a:repoformat"),
-      "Test for correctly configured repositories of data",
-      "repository/ies")
 
-    val textRepoResult =  try {
-      val textRepo = TextRepositorySource.fromFiles(repo.textInventory,repo.textConfig,baseDir)
-      TestResult(s"Repository configured in ${baseDir}", s"Created repository with ${textRepo.corpus.size} citable nodes",true)
-
-    } catch {
-      case e: Exception => TestResult(s"Repository configured in ${baseDir}", s"Failed for baseDir ${baseDir}: ${e.getMessage()}", false)
-    }
-
-    val collRepoResult =
-      repo.collRepoOption match {
-        case collRepo: Some[CiteCollectionRepository] =>  TestResult(s"Repository configured in ${baseDir}", s"Created collection repository with ${collRepo.get} citable objects",true)
-      case None =>     TestResult(s"Repository configured in ${baseDir}", s"Failed to create collection repository in ${baseDir}",false)
-    }
-
-    TestReport(filesTestSuite,Vector(textRepoResult, collRepoResult))
-
-  }
 }
 
 val repo = new EditorsRepo(baseDir)

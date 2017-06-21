@@ -6,7 +6,7 @@ import edu.holycross.shot.citeobj._
 
 
 
-case class EditorsRepo(baseDir: String)  {
+case class EditorsRepo(baseDir: String, collRepoOption: Option[CiteCollectionRepository])  {
   val textInventory = baseDir + "/editions/catalog/textinventory.xml"
   val textInvFile = new File(textInventory)
   require(textInvFile.exists(), s"==>Could not find text inventory file ${textInventory} ")
@@ -31,18 +31,6 @@ case class EditorsRepo(baseDir: String)  {
 
   val inventoryString = Source.fromFile(collInventory).getLines.mkString("\n")
   val dataString = Source.fromFile(vaFolio).getLines.mkString("\n") +   Source.fromFile(vaImages).getLines.mkString("\n")
-
-  def collRepoOption =  {
-    try {
-      val ccr = CiteCollectionRepository(s"${inventoryString}\n${dataString}")
-        Some(ccr)
-      } catch {
-       case e: Exception => {
-        println(s"==>Failed to make collection repository configured in ${baseDir}")
-        None
-       }
-      }
-   }
 
   def collRepoOk: Boolean = {
    collRepoOption match {
