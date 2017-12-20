@@ -1,13 +1,28 @@
-# Homer Multitext project: Mandatory Ongoing Maintenance (HMT-MOM): work in 2017
+# HMT-MOM: 1.0 release series
 
+Homer Multitext project: Mandatory Ongoing Maintenance.
 
+Although HMT MOM can be installed and used on any system with git, gradle and the
+Homer Multitext project's [fork of the Perseus morphological parser][morph],
+MOM is primarily intended for use from within
+the [Homer Multitext project virtual machine for editors][vm].
 
-HMT MOM is a library to support editorial work on the Homer Muiltitext project.  It is used by the `mom.sc` script included in the [template files for HMT editors](https://github.com/homermultitext/hmt-editors-template).
+Detailed documentation on how to use MOM in editing material for the Homer Multitext
+project is being added to the project web site's [guides for editors and contributors][2].
 
+## Version numbering##
 
-In 2017, we are migrating to a new technical infrastructure (to be published as version 2.0 of HMT MOM).  More information will be linked here when version 2.0 is released.
+The left-most digit identifies a major version, defined as a version that either dramatically
+changes MOM's functionality, or requires a change in configuration.  The second digit from the left
+identifies an upgrade that adds some tests or functionality to the main version, but does not
+require a change in configuration.  The third digit identifies a version with changes
+that do not change what MOM tests and validates (e.g., a version that improves formatting of HTML reports
+or user interface).
 
-Information in the [project wiki][1] does not yet reflect version 2.0.
+## Further information##
+
+See the [project wiki][1] for further notes and draft documentation,
+and discussion of future development plans.
 
 
 [morph]: https://github.com/homermultitext/morpheus
@@ -19,3 +34,12 @@ Information in the [project wiki][1] does not yet reflect version 2.0.
 
 
 [2]: http://www.homermultitext.org/hmt-docs/guides/index.html
+
+
+## Subprojects
+
+1. tabulation : creates tabular representation of CTS texts
+2. dse
+3. hmtvalidation
+4. paleography
+5. analysis

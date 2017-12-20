@@ -1,4 +1,4 @@
-Concept#TEI markup#Other
+Concept#TEI markup#Other notes
 Unclear reading#`unclear`#
 Lacuna#`gap`#
 Lexical token#`w`#(By default, lexical tokens are separated by white space.)
@@ -15,6 +15,6 @@ Place name#`placeName`#requires valid value on `@n`
 Ethnic group#`rs` of type `ethnic`#requires valid value on `@n`
 Astronomical bodies#`rs` of type `astro`#requires valid value on `@n`
 Title of cited work#`title`#
-Cited extant work#`title`#
+Cited extant work#`ref` wrapped in `title`#`ref` is of type `urn` with valid URN value in `@n`
 Quoted words, phrases or passages#`q`#
 Identifiable quotations#`ref`/`q` pair wrapped in `cit`#`ref` of type `urn`, with valid URN for text contents

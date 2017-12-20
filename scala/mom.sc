@@ -33,12 +33,14 @@ import edu.holycross.shot.scm._
 import edu.holycross.shot.ohco2._
 import edu.holycross.shot.citeobj._
 
+import org.homermultitext.edmodel._
+
 import scala.io.Source
 import java.io.File
 
 println("\nCreating library from repository data.  Please be patient...")
 
-
+// Process big static files ahead of time.
 val coll =  {
   val collInventory = baseDir + "/collections/catalog/citecatalog.cex"
   val vaFolio  = baseDir + "/collections/venetusA.cex"
@@ -68,28 +70,16 @@ val validator = Validator(repo)
 
 println("\n\nValidator ready to use.\n")
 
+
+val tr = TextRepositorySource.fromFiles(repo.textInventory,repo.textConfig,repo.baseDir)
+val tokens = TeiReader.fromCorpus(tr.corpus)
+val urnList = tokens.map(_.textNode).distinct
+val vectvect = for (u <- tokens.map(_.textNode)) yield { tokens.filter(_.textNode == u).map(_.readWithDiplomatic.text) }.distinct
+
+val dipl =  vectvect.map(_.mkString(" ")).mkString("\n")
+
 /*
 
-
-
-case class Validator(repo: EditorsRepo)  {
-
-
-}
-
-val repo = new EditorsRepo(baseDir)
-val validator = Validator(repo)
-
-object Verifier {
-  def paleography = {
-  }
-  def namedEntities = {}
-  def textMapping = {} // two ways: by text passage (extracted image), by TBS (overlay all)
-
-
-}
-*/
-/*
 
 object Paleography {
 
