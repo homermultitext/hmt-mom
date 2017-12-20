@@ -1,4 +1,4 @@
-# Homer Multitext project: Mandatory Ongoing Maintenance (HMT-MOM): work in 2017
+# Homer Multitext project: Mandatory Ongoing Maintenance (HMT-MOM)
 
 
 
