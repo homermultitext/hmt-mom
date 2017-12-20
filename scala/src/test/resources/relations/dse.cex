@@ -1,0 +1,14 @@
+#!citecatalog
+
+collection#urn:cite2:dse:verbs.v1:#DSE data model#urn:cite2:dse:verbs.v1.label:##CC-attribution-share-alike
+
+property#urn:cite2:dse:verbs.v1.urn:#URN#Cite2Urn#
+property#urn:cite2:hmt:msA.2017a.label:#Label#String#
+
+#!citedata
+
+urn#label
+urn:cite2:dse:verbs.v1:appearsOn#Feature appears on a physical surface
+urn:cite2:dse:verbs.v1:hasOnIt#Physical surface has a feature on it
+urn:cite2:dse:verbs.v1:illustrates#Image illustrates text or physical surface
+urn:cite2:dse:verbs.v1:illustratedBy#Text or physical surface illustrated by an image

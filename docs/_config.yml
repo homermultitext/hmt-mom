@@ -1,0 +1,32 @@
+# Dependencies
+
+
+# Permalinks
+permalink:        pretty
+
+# Setup
+title:            'HMT MOM'
+tagline:          'Mandatory On-going Maintenance'
+description:      'A system for automated validation and computer-assisted verification of HMT editorial work'
+baseurl: '/hmt-mom/'
+
+
+
+author:
+  name:           'Neel Smith'
+
+paginate:         5
+
+links:
+  - title: HMT home page
+    url: http://www.homermultitext.org/
+    external: true
+  - title: HMT editors' group
+    url: http://hmteditors.github.io/
+    external: true
+  - title: HMT on github
+    url: http://homermultitext.github.io/
+    external: true
+  - title: Github source for this site
+    url: https://github.com/homermultitext/hmt-mom
+    external: true

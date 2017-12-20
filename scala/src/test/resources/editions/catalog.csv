@@ -1,0 +1,6 @@
+urn,citationScheme,groupName,workTitle,versionLabel,exemplarLabel,online,language
+urn:cts:greekLit:tlg5026.msA.hmt:,book/scholion/section,Scholia on the Iliad,Main scholia to Venetus A,Homer Multitext,,true,grc
+urn:cts:greekLit:tlg5026.msAim.hmt:,book/scholion/section,Scholia on the Iliad,Intermarginal scholia to Venetus A,Homer Multitext,,true,grc
+urn:cts:greekLit:tlg5026.msAint.hmt:,book/scholion/section,Scholia on the Iliad,Interior scholia to Venetus A,Homer Multitext,,true,grc
+urn:cts:greekLit:tlg5026.msAext.hmt:,book/scholion/section,Scholia on the Iliad,Exterior scholia to Venetus A,Homer Multitext,,true,grc
+urn:cts:greekLit:tlg5026.msAil.hmt:,book/scholion/section,Scholia on the Iliad,Interlinear scholia to Venetus A,Homer Multitext,,true,grc
