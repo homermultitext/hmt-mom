@@ -35,8 +35,13 @@ case class ImageManager(
   }
 
 
-  //
-  //  s"![reading](${imgUrlBase}${splits(0)}.tif&RGN=${img.get.objectExtension}&WID=${imageSize}&CVT=JPEG])"
-
+  /**  Compose markdown for binary image linked to ICT.
+  *
+  * @param img Image to display in markdown.
+  * @param imgSize Size of binary image, in pixels.
+  */
+  def markdown(img: Cite2Urn, imgSize: Int = 100): String = {
+    s"[![image](${binary(img, imgSize)})](${ict(img)})"
+  }
 
 }

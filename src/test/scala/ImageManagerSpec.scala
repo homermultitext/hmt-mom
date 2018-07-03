@@ -16,8 +16,6 @@ class ImageManagerSpec extends FlatSpec {
 
     assert(im.ict(asterisk) == expected)
   }
-
-
   it should "form URLs for retrieving binary data for an image with no RoI" in {
     val im = ImageManager()
     val noRoi = asterisk.dropExtensions
@@ -31,5 +29,17 @@ class ImageManagerSpec extends FlatSpec {
     val expected = "http://www.homermultitext.org/iipsrv?OBJ=IIP,1.0&FIF=/project/homer/pyramidal/deepzoom/hmt/vaimg/2017a/VA012RN_0013.tif&RGN=0.1478,0.4788,0.01279,0.008458&WID=100&CVT=JPEG"
     assert(im.binary(asterisk) == expected)
   }
-  it should "compose Markdown for an embedded image linked to ICT" in pending
+  it should "allow specification of image size in retrieving binary data" in {
+    val im = ImageManager()
+    val expected = "http://www.homermultitext.org/iipsrv?OBJ=IIP,1.0&FIF=/project/homer/pyramidal/deepzoom/hmt/vaimg/2017a/VA012RN_0013.tif&RGN=0.1478,0.4788,0.01279,0.008458&WID=500&CVT=JPEG"
+
+    val actual = im.binary(asterisk, 500)
+    assert( actual == expected)
+  }
+
+  it should "compose Markdown for an embedded image linked to ICT" in {
+    val im = ImageManager()
+    val expected = "[![image](http://www.homermultitext.org/iipsrv?OBJ=IIP,1.0&FIF=/project/homer/pyramidal/deepzoom/hmt/vaimg/2017a/VA012RN_0013.tif&RGN=0.1478,0.4788,0.01279,0.008458&WID=100&CVT=JPEG)](http://www.homermultitext.org/ict2/?urn=urn:cite2:hmt:vaimg.2017a:VA012RN_0013@0.1478,0.4788,0.01279,0.008458)"
+    assert(im.markdown(asterisk) == expected)
+  }
 }
