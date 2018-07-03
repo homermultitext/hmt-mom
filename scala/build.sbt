@@ -1,28 +1,28 @@
 
 
-scalaVersion := "2.11.8"
+crossScalaVersions in ThisBuild := Seq("2.11.8", "2.12.4")
+scalaVersion := (crossScalaVersions in ThisBuild).value.last
+
 
 
 organization := "edu.holycross.shot"
-version := "2.0.0"
+version := "3.0.0"
 licenses += ("GPL-3.0",url("https://opensource.org/licenses/gpl-3.0.html"))
 
 resolvers += Resolver.jcenterRepo
-resolvers += "beta" at "http://beta.hpcc.uh.edu/nexus/content/repositories/releases"
 resolvers += Resolver.bintrayRepo("neelsmith", "maven")
-
 
 libraryDependencies ++= Seq(
 
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
+  "com.github.pathikrit" %% "better-files" % "3.5.0",
 
-
-  "edu.holycross.shot.cite" %% "xcite" % "2.4.0",
-  "edu.holycross.shot" %% "scm" % "4.0.1",
-  "edu.holycross.shot" %% "ohco2" % "9.0.1",
-  "edu.holycross.shot" %% "citeobj" % "3.1.3",
-  "edu.holycross.shot" %% "citerelations" % "1.1.1",
+  "edu.holycross.shot.cite" %% "xcite" % "3.5.0",
+  "edu.holycross.shot" %% "scm" % "6.1.1",
+  "edu.holycross.shot" %% "ohco2" % "10.9.0",
+  "edu.holycross.shot" %% "citeobj" % "7.1.1",
+  "edu.holycross.shot" %% "citerelations" % "2.3.0",
   "edu.holycross.shot" %% "citeiip" % "1.0.0",
-  "org.homermultitext" %% "hmt-textmodel" % "1.2.1"
+  "org.homermultitext" %% "hmt-textmodel" % "3.0.0"
 
 )

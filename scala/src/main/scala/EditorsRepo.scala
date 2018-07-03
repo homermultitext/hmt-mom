@@ -1,12 +1,18 @@
 package edu.holycross.shot.hmtmom
 
-import java.io.File
-import scala.io.Source
-import edu.holycross.shot.citeobj._
+import better.files.{File => ScalaFile, _}
+import better.files.Dsl._
 
 
+/** Root directory of an HMT editorial repository
+* laid out according to 2018 standards.
+*
+* @param baseDir Name of root directory.
+*/
+case class EditorsRepo(baseDir: String)  {
 
-case class EditorsRepo(baseDir: String, collRepoOption: Option[CiteCollectionRepository])  {
+
+  /*
   val textInventory = baseDir + "/editions/catalog/textinventory.xml"
   val textInvFile = new File(textInventory)
   require(textInvFile.exists(), s"==>Could not find text inventory file ${textInventory} ")
@@ -39,6 +45,6 @@ case class EditorsRepo(baseDir: String, collRepoOption: Option[CiteCollectionRep
    }
   }
   require(collRepoOk, s"==>Failed to make collection repository from base dir. ${baseDir}")
-
+*/
 
  }

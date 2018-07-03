@@ -10,7 +10,7 @@ import edu.holycross.shot.scm._
 
 object HmtMom {
   val library = "Editing in progress"
-  val libraryUrn = Cite2Urn("urn:cite2:hmt:mom.2017a:mom")
+  val libraryUrn = Cite2Urn("urn:cite2:hmt:mom.v1:mom")
   val license = "Creative Commons Attribution Share-Alike"
   val namespaces = Vector[CiteNamespace]()
 
@@ -28,10 +28,11 @@ object HmtMom {
   }
 
   /** Build ImageExtensions from editorial source.
-  */
+
   def images: Option[ImageExtensions] = {
     None
   }
+  */
 
   /** Build CiteRelationSet from editorial source.
   */
@@ -46,11 +47,8 @@ object HmtMom {
   * @param dir Name of root directory of an editing project.
   */
   def citeLibrary(dir: String): CiteLibrary = {
-
-
-
     CiteLibrary(library,libraryUrn,license,namespaces,
-      texts,collections,images,indexes
+      texts,collections,indexes
     )
   }
 

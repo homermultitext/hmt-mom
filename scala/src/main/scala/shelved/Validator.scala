@@ -9,7 +9,7 @@ import edu.holycross.shot.scm._
 
 
 case class Validator(editorsRepo: EditorsRepo) {
-
+/*
   def repo: TestReport = {
     val filesTestSuite = TestIdentifier(
       Cite2Urn("urn:cite2:hmt:editorstests.2017a:repoformat"),
@@ -33,6 +33,6 @@ case class Validator(editorsRepo: EditorsRepo) {
     TestReport(filesTestSuite,Vector(textRepoResult, collRepoResult))
 
   }
-
+*/
 
 }
