@@ -27,4 +27,4 @@ case class EditorsRepo(baseDir: String)  {
     require(conf.exists,"Missing required configuration file: " + conf)
   }
 
- }
+}
