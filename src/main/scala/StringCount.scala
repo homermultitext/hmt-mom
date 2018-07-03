@@ -2,11 +2,13 @@ package edu.holycross.shot.hmtmom
 
 /** Convenience class for counts of string occurrences.
 *
-* @param s String.
+* @param str String.
 * @param count: Number of occurrences.
 */
-case class StringCount(s: String, count: Int) {
+case class StringCount(str: String, count: Int) {
+
+  /** Format pair for CEX. */
   def cex :  String = {
-    s + "#" + count
+    str + "#" + count
   }
 }

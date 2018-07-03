@@ -45,7 +45,60 @@ case class HmtMom(repo: EditorsRepo) {
     }))
   }
 
+  /** Create corpus of XML source of Iliads and scholia.
+  */
   def corpus = iliads ++ scholia
 
+  /** Complete tokenization of the corpus. */
   def tokens = TeiReader.fromCorpus(corpus)
+
+
+
+}
+
+object HmtMom {
+
+  /** Construct an HmtMom object from the path to an
+  * editorial repository.
+  *
+  * @param repoPath Path to repository.
+  */
+  def apply(repoPath: String) : HmtMom = {
+    HmtMom(EditorsRepo(repoPath))
+  }
+
+
+  /** Count number of tokens occurring for each token type.
+  *
+  * @param tokens Tokens to profile.
+  */
+  def profileTokens(tokens: Vector[TokenAnalysis]): Vector[(LexicalCategory, Int, Int)] = {
+    val tokenTypes = tokens.map(_.analysis.lexicalCategory).distinct
+
+    val profile = for (ttype <- tokenTypes) yield {
+      val typeTokens = tokens.filter(_.analysis.lexicalCategory == ttype)
+      (ttype,typeTokens.size,typeTokens.map(_.analysis.readWithAlternate).distinct.size )
+    }
+    profile
+  }
+
+  /** Extract list of unique lexical words from tokens.
+  *
+  * @param tokens List of tokens to analyze.
+  */
+  def wordList(tokens: Vector[TokenAnalysis]): Vector[String] = {
+    tokens.map(_.analysis.readWithAlternate).distinct
+  }
+
+  /** Compute histogram of words for a list of tokens.
+  *
+  * @param tokens List of tokens to analyze.
+  */
+  def wordHisto(tokens: Vector[TokenAnalysis]): Vector[StringCount] = {
+    val lexTokens = tokens.filter(_.analysis.lexicalCategory == LexicalToken)
+    val strs = lexTokens.map(_.analysis.readWithAlternate)
+    val grouped = strs.groupBy(w => w).toVector
+    val counted =  grouped.map{ case (k,v) => StringCount(k,v.size) }
+    counted.sortBy(_.count).reverse
+  }
 }
