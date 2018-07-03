@@ -5,7 +5,7 @@ import edu.holycross.shot.ohco2._
 import edu.holycross.shot.citerelation._
 import edu.holycross.shot.citeobj._
 import edu.holycross.shot.scm._
-
+import org.homermultitext.edmodel._
 
 
 case class HmtMom(repo: EditorsRepo) {
@@ -47,5 +47,5 @@ case class HmtMom(repo: EditorsRepo) {
 
   def corpus = iliads ++ scholia
 
-
+  def tokens = TeiReader.fromCorpus(corpus)
 }

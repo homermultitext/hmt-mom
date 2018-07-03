@@ -3,6 +3,7 @@ import org.scalatest.FlatSpec
 
 import edu.holycross.shot.cite._
 import edu.holycross.shot.ohco2._
+import org.homermultitext.edmodel._
 
 class MomSpec extends FlatSpec {
 
@@ -36,6 +37,11 @@ class MomSpec extends FlatSpec {
     val repo = EditorsRepo("src/test/resources/il10")
     val mom = HmtMom(repo)
     assert(mom.corpus.isInstanceOf[Corpus])
+  }
+  it should "create a vector of HmtTokens for the whole corpus" in {
+    val repo = EditorsRepo("src/test/resources/il10")
+    val mom = HmtMom(repo)
+    assert(mom.tokens.isInstanceOf[Vector[HmtToken]])
   }
 
 
