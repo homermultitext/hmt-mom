@@ -16,7 +16,8 @@ case class EditorsRepo(baseDir: String)  {
   val validationDir = File(baseDir + "/validation")
   val editionsDir = File(baseDir + "/editions")
   val paleographyDir = File(baseDir + "/paleography")
-  val dirs = Vector(dseDir, editionsDir, validationDir, paleographyDir)
+  val libHeadersDir = File(baseDir + "/header")
+  val dirs = Vector(dseDir, editionsDir, validationDir, paleographyDir, libHeadersDir)
 
   for (d <- dirs) {
     require(d.exists, "Repository not correctly laid out: missing directory " + d)

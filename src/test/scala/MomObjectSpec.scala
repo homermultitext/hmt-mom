@@ -67,14 +67,13 @@ class MomObjectSpec extends FlatSpec {
     val repo = EditorsRepo("src/test/resources/il10")
     val tkns = HmtMom(repo).tokens
     val badCharTokens = HmtMom.badChars(tkns)
-    println("Out of " + tkns.size + ", "+ badCharTokens.size + " had a bad token.")
     assert((badCharTokens.size > 1) && (badCharTokens.size < tkns.size))
   }
   it should "collect all tokens with markup errors" in {
     val repo = EditorsRepo("src/test/resources/il10")
     val tkns = HmtMom(repo).tokens
     val badXmlTokens = HmtMom.badMarkup(tkns)
-    println(badXmlTokens)
+    assert(badXmlTokens.size == 1)
   }
 
 }

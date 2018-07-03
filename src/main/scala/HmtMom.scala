@@ -4,10 +4,17 @@ import edu.holycross.shot.cite._
 import edu.holycross.shot.ohco2._
 import edu.holycross.shot.citerelation._
 import edu.holycross.shot.citeobj._
-import edu.holycross.shot.scm._
+import edu.holycross.shot.dse._
 import org.homermultitext.edmodel._
+import org.homermultitext.hmtcexbuilder._
 import java.text.Normalizer
 
+/** HmtMom helps you manage and maintain the contents of a Homer Multitext
+*  project repository.
+*
+* @param repo Root directory of a repository laid out according to conventions
+* of HMT project in 2018.
+*/
 case class HmtMom(repo: EditorsRepo) {
 
   /** Create a corpus of XML archival editions.
@@ -52,7 +59,50 @@ case class HmtMom(repo: EditorsRepo) {
   /** Complete tokenization of the corpus. */
   def tokens = TeiReader.fromCorpus(corpus)
 
+  /** CEX library header data.*/
+  val libHeader = DataCollector.compositeFiles(repo.libHeadersDir.toString, "cex")
+  /** CEX data for DSE relations.*/
+  val dseCex = DataCollector.compositeFiles(repo.dseDir.toString, "cex")
 
+  /** Construct DseVector for this repository's records. */
+  def dse:  DseVector = {
+    val records = dseCex.split("\n").filter(_.nonEmpty).filterNot(_.contains("passage#")).toVector
+    // This value must agree with header data in header/1.dse-prolog.cex.
+    val baseUrn = "urn:cite2:validate:tempDse.temp:"
+    val dseRecords = for ((record, count) <- records.zipWithIndex) yield {
+      s"${baseUrn}validate_${count}#Temporary DSE record ${count}#${record}"
+    }
+    val srcAll = libHeader + dseRecords.mkString("\n")
+    DseVector(srcAll)
+  }
+
+  /** Recursively merge  a list of corpora into a single corpus.
+  *
+  * @param v List of corpora to merge.
+  * @param composite Composite corpus compiled so far.
+  */
+  def mergeCorpusVector(v: Vector[Corpus], composite: Corpus):  Corpus = {
+    if (v.isEmpty) {
+      composite
+    } else {
+      val nextCorpus = composite ++ v.head
+      mergeCorpusVector(v.tail, nextCorpus)
+    }
+  }
+
+  /** Select a corpus by page reference.
+  *
+  * @param pg Page to select texts for.
+  * @param dse DseVector to consult for records of
+  * texts on page.
+  */
+  def corpusForPage(pg: Cite2Urn, dseV: DseVector) = {
+    val textUrns = dseV.textsForTbs(pg).toVector
+    val miniCorpora = for (u <- textUrns) yield {
+      corpus ~~ u
+    }
+    mergeCorpusVector(miniCorpora, Corpus(Vector.empty[CitableNode]))
+  }
 
 }
 
@@ -142,19 +192,6 @@ object HmtMom {
     counted.sortBy(_._2).reverse
   }
 
-
-/*
-
-val md = for ((cp, cnt) <- histo) yield {
-  val ok = if (allowedCPs.contains(cp)) { "valid" } else { "**<span style=\"color:red\">invalid</span>**"}
-  val cols = List(cp.toHexString, new String(Array(cp), 0,1), cnt, ok)
-  "| " + cols.mkString(" | ") + " | "
-}
-val hdr = "| Unicode cp | String | Count | Valid HMT? |\n| :------------- | :------------- |:------------- |:------------- |\n"
-hdr + md.mkString("\n")
-*/
-
-
   /** Compose text for a token analysis according todo
   * HMT project normalization.
   *
@@ -219,7 +256,7 @@ hdr + md.mkString("\n")
   */
   def badMarkup(tokens: Vector[TokenAnalysis]): Vector[TokenAnalysis] = {
     val tokenOpts = for (t <- tokens) yield {
-      if (t.analysis.errors.size > 0) {
+      if (t.analysis.errors.nonEmpty) {
         Some(t)
       } else {
         None
