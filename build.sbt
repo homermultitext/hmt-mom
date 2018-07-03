@@ -6,7 +6,7 @@ scalaVersion := (crossScalaVersions in ThisBuild).value.last
 
 
 organization := "edu.holycross.shot"
-version := "3.0.0"
+version := "3.1.0"
 licenses += ("GPL-3.0",url("https://opensource.org/licenses/gpl-3.0.html"))
 
 resolvers += Resolver.jcenterRepo
@@ -22,7 +22,7 @@ libraryDependencies ++= Seq(
   "edu.holycross.shot" %% "ohco2" % "10.9.0",
   "edu.holycross.shot" %% "citeobj" % "7.1.1",
   "edu.holycross.shot" %% "citerelations" % "2.3.0",
-  "edu.holycross.shot" %% "citeiip" % "1.0.0",
+  //"edu.holycross.shot" %% "citeiip" % "1.0.0",
   "org.homermultitext" %% "hmt-textmodel" % "3.0.0"
 
 )

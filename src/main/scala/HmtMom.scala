@@ -8,48 +8,24 @@ import edu.holycross.shot.scm._
 
 
 
-object HmtMom {
-  val library = "Editing in progress"
-  val libraryUrn = Cite2Urn("urn:cite2:hmt:mom.v1:mom")
-  val license = "Creative Commons Attribution Share-Alike"
-  val namespaces = Vector[CiteNamespace]()
+case class HmtMom(repo: EditorsRepo) {
 
-
-  /** Build a TextRepository from editorial source.
+  /** Create a corpus of XML archival editions.
   */
-  def texts: Option[TextRepository] = {
-    None
+  def raw:  Corpus = {
+    TextRepositorySource.fromFiles(repo.ctsCatalog.toString, repo.ctsCitation.toString, repo.editionsDir.toString).corpus
   }
 
-  /** Build a CiteCollectionRepository from editorial source.
+  /** Create corpus of XML source of Iliad with all nodes renamed to
+  * diplomatic version.
   */
-  def collections: Option[CiteCollectionRepository] = {
-    None
-  }
-
-  /** Build ImageExtensions from editorial source.
-
-  def images: Option[ImageExtensions] = {
-    None
-  }
-  */
-
-  /** Build CiteRelationSet from editorial source.
-  */
-  def indexes: Option[CiteRelationSet] = {
-    None
-  }
-
-
-  /** Create a CiteLibrary for a directory following
-  * HMT editors' layout conventions.
-  *
-  * @param dir Name of root directory of an editing project.
-  */
-  def citeLibrary(dir: String): CiteLibrary = {
-    CiteLibrary(library,libraryUrn,license,namespaces,
-      texts,collections,indexes
-    )
+  def iliads: Corpus = {
+    val iliadXml = raw ~~ CtsUrn("urn:cts:greekLit:tlg0012.tlg001:")
+    val iliadNodes = iliadXml.nodes.map( n => {
+      val diplo = n.urn.version.replaceAll("_xml","")
+      CitableNode(n.urn.dropVersion.addVersion(diplo) ,n.text)
+    })
+    Corpus (iliadNodes)
   }
 
 
