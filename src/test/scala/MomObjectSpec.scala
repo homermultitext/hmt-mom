@@ -17,6 +17,8 @@ class MomObjectSpec extends FlatSpec {
     assert (actualCategories == expectedCategories)
   }
 
+  it should "convert allowed input characters to required output characters" in pending
+
   it should "extract a list of unique lexical words from a list of tokens" in {
     val repo = EditorsRepo("src/test/resources/il10")
     val mom = HmtMom(repo)
@@ -33,5 +35,22 @@ class MomObjectSpec extends FlatSpec {
     assert (actualMostFrequent == expectedMostFrequent)
   }
 
+  it should "compile a complete index of token occurrences" in {
+    val repo = EditorsRepo("src/test/resources/il10")
+    val mom = HmtMom(repo)
+    val wordHisto = HmtMom.wordHisto(mom.tokens)
+
+  }
+  it should "compute a sequence of StringOccurences from a sequence of tokens" in {
+    val repo = EditorsRepo("src/test/resources/il10")
+    val tkns = HmtMom(repo).tokens
+    val stringOccurences = HmtMom.stringSeq(tkns)
+    assert(stringOccurences.size == tkns.size)
+    assert(stringOccurences.isInstanceOf[Vector[StringOccurrence]])
+  }
+
+  it should "compute a histogram of characters in a list of tokens" in pending
+  it should "report on all character-set errors in a list of tokens" in pending
+  it should "report on all markup errors in a list of tokens" in pending
 
 }

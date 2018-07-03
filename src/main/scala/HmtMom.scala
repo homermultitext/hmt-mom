@@ -82,6 +82,23 @@ object HmtMom {
     profile
   }
 
+  /** Compute index of tokens to passage where they occur.
+  *
+  * @param tokens Tokens to index.
+  */
+  def tokenIndex(tokens: Vector[TokenAnalysis]) : Vector[String] = {
+    def grouped = stringSeq(tokens).groupBy ( occ => occ.s).toVector
+    val idx = for (grp <- grouped) yield {
+      val str = grp._1
+      val occurrences = grp._2.map(_.urn)
+      val flatList = for (occurrence <- occurrences) yield {
+        str + "#" + occurrence.toString
+      }
+      flatList
+    }
+    idx.flatten
+  }
+
   /** Extract list of unique lexical words from tokens.
   *
   * @param tokens List of tokens to analyze.
@@ -101,4 +118,16 @@ object HmtMom {
     val counted =  grouped.map{ case (k,v) => StringCount(k,v.size) }
     counted.sortBy(_.count).reverse
   }
+
+  /** Compute sequence of StringOccurrence for a list of tokens.
+  *
+  * @param tokens Tokens to analyze
+  */
+  def stringSeq(tokens: Vector[TokenAnalysis]): Vector[StringOccurrence] = {
+     tokens.map( tkn => {
+        StringOccurrence(tkn.analysis.editionUrn, tkn.analysis.readWithAlternate)
+      }
+    )
+  }
+
 }
