@@ -6,7 +6,7 @@ import edu.holycross.shot.citerelation._
 import edu.holycross.shot.citeobj._
 import edu.holycross.shot.scm._
 import org.homermultitext.edmodel._
-
+import java.text.Normalizer
 
 case class HmtMom(repo: EditorsRepo) {
 
@@ -66,7 +66,6 @@ object HmtMom {
   def apply(repoPath: String) : HmtMom = {
     HmtMom(EditorsRepo(repoPath))
   }
-
 
   /** Count number of tokens occurring for each token type.
   *
@@ -130,4 +129,102 @@ object HmtMom {
     )
   }
 
+
+  /** Compute histogram of codepoints for a list of tokens
+  * sorted from most frequent to least frequent.
+  *
+  * @param tokens List of tokens to analyze.
+  */
+  def cpHisto(tokens: Vector[TokenAnalysis]):  Vector[(Int,Int)] = {
+    def cps = hmtCpsFromTokens(tokens)
+    val grouped = cps.groupBy(cp => cp).toVector
+    val counted =  grouped.map{ case (k,v) => (k,v.size) }
+    counted.sortBy(_._2).reverse
+  }
+
+
+/*
+
+val md = for ((cp, cnt) <- histo) yield {
+  val ok = if (allowedCPs.contains(cp)) { "valid" } else { "**<span style=\"color:red\">invalid</span>**"}
+  val cols = List(cp.toHexString, new String(Array(cp), 0,1), cnt, ok)
+  "| " + cols.mkString(" | ") + " | "
+}
+val hdr = "| Unicode cp | String | Count | Valid HMT? |\n| :------------- | :------------- |:------------- |:------------- |\n"
+hdr + md.mkString("\n")
+*/
+
+
+  /** Compose text for a token analysis according todo
+  * HMT project normalization.
+  *
+  * @param tkn Token analysis.
+  */
+  def hmtText(tkn: TokenAnalysis): String = {
+    val rdgs = tkn.analysis.readings.map(_.reading).mkString
+    //get alt reading string
+    val alts = if (tkn.hasAlternate) {
+      tkn.analysis.alternateReading.get.simpleString
+    } else { ""}
+    val str = (rdgs + alts).replaceAll("\\s","")
+    val cps1 = HmtChars.stringToCps(str)
+    val hmtCps = HmtChars.normalizeCPs(cps1)
+    Normalizer.normalize(HmtChars.cpsToString(hmtCps), Normalizer.Form.NFC)
+  }
+
+  /** Compute list of codepoints from a list of tokens.
+  *
+  * @param tokens Tokens to analyze.
+  */
+  def hmtCpsFromTokens(tokens: Vector[TokenAnalysis]):  Vector[Int] = {
+    val snormal = tokens.map(hmtText(_))
+    HmtChars.stringToCps(snormal.mkString)
+  }
+
+  /** Determine if all codepoints in a list are valid.
+  *
+  * @param cps List of codepoints.
+  */
+  def validCPs(cps: Vector[Int]): Boolean = {
+    val checkOk =  cps.map(HmtChars.legal(_)).distinct
+    // all tokens were valid of only distinct value is true:
+    if ((checkOk.size == 1)  && (checkOk(0))) {
+      true
+    } else {
+      false
+    }
+  }
+
+  /** Filter a token list for tokens containing one or more
+  * invalid characters.
+  *
+  * @param tokens List of tokens.
+  */
+  def badChars(tokens: Vector[TokenAnalysis]): Vector[TokenAnalysis] = {
+    val tokenOpts = for (t <- tokens) yield {
+      val cps = hmtCpsFromTokens(Vector(t))
+      if (validCPs(cps)) {
+        None
+      } else {
+        Some(t)
+      }
+    }
+    tokenOpts.flatten
+  }
+
+  /** Filter a token list for tokens containing one or more
+  * markup errors.
+  *
+  * @param tokens List of tokens.
+  */
+  def badMarkup(tokens: Vector[TokenAnalysis]): Vector[TokenAnalysis] = {
+    val tokenOpts = for (t <- tokens) yield {
+      if (t.analysis.errors.size > 0) {
+        Some(t)
+      } else {
+        None
+      }
+    }
+    tokenOpts.flatten
+  }
 }
