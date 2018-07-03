@@ -1,23 +1,41 @@
 package edu.holycross.shot.hmtmom
 import edu.holycross.shot.cite._
 
+
+/** A class for working with image services recognizing URNs.
+*
+* @param ictBase Base URL for HMT Image Citation Service, version 2.
+* @param iipBase Base URL for IIP image service.
+*/
 case class ImageManager(
   ictBase: String = "http://www.homermultitext.org/ict2/",
-  iipBase: String = "http://www.homermultitext.org/iipsrv?OBJ=IIP,1.0&FIF=/project/homer/pyramidal/",
+  iipBase: String = "http://www.homermultitext.org/iipsrv?OBJ=IIP,1.0&FIF=/project/homer/pyramidal/deepzoom/"
+  ) {
 
-  binaryImgService: String = "http://www.homermultitext.org/hmt-digital/images?request=GetBinaryImage") {
-
-
-  def ict(img: Cite2Urn) = {
+  /**  Form URL for using an image in HMT Image Citation Tool.
+  *
+  * @param img Image to open in ICT.
+  */
+  def ict(img: Cite2Urn): String = {
     ictBase + "?urn=" + img
   }
 
-  def binary(img: Cite2Urn) = {}
+  /**  Form URL for image binary data.
+  *
+  *  @param img Image to retrieve.
+  *  @param imgSize Size of binary image, in pixels.
+  */
+  def binary(img: Cite2Urn, imgSize: Int = 100): String = {
+    val imgPath = iipBase + s"${img.namespace}/${img.collection}/${img.version}/${img.dropExtensions.objectComponent}"
 
-  //val urlBase = s"${imgService}&w=${imgSize}&urn="
+    img.objectExtensionOption match {
+      case roi: Some[String] =>        s"${imgPath}.tif&RGN=${roi.get}&WID=${imgSize}&CVT=JPEG"
+      case None => s"${imgPath}.tif&WID=${imgSize}&CVT=JPEG"
+    }
+  }
 
 
-  //val splits = img.get.objectComponent.split("@")
+  //
   //  s"![reading](${imgUrlBase}${splits(0)}.tif&RGN=${img.get.objectExtension}&WID=${imageSize}&CVT=JPEG])"
 
 
