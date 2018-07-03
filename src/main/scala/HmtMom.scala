@@ -29,5 +29,23 @@ case class HmtMom(repo: EditorsRepo) {
   }
 
 
+  /** Create corpus of XML source of scholia with all nodes renamed to
+  * diplomatic version.
+  */
+  def scholia : Corpus = {
+    val scholiaXml = raw ~~ CtsUrn("urn:cts:greekLit:tlg5026:")
+    val noReff = Corpus(scholiaXml.nodes.filterNot(_.urn.toString.contains(".ref")))
+    val collapsed = for (i <- 0 until (noReff.size - 1) by 2 ) yield {
+      val u = noReff.nodes(i).urn.collapsePassageBy(1)
+      val txt = "<div>" + noReff.nodes(i).text + " " + noReff.nodes(i+1).text + "</div>"
+      CitableNode(u,txt)
+    }
+    Corpus(collapsed.toVector.map( n => {
+      CitableNode(n.urn.dropVersion.addVersion("hmt") ,n.text)
+    }))
+  }
+
+  def corpus = iliads ++ scholia
+
 
 }
