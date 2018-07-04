@@ -35,7 +35,6 @@ case class MomReporter(mom: HmtMom) {
    */
   def missingPassages(txts: Vector[CtsUrn]):  Vector[CtsUrn] = {
     val accountedFor = for (psg <- txts) yield {
-      //println("...looking for  " + psg)
       val matches = corpus ~~ psg
       if (matches.isEmpty) {
         Some(psg)
@@ -47,19 +46,42 @@ case class MomReporter(mom: HmtMom) {
   }
 
 
+  /** Select a corpus by page reference.
+  *
+  * @param pg Page to select texts for.
+  * @param dse DseVector to consult for records of
+  * texts on page.
+  */
+  def corpusForPage(pg: Cite2Urn, dseV: DseVector) = {
+    val textUrns = dseV.textsForTbs(pg).toVector
+    val miniCorpora = for (u <- textUrns) yield {
+      corpus ~~ u
+    }
+    HmtMom.mergeCorpusVector(miniCorpora, Corpus(Vector.empty[CitableNode]))
+  }
+
+/*
+  def tokensForPage(pg: Cite2Urn) : Vector[TokenAnalysis] = {
+    println("Getting corpus for page...")
+    val pageCorpus = corpusForPage(pg,dse)
+    TeiReader.fromCorpus(pageCorpus)
+  }
+  */
+
   /** Compose markdown report on automated validation of DSE records.
   *
   * @param pageUrn Page to analyze.
   */
   def dseValidation(pageUrn: Cite2Urn): String = {
     val md = StringBuilder.newBuilder
+    val errors = StringBuilder.newBuilder
 
     md.append(s"# DSE records for ${pageUrn.collection}, page " + pageUrn.objectComponent + "\n\n")
-    md.append("## Automated validation\n\nInternal consistency of records:\n\n")
+    md.append("## Automated validation\n\n### Internal consistency of records\n\n")
 
     val imgs = dse.imagesForTbs(pageUrn).toVector
     if (imgs.size != 1) {
-      md.append(s"Could not validate DSE records:  page ${pageUrn} indexed to more than one image:\n\n" + imgs.map(i => "-  " + i.toString).mkString("\n") + "\n")
+      errors.append(s"## Errors\n\nCould not validate DSE records:  page ${pageUrn} indexed to more than one image:\n\n" + imgs.map(i => "-  " + i.toString).mkString("\n") + "\n")
 
     } else {
       val img = imgs(0)
@@ -70,22 +92,34 @@ case class MomReporter(mom: HmtMom) {
           md.append(s"-  **${tbsTxts.size}** text passages are indexed to ${pageUrn.objectComponent}\n")
       } else {
         md.append(s"- Error in indexing: ${imgTxts.size} text passages indexed to image ${imgs.head.objectComponent}, but ${tbsTxts.size} passages indexed to page ${pageUrn.objectComponent}\n")
+        if (errors.isEmpty) {
+          errors.append("## Errors\n\n")
+        }
+        errors.append("There were inconsistencies in indexing. (See details above.)\n\n")
       }
 
       // check image size...
       val dseImgMessage = dse.imagesForTbs(pageUrn).size match {
-        case 1 => "Surface indexed to only one image."
-        case i: Int => s"**Errorr**:  page ${pageUrn} indexed to ${i} images."
+        case 1 => "Surface correctly indexed to only one image."
+        case i: Int => {
+          if (errors.isEmpty) {
+            errors.append("## Errors\n\n")
+          }
+          errors.append(
+          s"There were errors in indexing:  page ${pageUrn} indexed to ${i} images.\n\n")
+          s"**Error**:  page ${pageUrn} indexed to ${i} images."
+        }
       }
-      md.append("\n\nSelection of image for imaging:\n\n" +  dseImgMessage  + "\n\n")
+      md.append("\n\n### Selection of image for imaging\n\n" +  dseImgMessage  + "\n\n")
 
       val missingPsgs = missingPassages(tbsTxts)
       val dseTextMessage =  if (missingPsgs.isEmpty) {
         "All passages indexed in DSE records appear in text corpus."
       } else {
         "The following passages in DSE records do not appear in the text corpus:\n\n" + missingPsgs.mkString("\n") + "\n\n"
+        errors.append("There were errors citing texts.  (See details above). \n\n")
       }
-      md.append("\n\nRelation of DSE records to text corpus:\n\n" +  dseTextMessage  + "\n\n")
+      md.append("\n\n### Relation of DSE records to text corpus\n\n" +  dseTextMessage  + "\n\n" + errors.toString + "\n\n")
     }
     md.toString
   }
@@ -134,22 +168,51 @@ case class MomReporter(mom: HmtMom) {
       val dirName = u.collection + "-" + u.objectComponent
       val pageDir = mkdirs(outputDir/dirName)
 
-      //Format main page:
-      //summarize results of validation and add links for
-      // verification for DSE records
+      // DSE reporting:
       println("Validating  DSE records...")
       val dseValidMd = dseValidation(u)
+      val dseErrors = dseValidMd.contains("## Errors")
+
+
       println("Formatting page to check completeness...")
       val dseCompleteMd = dseCompleteness(u)
-      val dseReport = pageDir/"dse.md"
-      dseReport.overwrite(dseValidMd + dseCompleteMd)
-
-
-      println("\tsummarize results of text profiling")
-      println("print page with bad character results")
-      println("print page with bad XML results")
+      val dseReport = pageDir/"dse-validation.md"
+      dseReport.overwrite(dseValidMd)
       println("print passage view to check correctness")
 
+      val pageCorpus = corpusForPage(u,dse)
+      println("print page with bad character results")
+      println("print page with bad XML results")
+
+
+
+      val index = pageDir/"summary.md"
+      val home = StringBuilder.newBuilder
+      home.append(s"# Review ${u.collection}, page ${u.objectComponent}\n\n")
+      home.append("## Summary of automated validation\n\n")
+      if (dseErrors) {
+        home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) DSE: there were errors.  ")
+
+      } else {
+        home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/yes.png) DSE: there were no errors.  ")
+      }
+
+
+      home.append("See [details in dse-validation.md](./dse-validation.md)\n")
+      home.append("-  Character set in editions.  **TBA**\n")
+      home.append("-  XML markup in editions.  **TBA**\n")
+      home.append("-  Named entity identifications.  **TBA**\n")
+      home.append("-  Indexing scholia markers.  **TBA**\n")
+
+      val pageTokens = TeiReader.fromCorpus(pageCorpus)
+      val tProf = HmtMom.profileTokens(pageTokens)
+      val tokensProfile = for (prof <- tProf) yield {
+        "- " + prof._1 + ": " + prof._2 + " tokens. " + prof._3 + " distinct tokens."
+      }
+      home.append("\n## Overview of page's text contents\n\n")
+      home.append(s"**${pageTokens.size}** analyzed tokens in **${pageCorpus.size}** citable units of text.\n\nDistribution of token types:\n\n")
+      home.append(tokensProfile.mkString("\n") + "\n")
+      index.overwrite(home.toString)
 
 
     } catch {

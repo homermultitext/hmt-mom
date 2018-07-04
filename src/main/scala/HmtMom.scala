@@ -76,33 +76,9 @@ case class HmtMom(repo: EditorsRepo) {
     DseVector(srcAll)
   }
 
-  /** Recursively merge  a list of corpora into a single corpus.
-  *
-  * @param v List of corpora to merge.
-  * @param composite Composite corpus compiled so far.
-  */
-  def mergeCorpusVector(v: Vector[Corpus], composite: Corpus):  Corpus = {
-    if (v.isEmpty) {
-      composite
-    } else {
-      val nextCorpus = composite ++ v.head
-      mergeCorpusVector(v.tail, nextCorpus)
-    }
-  }
 
-  /** Select a corpus by page reference.
-  *
-  * @param pg Page to select texts for.
-  * @param dse DseVector to consult for records of
-  * texts on page.
-  */
-  def corpusForPage(pg: Cite2Urn, dseV: DseVector) = {
-    val textUrns = dseV.textsForTbs(pg).toVector
-    val miniCorpora = for (u <- textUrns) yield {
-      corpus ~~ u
-    }
-    mergeCorpusVector(miniCorpora, Corpus(Vector.empty[CitableNode]))
-  }
+
+
 
 }
 
@@ -265,6 +241,18 @@ object HmtMom {
     tokenOpts.flatten
   }
 
-
+  /** Recursively merge  a list of corpora into a single corpus.
+  *
+  * @param v List of corpora to merge.
+  * @param composite Composite corpus compiled so far.
+  */
+  def mergeCorpusVector(v: Vector[Corpus], composite: Corpus):  Corpus = {
+    if (v.isEmpty) {
+      composite
+    } else {
+      val nextCorpus = composite ++ v.head
+      mergeCorpusVector(v.tail, nextCorpus)
+    }
+  }
 
 }
