@@ -1,0 +1,28 @@
+// Metadata for work in progress in this repository,
+// allowing validation to use a CITE library.
+//
+#!cexversion
+3.0.1
+
+#!citelibrary
+name#Homer Multitext project, temporary library for validating work in progress
+urn#urn:cite2:hmt:workinprogress.cex.temp:all
+license#Creative Commons Attribution, Non-Commercial 4.0 License <https://creativecommons.org/licenses/by-nc/4.0/>.
+
+// We apply the DSE data model in our work in progress,
+// so we add a collection of data models with that single
+// member.
+
+#!citecollections
+URN#Description#Labelling property#Ordering property#License
+urn:cite2:cite:datamodels.v1:#CITE data models#urn:cite2:cite:datamodels.v1.label:##Public domain
+
+#!citeproperties
+Property#Label#Type#Authority list
+urn:cite2:cite:datamodels.v1.urn:#Data model#Cite2Urn#
+urn:cite2:cite:datamodels.v1.label:#Label#String#
+urn:cite2:cite:datamodels.v1.description:#Description#String#
+
+#!citedata
+urn#label#description
+urn:cite2:cite:datamodels.v1:dsemodel#Diplomatic Scholarly Edition#Diplomatic Scholarly Edition.  See https://cite-architecture.github.io/dse/.
