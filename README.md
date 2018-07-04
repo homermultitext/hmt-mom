@@ -3,7 +3,7 @@
 
 HMT MOM is a library to support validating editorial work on the Homer Muiltitext project.
 
-## Current version:  3.1.2
+## Current version:  3.2.0
 
 [Release notes](releases.md)
 

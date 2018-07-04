@@ -59,12 +59,13 @@ case class MomReporter(mom: HmtMom) {
     }
     HmtMom.mergeCorpusVector(miniCorpora, Corpus(Vector.empty[CitableNode]))
   }
-
 /*
-  def tokensForPage(pg: Cite2Urn) : Vector[TokenAnalysis] = {
-    println("Getting corpus for page...")
-    val pageCorpus = corpusForPage(pg,dse)
-    TeiReader.fromCorpus(pageCorpus)
+  def diplomaticForCorpus(c: Corpus): Corpus = {
+    TeiReader(pageCorpus.cex("#"), "#").tokens
+
+TeiReader(pageCorpus.cex("#"), "#").tokens.map(_.analysis.readWithDiplomatic).mkString(" ")
+
+    Corpus(Vector.empty)
   }
   */
 
@@ -153,13 +154,17 @@ case class MomReporter(mom: HmtMom) {
   // need image for each text
   def passageView(surface: Cite2Urn, pageCorpus : Corpus) : String = {
     val viewMd = StringBuilder.newBuilder
-
+  //TeiReader(pageCorpus.cex("#"), "#").tokens
+  //TeiReader(pageCorpus.cex("#"), "#").tokens.map(_.analysis.readWithDiplomatic).mkString(" ")
 
     val rows = for (psg <- pageCorpus.nodes) yield {
       val img = dse.imagesWRoiForText(psg.urn).head
       val imgmgr = ImageManager()
       val md = imgmgr.markdown(img, 1000)
-      psg.text.trim.replaceAll("\n" ,"") + " (*" + psg.urn + "*)" + "  " + md
+
+      val dipl = TeiReader(psg.cex("#")).tokens.map(_.analysis.readWithDiplomatic).mkString(" ")
+
+      dipl + " (*" + psg.urn + "*)" + "  " + md
     }
 
 

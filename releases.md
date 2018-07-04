@@ -2,6 +2,9 @@
 
 Beginning with version 3.0:
 
+**3.2.0**:  Use diplomatic edition for passage view in verification.
+
+
 **3.1.2**:   Correct class names.
 
 **3.1.1**:   Correct package publication.
