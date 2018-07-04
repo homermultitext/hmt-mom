@@ -1,4 +1,4 @@
-package edu.holycross.shot.hmtmom
+package org.homermultitext.hmtmom
 
 import better.files._
 import File._

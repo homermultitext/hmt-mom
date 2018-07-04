@@ -1,4 +1,4 @@
-package edu.holycross.shot.hmtmom
+package org.homermultitext.hmtmom
 import org.scalatest.FlatSpec
 
 import edu.holycross.shot.cite._
@@ -15,7 +15,7 @@ class MomReporterOutputSpec extends FlatSpec {
     val repo = EditorsRepo("src/test/resources/il10")
     val mom = HmtMom(repo)
     val reporter = MomReporter(mom)
-    val pg = "urn:cite2:hmt:msA.v1:126r"
+    val pg = "urn:cite2:hmt:msA.v1:127v"
     reporter.validate(pg)
   }
 

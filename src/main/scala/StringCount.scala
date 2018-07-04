@@ -1,4 +1,4 @@
-package edu.holycross.shot.hmtmom
+package org.homermultitext.hmtmom
 
 /** Convenience class for counts of string occurrences.
 *

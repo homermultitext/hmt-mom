@@ -1,4 +1,4 @@
-package edu.holycross.shot
+package org.homermultitext
 
 /** Provides classes for validating editorial work on the Homer Multitext
 project.

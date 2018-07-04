@@ -1,4 +1,4 @@
-package edu.holycross.shot.hmtmom
+package org.homermultitext.hmtmom
 import edu.holycross.shot.cite._
 
 
