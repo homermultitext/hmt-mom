@@ -36,7 +36,8 @@ class MomObjectSpec extends FlatSpec {
   it should "compile a complete index of token occurrences" in {
     val repo = EditorsRepo("src/test/resources/il10")
     val mom = HmtMom(repo)
-    val wordHisto = HmtMom.wordHisto(mom.tokens)
+    val wordIdx = HmtMom.tokenIndex(mom.tokens)
+    println("WORD INDEX: " + wordIdx(0))
   }
 
   it should "compute a sequence of StringOccurences from a sequence of tokens" in {

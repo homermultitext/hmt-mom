@@ -211,13 +211,6 @@ TeiReader(pageCorpus.cex("#"), "#").tokens.map(_.analysis.readWithDiplomatic).mk
 
       val dseReport = pageDir/"dse-validation.md"
       dseReport.overwrite(dseValidMd)
-      println("print passage view to check correctness")
-
-
-      // Text validation reporting
-      val pageCorpus = corpusForPage(u,dse)
-      println("print page with bad character results")
-      println("print page with bad XML results")
 
 
       if (dseErrors) {
@@ -229,8 +222,29 @@ TeiReader(pageCorpus.cex("#"), "#").tokens.map(_.analysis.readWithDiplomatic).mk
       home.append("See [details in dse-validation.md](./dse-validation.md)\n")
 
 
-      home.append("-  Character set in editions.  **TBA**\n")
-      home.append("-  XML markup in editions.  **TBA**\n")
+      // Text validation reporting
+      val pageCorpus = corpusForPage(u,dse)
+      val badChars = HmtMom.badChars(tkns)
+      if (badChars.isEmpty) {
+          home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/yes.png) Character set in editions: there were no errors.  ")
+      } else {
+          home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) Character set in editions: there were errors.  ")
+      }
+      val errHeader = "Token#Reading#Error\n"
+      val badCharFile = pageDir/"badCharacters.cex"
+      badCharFile.overwrite(errHeader + badChars.map(_.analysis.errorReport("#")).mkString("\n"))
+      home.append("See [details in badCharacters.cex](./badCharacters.cex)\n")
+
+      val badXml = HmtMom.badMarkup(tkns).map(_.analysis.errorReport("#"))
+      if (badXml.isEmpty) {
+          home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/yes.png) XML markup: there were no errors.  ")
+      } else {
+          home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) XML markup: there were errors.  ")
+      }
+      val badXmlFile = pageDir/"badXML.cex"
+
+      badXmlFile.overwrite(errHeader + badXml.mkString("\n"))
+      home.append("See [details in badXML.cex](./badXML.cex)\n")
       home.append("-  Named entity identifications.  **TBA**\n")
       home.append("-  Indexing scholia markers.  **TBA**\n")
 
@@ -243,12 +257,21 @@ TeiReader(pageCorpus.cex("#"), "#").tokens.map(_.analysis.readWithDiplomatic).mk
       val dsePassageMd =
       dseVerify.overwrite(dseCompleteMd + dseCorrectMd)
 
-      home.append("- [Completeness of DSE indexing](./dse-verification.md)\n")
+      home.append("- Completeness of DSE indexing:  see `dse-verification.md`\n")
 
 
 
       // OV of text contents
       home.append("\n## Overview of page's text contents\n\n")
+      val wordList = pageDir/"wordlist.txt"
+      wordList.overwrite(HmtMom.wordList(tkns).mkString("\n"))
+      val wordHisto = pageDir/"wordFrequencies.txt"
+      wordHisto.overwrite(HmtMom.wordHisto(tkns).map(_.cex).mkString("\n"))
+      val wordIndex = pageDir/"wordIndex.txt"
+      wordIndex.overwrite(HmtMom.tokenIndex(tkns).mkString("\n"))
+      val charHisto = pageDir/"characterFrequencies.txt"
+      charHisto.overwrite(HmtMom.cpHisto(tkns).map{case (cp,freq) => s"${cp}#${freq}"}.mkString("\n"))
+
       val pageTokens = TeiReader.fromCorpus(pageCorpus)
       val tProf = HmtMom.profileTokens(pageTokens)
       val tokensProfile = for (prof <- tProf) yield {
@@ -256,6 +279,10 @@ TeiReader(pageCorpus.cex("#"), "#").tokens.map(_.analysis.readWithDiplomatic).mk
       }
       home.append(s"**${pageTokens.size}** analyzed tokens in **${pageCorpus.size}** citable units of text.\n\nDistribution of token types:\n\n")
       home.append(tokensProfile.mkString("\n") + "\n")
+
+
+
+
 
       val index = pageDir/"summary.md"
       index.overwrite(home.toString)
