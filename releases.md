@@ -2,6 +2,9 @@
 
 Beginning with version 3.0:
 
+**3.3.1**:  Bug fixes in updates to HMT text model library.
+
+
 **3.3.0**:  Updates to HMT text model library, and improved reporting on character usage.
 
 
