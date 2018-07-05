@@ -2,6 +2,9 @@
 
 Beginning with version 3.0:
 
+**3.3.0**:  Updates to HMT text model library, and improved reporting on character usage.
+
+
 **3.2.0**:  Use diplomatic edition for passage view in verification.
 
 

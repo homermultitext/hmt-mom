@@ -7,7 +7,7 @@ import edu.holycross.shot.citeobj._
 import edu.holycross.shot.dse._
 import org.homermultitext.edmodel._
 import org.homermultitext.hmtcexbuilder._
-import java.text.Normalizer
+
 
 import better.files._
 import File._
@@ -59,15 +59,6 @@ case class MomReporter(mom: HmtMom) {
     }
     HmtMom.mergeCorpusVector(miniCorpora, Corpus(Vector.empty[CitableNode]))
   }
-/*
-  def diplomaticForCorpus(c: Corpus): Corpus = {
-    TeiReader(pageCorpus.cex("#"), "#").tokens
-
-TeiReader(pageCorpus.cex("#"), "#").tokens.map(_.analysis.readWithDiplomatic).mkString(" ")
-
-    Corpus(Vector.empty)
-  }
-  */
 
   /** Compose markdown report on automated validation of DSE records.
   *
@@ -232,7 +223,25 @@ TeiReader(pageCorpus.cex("#"), "#").tokens.map(_.analysis.readWithDiplomatic).mk
       }
       val errHeader = "Token#Reading#Error\n"
       val badCharFile = pageDir/"badCharacters.cex"
-      badCharFile.overwrite(errHeader + badChars.map(_.analysis.errorReport("#")).mkString("\n"))
+
+      badCharFile.overwrite(errHeader + badChars.map(
+        tk=> {
+          val txt = HmtMom.hmtText(tk)
+          val cps = HmtChars.badCPs(txt)
+
+          val strWCP = for (cp <- cps) yield {
+            val s =  HmtChars.cpsToString(Vector(cp))
+            s + " (x" + cp.toHexString +")"
+          }
+          val address = if (cps.size > 1) {
+            "Invalid characters: "
+          } else {
+            "Invalid character: "
+          }
+          s"""${tk.analysis.editionUrn}#${txt}${address}${strWCP.mkString(", ")}"""
+
+        }
+      ))
       home.append("See [details in badCharacters.cex](./badCharacters.cex)\n")
 
       val badXml = HmtMom.badMarkup(tkns).map(_.analysis.errorReport("#"))

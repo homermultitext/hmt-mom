@@ -7,7 +7,7 @@ import edu.holycross.shot.citeobj._
 import edu.holycross.shot.dse._
 import org.homermultitext.edmodel._
 import org.homermultitext.hmtcexbuilder._
-import java.text.Normalizer
+
 
 /** HmtMom helps you manage and maintain the contents of a Homer Multitext
 *  project repository.
@@ -180,9 +180,8 @@ object HmtMom {
       tkn.analysis.alternateReading.get.simpleString
     } else { ""}
     val str = (rdgs + alts).replaceAll("\\s","")
-    val cps1 = HmtChars.stringToCps(str)
-    val hmtCps = HmtChars.normalizeCPs(cps1)
-    Normalizer.normalize(HmtChars.cpsToString(hmtCps), Normalizer.Form.NFC)
+    //option: HmtChars.hmtNormalize(str)
+    str
   }
 
   /** Compute list of codepoints from a list of tokens.
@@ -214,15 +213,10 @@ object HmtMom {
   * @param tokens List of tokens.
   */
   def badChars(tokens: Vector[TokenAnalysis]): Vector[TokenAnalysis] = {
-    val tokenOpts = for (t <- tokens) yield {
-      val cps = hmtCpsFromTokens(Vector(t))
-      if (validCPs(cps)) {
-        None
-      } else {
-        Some(t)
-      }
-    }
-    tokenOpts.flatten
+    tokens.filterNot(t => {
+      val txt = hmtText(t)
+      HmtChars.legalChars(txt)
+    })
   }
 
   /** Filter a token list for tokens containing one or more
