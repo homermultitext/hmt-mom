@@ -69,51 +69,54 @@ case class MomReporter(mom: HmtMom) {
     val errors = StringBuilder.newBuilder
 
     md.append(s"# Validation of DSE records for ${pageUrn.collection}, page " + pageUrn.objectComponent + "\n\n")
-
-
-    val imgs = dse.imagesForTbs(pageUrn).toVector
-    if (imgs.size != 1) {
-      errors.append(s"### Errors\n\nCould not validate DSE records:  page ${pageUrn} indexed to more than one image:\n\n" + imgs.map(i => "-  " + i.toString).mkString("\n") + "\n")
-
+    if (dse.size == 0) {
+      md.append("### Errors\n\nNo DSE records found!\n\n")
     } else {
-      md.append("## Internal consistency of records\n\n")
-      val img = imgs(0)
-      val imgTxts = dse.textsForImage(img).toVector
-      val  tbsTxts = dse.textsForTbs(pageUrn).toVector
-      if (imgTxts.size == tbsTxts.size) {
-          md.append(s"- **${imgTxts.size}** text passages are indexed to ${imgs.head.objectComponent}\n")
-          md.append(s"-  **${tbsTxts.size}** text passages are indexed to ${pageUrn.objectComponent}\n")
-      } else {
-        md.append(s"- Error in indexing: ${imgTxts.size} text passages indexed to image ${imgs.head.objectComponent}, but ${tbsTxts.size} passages indexed to page ${pageUrn.objectComponent}\n")
-        if (errors.isEmpty) {
-          errors.append("## Errors\n\n")
-        }
-        errors.append("There were inconsistencies in indexing. (See details above.)\n\n")
-      }
+      val imgs = dse.imagesForTbs(pageUrn).toVector
+      if (imgs.size != 1) {
+        errors.append(s"### Errors\n\nCould not validate DSE records:  page ${pageUrn} indexed to more than one image:\n\n" + imgs.map(i => "-  " + i.toString).mkString("\n") + "\n")
 
-      // check image size...
-      val dseImgMessage = dse.imagesForTbs(pageUrn).size match {
-        case 1 => "Surface **correctly** indexed to only one image."
-        case i: Int => {
+      } else {
+        md.append("## Internal consistency of records\n\n")
+        val img = imgs(0)
+        val imgTxts = dse.textsForImage(img).toVector
+        val  tbsTxts = dse.textsForTbs(pageUrn).toVector
+        if (imgTxts.size == tbsTxts.size) {
+            md.append(s"- **${imgTxts.size}** text passages are indexed to ${imgs.head.objectComponent}\n")
+            md.append(s"-  **${tbsTxts.size}** text passages are indexed to ${pageUrn.objectComponent}\n")
+        } else {
+          md.append(s"- Error in indexing: ${imgTxts.size} text passages indexed to image ${imgs.head.objectComponent}, but ${tbsTxts.size} passages indexed to page ${pageUrn.objectComponent}\n")
           if (errors.isEmpty) {
             errors.append("## Errors\n\n")
           }
-          errors.append(
-          s"There were errors in indexing:  page ${pageUrn} indexed to ${i} images.\n\n")
-          s"**Error**:  page ${pageUrn} indexed to ${i} images."
+          errors.append("There were inconsistencies in indexing. (See details above.)\n\n")
         }
-      }
-      md.append("\n\n## Selection of image for imaging\n\n" +  dseImgMessage  + "\n\n")
 
-      val missingPsgs = missingPassages(tbsTxts)
-      val dseTextMessage =  if (missingPsgs.isEmpty) {
-        "**All** passages indexed in DSE records appear in text corpus."
-      } else {
-        "The following passages in DSE records do not appear in the text corpus:\n\n" + missingPsgs.mkString("\n") + "\n\n"
-        errors.append("There were errors citing texts.  (See details above). \n\n")
+        // check image size...
+        val dseImgMessage = dse.imagesForTbs(pageUrn).size match {
+          case 1 => "Surface **correctly** indexed to only one image."
+          case i: Int => {
+            if (errors.isEmpty) {
+              errors.append("## Errors\n\n")
+            }
+            errors.append(
+            s"There were errors in indexing:  page ${pageUrn} indexed to ${i} images.\n\n")
+            s"**Error**:  page ${pageUrn} indexed to ${i} images."
+          }
+        }
+        md.append("\n\n## Selection of image for imaging\n\n" +  dseImgMessage  + "\n\n")
+
+        val missingPsgs = missingPassages(tbsTxts)
+        val dseTextMessage =  if (missingPsgs.isEmpty) {
+          "**All** passages indexed in DSE records appear in text corpus."
+        } else {
+          "The following passages in DSE records do not appear in the text corpus:\n\n" + missingPsgs.mkString("\n") + "\n\n"
+          errors.append("There were errors citing texts.  (See details above). \n\n")
+        }
+        md.append("\n\n## Relation of DSE records to text corpus\n\n" +  dseTextMessage  + "\n\n" + errors.toString + "\n\n")
       }
-      md.append("\n\n## Relation of DSE records to text corpus\n\n" +  dseTextMessage  + "\n\n" + errors.toString + "\n\n")
     }
+
     md.toString
   }
 
@@ -141,13 +144,9 @@ case class MomReporter(mom: HmtMom) {
   }
 
 
-  // need texts for page
-  // need image for each text
+
   def passageView(surface: Cite2Urn, pageCorpus : Corpus) : String = {
     val viewMd = StringBuilder.newBuilder
-  //TeiReader(pageCorpus.cex("#"), "#").tokens
-  //TeiReader(pageCorpus.cex("#"), "#").tokens.map(_.analysis.readWithDiplomatic).mkString(" ")
-
     val rows = for (psg <- pageCorpus.nodes) yield {
       val img = dse.imagesWRoiForText(psg.urn).head
       val imgmgr = ImageManager()
@@ -157,8 +156,6 @@ case class MomReporter(mom: HmtMom) {
 
       dipl + " (*" + psg.urn + "*)" + "  " + md
     }
-
-
     rows.mkString("\n\n\n")
   }
 
@@ -214,52 +211,36 @@ case class MomReporter(mom: HmtMom) {
 
 
       // Text validation reporting
+      val errHeader = "Token#Reading#Error\n"
       val pageCorpus = corpusForPage(u,dse)
       val badChars = HmtMom.badChars(tkns)
       if (badChars.isEmpty) {
           home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/yes.png) Character set in editions: there were no errors.  ")
       } else {
-          home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) Character set in editions: there were errors.  ")
+        home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) Character set in editions: there were errors.  ")
+
+        val badCharFile = pageDir/"badCharacters.cex"
+        val charTable = HmtMom.cpTable(badChars)
+        badCharFile.overwrite(charTable)
+        home.append("See [details in badCharacters.cex](./badCharacters.cex)\n")
       }
-      val errHeader = "Token#Reading#Error\n"
-      val badCharFile = pageDir/"badCharacters.cex"
-
-      badCharFile.overwrite(errHeader + badChars.map(
-        tk=> {
-          val txt = HmtMom.hmtText(tk)
-          val cps = HmtChars.badCPs(txt)
-
-          val strWCP = for (cp <- cps) yield {
-            val s =  HmtChars.cpsToString(Vector(cp))
-            s + " (x" + cp.toHexString +")"
-          }
-          val address = if (cps.size > 1) {
-            "Invalid characters: "
-          } else {
-            "Invalid character: "
-          }
-          s"""${tk.analysis.editionUrn}#${txt}${address}${strWCP.mkString(", ")}"""
-
-        }
-      ))
-      home.append("See [details in badCharacters.cex](./badCharacters.cex)\n")
 
       val badXml = HmtMom.badMarkup(tkns).map(_.analysis.errorReport("#"))
       if (badXml.isEmpty) {
-          home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/yes.png) XML markup: there were no errors.  ")
+          home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/yes.png) XML markup: there were no errors.\n")
       } else {
           home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) XML markup: there were errors.  ")
-      }
-      val badXmlFile = pageDir/"badXML.cex"
+          val badXmlFile = pageDir/"badXML.cex"
 
-      badXmlFile.overwrite(errHeader + badXml.mkString("\n"))
-      home.append("See [details in badXML.cex](./badXML.cex)\n")
+          badXmlFile.overwrite(errHeader + badXml.mkString("\n"))
+          home.append("See [details in badXML.cex](./badXML.cex)\n")
+      }
+
+
       home.append("-  Named entity identifications.  **TBA**\n")
       home.append("-  Indexing scholia markers.  **TBA**\n")
 
-
-
-      home.append("## Visualizations to review for verification\n\n")
+      home.append("\n\n## Visualizations to review for verification\n\n")
       val dseCompleteMd = dseCompleteness(u)
       val dseCorrectMd = dseCorrectness(u, pageCorpus)
       val dseVerify = pageDir/"dse-verification.md"
@@ -274,13 +255,15 @@ case class MomReporter(mom: HmtMom) {
       home.append("\n## Overview of page's text contents\n\n")
       val wordList = pageDir/"wordlist.txt"
       wordList.overwrite(HmtMom.wordList(tkns).mkString("\n"))
-      val wordHisto = pageDir/"wordFrequencies.txt"
-      wordHisto.overwrite(HmtMom.wordHisto(tkns).map(_.cex).mkString("\n"))
-      val wordIndex = pageDir/"wordIndex.txt"
-      wordIndex.overwrite(HmtMom.tokenIndex(tkns).mkString("\n"))
-      val charHisto = pageDir/"characterFrequencies.txt"
-      charHisto.overwrite(HmtMom.cpHisto(tkns).map{case (cp,freq) => s"${cp}#${freq}"}.mkString("\n"))
+      val wordHisto = pageDir/"wordFrequencies.cex"
+      wordHisto.overwrite("Word#Frequency\n" + HmtMom.wordHisto(tkns).map(_.cex).mkString("\n"))
+      val wordIndex = pageDir/"wordIndex.cex"
+      val wordHeader = "Character#Codepoint#Frequency\n"
 
+
+      wordIndex.overwrite(wordHeader + HmtMom.tokenIndex(tkns).mkString("\n"))
+      val charHisto = pageDir/"characterFrequencies.cex"
+      charHisto.overwrite(HmtMom.cpTable(tkns))
       val pageTokens = TeiReader.fromCorpus(pageCorpus)
       val tProf = HmtMom.profileTokens(pageTokens)
       val tokensProfile = for (prof <- tProf) yield {
@@ -289,6 +272,15 @@ case class MomReporter(mom: HmtMom) {
       home.append(s"**${pageTokens.size}** analyzed tokens in **${pageCorpus.size}** citable units of text.\n\nDistribution of token types:\n\n")
       home.append(tokensProfile.mkString("\n") + "\n")
 
+      home.append("\nWord data:\n\n")
+
+      home.append("-  frequencies:  see [wordFrequencies.cex](./wordFrequencies.cex)\n")
+      home.append("-  index of all occurrences:  see [wordIndex.cex](./wordIndex.cex)\n")
+      home.append("-  list of unique words (suitable for morphological analysis):  see [wordlist.txt](./wordlist.txt)\n")
+
+
+      home.append("\nCharacter data:\n\n")
+      home.append("-  frequencies:  see [characterFrequencies.cex](./characterFrequencies.cex)\n")
 
 
 

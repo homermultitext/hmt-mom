@@ -168,6 +168,17 @@ object HmtMom {
     counted.sortBy(_._2).reverse
   }
 
+  def cpTable(tokens: Vector[TokenAnalysis]): String = {
+    cpTableFromHisto(cpHisto(tokens))
+  }
+  def cpTableFromHisto(histo: Vector[(Int,Int)]): String = {
+    val rows = for ((cp,freq) <- histo) yield {
+      val s = HmtChars.cpsToString(Vector(cp))
+      s"${s}#x${cp.toHexString}#${freq}"
+    }
+    "Character#CodePoint#Frequency\n" + rows.mkString("\n")
+  }
+
   /** Compose text for a token analysis according todo
   * HMT project normalization.
   *
