@@ -2,6 +2,8 @@
 
 Beginning with version 3.0:
 
+**3.3.3**:  Better report on tokens with bad characters.
+
 **3.3.2**:  Facelift to display of validation summary page.
 
 **3.3.1**:  Bug fixes in updates to HMT text model library.

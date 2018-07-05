@@ -213,15 +213,14 @@ case class MomReporter(mom: HmtMom) {
       // Text validation reporting
       val errHeader = "Token#Reading#Error\n"
       val pageCorpus = corpusForPage(u,dse)
-      val badChars = HmtMom.badChars(tkns)
+      val badChars = HmtMom.badCharTokens(tkns)
       if (badChars.isEmpty) {
           home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/yes.png) Character set in editions: there were no errors.  ")
       } else {
         home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) Character set in editions: there were errors.  ")
 
         val badCharFile = pageDir/"badCharacters.cex"
-        val charTable = HmtMom.cpTable(badChars)
-        badCharFile.overwrite(charTable)
+        badCharFile.overwrite(HmtMom.badCharTable(badChars))
         home.append("See [details in badCharacters.cex](./badCharacters.cex)\n")
       }
 

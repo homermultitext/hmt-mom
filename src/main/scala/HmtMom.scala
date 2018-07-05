@@ -223,12 +223,25 @@ object HmtMom {
   *
   * @param tokens List of tokens.
   */
-  def badChars(tokens: Vector[TokenAnalysis]): Vector[TokenAnalysis] = {
+  def badCharTokens(tokens: Vector[TokenAnalysis]): Vector[TokenAnalysis] = {
     tokens.filterNot(t => {
       val txt = hmtText(t)
       HmtChars.legalChars(txt)
     })
   }
+
+  def badCharTable(tokens: Vector[TokenAnalysis]):  String ={
+    val rows = for (t <- tokens) yield {
+      val allText = t.analysis.readWithDiplomatic + t.analysis.readWithAlternate
+      val badChars= HmtChars.badCPs(allText).map( c =>
+        s"${HmtChars.cpsToString(Vector(c))} (x${c.toHexString})"
+      )
+      t.analysis.editionUrn + "#" + allText + "#" + badChars.mkString(", ")
+    }
+    "Passage#All readings#Errors\n" + rows.mkString("\n")
+  }
+
+
 
   /** Filter a token list for tokens containing one or more
   * markup errors.
