@@ -8,7 +8,6 @@ import edu.holycross.shot.dse._
 import org.homermultitext.edmodel._
 import org.homermultitext.hmtcexbuilder._
 
-
 import better.files._
 import File._
 import java.io.{File => JFile}
@@ -120,27 +119,7 @@ case class MomReporter(mom: HmtMom) {
   }
 
 
-  /** Compose markdown report to verify completeness of DSE records.
-  *
-  * @param pg Page to analyze.
-  */
-  def dseCompleteness(pg: Cite2Urn ): String = {
-    val bldr = StringBuilder.newBuilder
-    bldr.append(s"\n\n## Human verification of DSE records for ${pg.collection}, page ${pg.objectComponent}\n\n###  Completeness\n\n")
-    bldr.append(s"To check for **completeness** of coverage, please review these visualizations of DSE relations in ICT2:\n\n")
-    bldr.append(s"- [**all** DSE relations of page ${pg.objectComponent} ](${dse.ictForSurface(pg)}).\n\n")
 
-    bldr
-    .append("Visualizations for individual documents:\n\n")
-    val texts =  dse.textsForTbs(pg).map(_.dropPassage).toVector
-    val listItems = for (txt <- texts) yield {
-      println("Create view for " + txt + " ...")
-      val oneDocDse = DseVector(dse.passages.filter(_.passage ~~ txt))
-      "-  all [passages in " + txt + "](" + oneDocDse.ictForSurface(pg) + ")."
-    }
-    bldr.append(listItems.mkString("\n") + "\n")
-    bldr.toString
-  }
 
 
 
@@ -183,13 +162,17 @@ case class MomReporter(mom: HmtMom) {
     try {
       val u = Cite2Urn(pageUrn)
       println("Validating page " + u + "...")
+
       val dirName = u.collection + "-" + u.objectComponent
-      val pageDir = mkdirs(outputDir/dirName)
+      val pageDir = outputDir/dirName
+      if (pageDir.exists) {
+        pageDir.delete()
+      }
+      mkdirs(pageDir)
 
       val home = StringBuilder.newBuilder
       home.append(s"# Review of ${u.collection}, page ${u.objectComponent}\n\n")
       home.append("## Summary of automated validation\n\n")
-
 
       // DSE valdiation reporting:
       println("Validating  DSE records...")
@@ -241,7 +224,8 @@ case class MomReporter(mom: HmtMom) {
       home.append("-  Indexing scholia markers.  **TBA**\n")
 
       home.append("\n\n## Visualizations to review for verification\n\n")
-      val dseCompleteMd = dseCompleteness(u)
+      val dseReporter =  DseReporter(u, dse)
+      val dseCompleteMd = dseReporter.dseCompleteness
       val dseCorrectMd = dseCorrectness(u, pageCorpus)
       val dseVerify = pageDir/"dse-verification.md"
       val dsePassageMd =
