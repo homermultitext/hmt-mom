@@ -6,7 +6,7 @@ scalaVersion := (crossScalaVersions in ThisBuild).value.last
 
 
 organization := "org.homermultitext"
-version := "3.3.3"
+version := "3.3.5"
 licenses += ("GPL-3.0",url("https://opensource.org/licenses/gpl-3.0.html"))
 
 resolvers += Resolver.jcenterRepo
@@ -24,7 +24,7 @@ libraryDependencies ++= Seq(
   "edu.holycross.shot" %% "citerelations" % "2.3.0",
   "edu.holycross.shot" %% "dse" % "3.2.0",
   //"edu.holycross.shot" %% "citeiip" % "1.0.0",
-  "org.homermultitext" %% "hmt-textmodel" % "3.4.2",
+  "org.homermultitext" %% "hmt-textmodel" % "3.4.3",
   "org.homermultitext" %% "hmtcexbuilder" % "3.1.2"
 
 )

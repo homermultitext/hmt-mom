@@ -2,6 +2,12 @@
 
 Beginning with version 3.0:
 
+
+**3.3.5**:  Text profiling when validating by page now profiles only text on that page.
+
+
+**3.3.4**:  Updates in supporting libraries.
+
 **3.3.3**:  Better report on tokens with bad characters.
 
 **3.3.2**:  Facelift to display of validation summary page.

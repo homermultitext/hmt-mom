@@ -23,7 +23,6 @@ case class MomReporter(mom: HmtMom) {
 
   // compute these once:
   val dse = mom.dse
-  val tkns = mom.tokens
   val corpus = mom.corpus
 
   val bifolios = Seq("e3", "venB")
@@ -205,7 +204,7 @@ case class MomReporter(mom: HmtMom) {
         home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) DSE: there were errors.  ")
 
       } else {
-        home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/yes.png) DSE: there were no errors.  ")
+        home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/yes.png) DSE: there were no errors. \n")
       }
       home.append("See [details in dse-validation.md](./dse-validation.md)\n")
 
@@ -213,9 +212,11 @@ case class MomReporter(mom: HmtMom) {
       // Text validation reporting
       val errHeader = "Token#Reading#Error\n"
       val pageCorpus = corpusForPage(u,dse)
-      val badChars = HmtMom.badCharTokens(tkns)
+      val pageTokens = TeiReader.fromCorpus(pageCorpus)
+
+      val badChars = HmtMom.badCharTokens(pageTokens)
       if (badChars.isEmpty) {
-          home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/yes.png) Character set in editions: there were no errors.  ")
+          home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/yes.png) Character set in editions: there were no errors.\n")
       } else {
         home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) Character set in editions: there were errors.  ")
 
@@ -224,7 +225,7 @@ case class MomReporter(mom: HmtMom) {
         home.append("See [details in badCharacters.cex](./badCharacters.cex)\n")
       }
 
-      val badXml = HmtMom.badMarkup(tkns).map(_.analysis.errorReport("#"))
+      val badXml = HmtMom.badMarkup(pageTokens).map(_.analysis.errorReport("#"))
       if (badXml.isEmpty) {
           home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/yes.png) XML markup: there were no errors.\n")
       } else {
@@ -246,24 +247,24 @@ case class MomReporter(mom: HmtMom) {
       val dsePassageMd =
       dseVerify.overwrite(dseCompleteMd + dseCorrectMd)
 
-      home.append("- Completeness of DSE indexing:  see `dse-verification.md`\n")
+      home.append("- Completeness of DSE indexing:  see [dse-verification.md](./dse-verification.md)\n")
 
 
 
       // OV of text contents
       home.append("\n## Overview of page's text contents\n\n")
       val wordList = pageDir/"wordlist.txt"
-      wordList.overwrite(HmtMom.wordList(tkns).mkString("\n"))
+      wordList.overwrite(HmtMom.wordList(pageTokens).mkString("\n"))
       val wordHisto = pageDir/"wordFrequencies.cex"
-      wordHisto.overwrite("Word#Frequency\n" + HmtMom.wordHisto(tkns).map(_.cex).mkString("\n"))
+      wordHisto.overwrite("Word#Frequency\n" + HmtMom.wordHisto(pageTokens).map(_.cex).mkString("\n"))
       val wordIndex = pageDir/"wordIndex.cex"
       val wordHeader = "Character#Codepoint#Frequency\n"
 
 
-      wordIndex.overwrite(wordHeader + HmtMom.tokenIndex(tkns).mkString("\n"))
+      wordIndex.overwrite(wordHeader + HmtMom.tokenIndex(pageTokens).mkString("\n"))
       val charHisto = pageDir/"characterFrequencies.cex"
-      charHisto.overwrite(HmtMom.cpTable(tkns))
-      val pageTokens = TeiReader.fromCorpus(pageCorpus)
+      charHisto.overwrite(HmtMom.cpTable(pageTokens))
+
       val tProf = HmtMom.profileTokens(pageTokens)
       val tokensProfile = for (prof <- tProf) yield {
         "- " + prof._1 + ": " + prof._2 + " tokens. " + prof._3 + " distinct tokens."
