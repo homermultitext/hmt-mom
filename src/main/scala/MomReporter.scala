@@ -224,9 +224,9 @@ case class MomReporter(mom: HmtMom) {
       home.append("-  Indexing scholia markers.  **TBA**\n")
 
       home.append("\n\n## Visualizations to review for verification\n\n")
-      val dseReporter =  DseReporter(u, dse)
+      val dseReporter =  DseReporter(u, dse, pageCorpus)
       val dseCompleteMd = dseReporter.dseCompleteness
-      val dseCorrectMd = dseCorrectness(u, pageCorpus)
+      val dseCorrectMd = dseReporter.dseCorrectness
       val dseVerify = pageDir/"dse-verification.md"
       val dsePassageMd =
       dseVerify.overwrite(dseCompleteMd + dseCorrectMd)
