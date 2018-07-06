@@ -26,23 +26,6 @@ case class MomReporter(mom: HmtMom) {
 
   val bifolios = Seq("e3", "venB")
 
-  /** Check if passages in a list are actually in corpus
-  * or not, and create a Vector of missing passages.
-  *
-  * @param txts Passages to check.
-   */
-  def missingPassages(txts: Vector[CtsUrn]):  Vector[CtsUrn] = {
-    val accountedFor = for (psg <- txts) yield {
-      val matches = corpus ~~ psg
-      if (matches.isEmpty) {
-        Some(psg)
-      } else {
-        None
-      }
-    }
-    accountedFor.flatten
-  }
-
 
   /** Select a corpus by page reference.
   *
@@ -56,100 +39,6 @@ case class MomReporter(mom: HmtMom) {
       corpus ~~ u
     }
     HmtMom.mergeCorpusVector(miniCorpora, Corpus(Vector.empty[CitableNode]))
-  }
-
-  /** Compose markdown report on automated validation of DSE records.
-  *
-  * @param pageUrn Page to analyze.
-  */
-  def dseValidation(pageUrn: Cite2Urn): String = {
-    val md = StringBuilder.newBuilder
-    val errors = StringBuilder.newBuilder
-
-    md.append(s"# Validation of DSE records for ${pageUrn.collection}, page " + pageUrn.objectComponent + "\n\n")
-    if (dse.size == 0) {
-      md.append("### Errors\n\nNo DSE records found!\n\n")
-    } else {
-      val imgs = dse.imagesForTbs(pageUrn).toVector
-      if (imgs.size != 1) {
-        errors.append(s"### Errors\n\nCould not validate DSE records:  page ${pageUrn} indexed to more than one image:\n\n" + imgs.map(i => "-  " + i.toString).mkString("\n") + "\n")
-
-      } else {
-        md.append("## Internal consistency of records\n\n")
-        val img = imgs(0)
-        val imgTxts = dse.textsForImage(img).toVector
-        val  tbsTxts = dse.textsForTbs(pageUrn).toVector
-        if (imgTxts.size == tbsTxts.size) {
-            md.append(s"- **${imgTxts.size}** text passages are indexed to ${imgs.head.objectComponent}\n")
-            md.append(s"-  **${tbsTxts.size}** text passages are indexed to ${pageUrn.objectComponent}\n")
-        } else {
-          md.append(s"- Error in indexing: ${imgTxts.size} text passages indexed to image ${imgs.head.objectComponent}, but ${tbsTxts.size} passages indexed to page ${pageUrn.objectComponent}\n")
-          if (errors.isEmpty) {
-            errors.append("## Errors\n\n")
-          }
-          errors.append("There were inconsistencies in indexing. (See details above.)\n\n")
-        }
-
-        // check image size...
-        val dseImgMessage = dse.imagesForTbs(pageUrn).size match {
-          case 1 => "Surface **correctly** indexed to only one image."
-          case i: Int => {
-            if (errors.isEmpty) {
-              errors.append("## Errors\n\n")
-            }
-            errors.append(
-            s"There were errors in indexing:  page ${pageUrn} indexed to ${i} images.\n\n")
-            s"**Error**:  page ${pageUrn} indexed to ${i} images."
-          }
-        }
-        md.append("\n\n## Selection of image for imaging\n\n" +  dseImgMessage  + "\n\n")
-
-        val missingPsgs = missingPassages(tbsTxts)
-        val dseTextMessage =  if (missingPsgs.isEmpty) {
-          "**All** passages indexed in DSE records appear in text corpus."
-        } else {
-          "The following passages in DSE records do not appear in the text corpus:\n\n" + missingPsgs.mkString("\n") + "\n\n"
-          errors.append("There were errors citing texts.  (See details above). \n\n")
-        }
-        md.append("\n\n## Relation of DSE records to text corpus\n\n" +  dseTextMessage  + "\n\n" + errors.toString + "\n\n")
-      }
-    }
-
-    md.toString
-  }
-
-
-
-
-
-
-  def passageView(surface: Cite2Urn, pageCorpus : Corpus) : String = {
-    val viewMd = StringBuilder.newBuilder
-    val rows = for (psg <- pageCorpus.nodes) yield {
-      val img = dse.imagesWRoiForText(psg.urn).head
-      val imgmgr = ImageManager()
-      val md = imgmgr.markdown(img, 1000)
-
-      val dipl = TeiReader(psg.cex("#")).tokens.map(_.analysis.readWithDiplomatic).mkString(" ")
-
-      dipl + " (*" + psg.urn + "*)" + "  " + md
-    }
-    rows.mkString("\n\n\n")
-  }
-
-
-
-  /** Compose markdown report to verify correctness of DSE records.
-  *
-  * @param pg Page to analyze.
-  */
-  def dseCorrectness(pg: Cite2Urn, txts: Corpus):  String = {
-    val bldr = StringBuilder.newBuilder
-    bldr.append("\n\n### Correctness\n\n")
-    bldr.append("To check for **correctness** of indexing, please verify that text transcriptions and images agree:\n\n")
-
-    bldr.append(passageView(pg, txts))
-    bldr.toString
   }
 
 
@@ -170,15 +59,18 @@ case class MomReporter(mom: HmtMom) {
       }
       mkdirs(pageDir)
 
+      val pageCorpus = corpusForPage(u,dse)
+      val pageTokens = TeiReader.fromCorpus(pageCorpus)
+
       val home = StringBuilder.newBuilder
       home.append(s"# Review of ${u.collection}, page ${u.objectComponent}\n\n")
       home.append("## Summary of automated validation\n\n")
 
       // DSE valdiation reporting:
       println("Validating  DSE records...")
-      val dseValidMd = dseValidation(u)
+      val dseReporter =  DseReporter(u, dse, pageCorpus)
+      val dseValidMd = dseReporter.dseValidation
       val dseErrors = dseValidMd.contains("## Errors")
-
       val dseReport = pageDir/"dse-validation.md"
       dseReport.overwrite(dseValidMd)
 
@@ -194,8 +86,7 @@ case class MomReporter(mom: HmtMom) {
 
       // Text validation reporting
       val errHeader = "Token#Reading#Error\n"
-      val pageCorpus = corpusForPage(u,dse)
-      val pageTokens = TeiReader.fromCorpus(pageCorpus)
+
 
       val badChars = HmtMom.badCharTokens(pageTokens)
       if (badChars.isEmpty) {
@@ -224,7 +115,7 @@ case class MomReporter(mom: HmtMom) {
       home.append("-  Indexing scholia markers.  **TBA**\n")
 
       home.append("\n\n## Visualizations to review for verification\n\n")
-      val dseReporter =  DseReporter(u, dse, pageCorpus)
+
       val dseCompleteMd = dseReporter.dseCompleteness
       val dseCorrectMd = dseReporter.dseCorrectness
       val dseVerify = pageDir/"dse-verification.md"
