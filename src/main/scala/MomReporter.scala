@@ -33,8 +33,8 @@ case class MomReporter(mom: HmtMom) {
   * @param dse DseVector to consult for records of
   * texts on page.
   */
-  def corpusForPage(pg: Cite2Urn, dseV: DseVector) = {
-    val textUrns = dseV.textsForTbs(pg).toVector
+  def corpusForPage(pg: Cite2Urn) = {
+    val textUrns = dse.textsForTbs(pg).toVector
     val miniCorpora = for (u <- textUrns) yield {
       corpus ~~ u
     }
@@ -59,14 +59,18 @@ case class MomReporter(mom: HmtMom) {
       }
       mkdirs(pageDir)
 
-      val pageCorpus = corpusForPage(u,dse)
+      val pageCorpus = corpusForPage(u)
       val pageTokens = TeiReader.fromCorpus(pageCorpus)
 
       val home = StringBuilder.newBuilder
       home.append(s"# Review of ${u.collection}, page ${u.objectComponent}\n\n")
       home.append("## Summary of automated validation\n\n")
 
-      // DSE valdiation reporting:
+
+      // 1.  Paleography validation
+
+
+      // 2.  DSE valdiation reporting:
       println("Validating  DSE records...")
       val dseReporter =  DseReporter(u, dse, pageCorpus)
       val dseValidMd = dseReporter.dseValidation
@@ -87,7 +91,7 @@ case class MomReporter(mom: HmtMom) {
       // Text validation reporting
       val errHeader = "Token#Reading#Error\n"
 
-
+      // 3.  Character valdiatoin
       val badChars = HmtMom.badCharTokens(pageTokens)
       if (badChars.isEmpty) {
           home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/yes.png) Character set in editions: there were no errors.\n")
@@ -99,6 +103,8 @@ case class MomReporter(mom: HmtMom) {
         home.append("See [details in badCharacters.cex](./badCharacters.cex)\n")
       }
 
+
+      // 4.  XML markup validation
       val badXml = HmtMom.badMarkup(pageTokens).map(_.analysis.errorReport("#"))
       if (badXml.isEmpty) {
           home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/yes.png) XML markup: there were no errors.\n")

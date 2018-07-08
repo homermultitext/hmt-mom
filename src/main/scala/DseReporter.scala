@@ -24,7 +24,6 @@ import better.files.Dsl._
 */
 case class DseReporter(pg:  Cite2Urn, dse: DseVector, txts: Corpus) {
 
-
   /** Check if passages in a list are actually in corpus
   * or not, and create a Vector of missing passages.
   *
