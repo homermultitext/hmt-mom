@@ -45,7 +45,7 @@ class MomObjectSpec extends FlatSpec {
     val tkns = HmtMom(repo).tokens
     val stringOccurences = HmtMom.stringSeq(tkns)
     assert(stringOccurences.size == tkns.size)
-    assert(stringOccurences.isInstanceOf[Vector[StringOccurrence]])
+    assert(stringOccurences.isInstanceOf[Vector[Occurrence[String]]])
   }
 
   it should "compute a list of HMT-output codepoints for a list of tokens" in {

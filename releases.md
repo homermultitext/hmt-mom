@@ -3,6 +3,9 @@
 Beginning with version 3.0:
 
 
+**3.4.0**:  Add reporting on paleographic observations.
+
+
 **3.3.5**:  Text profiling when validating by page now profiles only text on that page.
 
 

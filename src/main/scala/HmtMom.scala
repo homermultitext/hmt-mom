@@ -113,7 +113,7 @@ object HmtMom {
   * @param tokens Tokens to index.
   */
   def tokenIndex(tokens: Vector[TokenAnalysis]) : Vector[String] = {
-    def grouped = stringSeq(tokens).groupBy ( occ => occ.s).toVector
+    def grouped = stringSeq(tokens).groupBy ( occ => occ.something).toVector
     val idx = for (grp <- grouped) yield {
       val str = grp._1
       val occurrences = grp._2.map(_.urn)
@@ -145,13 +145,13 @@ object HmtMom {
     counted.sortBy(_.count).reverse
   }
 
-  /** Compute sequence of StringOccurrence for a list of tokens.
+  /** Compute sequence of occurrences for a list of tokens.
   *
   * @param tokens Tokens to analyze
   */
-  def stringSeq(tokens: Vector[TokenAnalysis]): Vector[StringOccurrence] = {
+  def stringSeq(tokens: Vector[TokenAnalysis]): Vector[Occurrence[String]] = {
      tokens.map( tkn => {
-        StringOccurrence(tkn.analysis.editionUrn, tkn.analysis.readWithAlternate)
+        Occurrence(tkn.analysis.editionUrn, tkn.analysis.readWithAlternate)
       }
     )
   }

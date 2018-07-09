@@ -28,6 +28,12 @@ object PaleographyResults {
     testCexLines(lines, Vector.empty[PaleographicObservation], Vector.empty[String])
   }
 
+
+  /**  Create test report for a list of CEX Strings
+  * recording paleographic observations.
+  *
+  * @param lines Lines to examine.
+  */
   def testCexLines(lines: Vector[String], good: Vector[PaleographicObservation], bad:  Vector[String] ): TestResults[PaleographicObservation] = {
     if (lines.isEmpty) {
       TestResults(good, bad)
@@ -52,6 +58,42 @@ object PaleographyResults {
     }
   }
 
+
+  /** Compose markdown report for verifying paleographic
+  * observations for a single page.
+  *
+  * @param pg Page to examine.
+  * @param observations Paelographic observations to display.
+  * @param baseUrl ICT2 location.
+  */
+  def pageVerification(pg: Cite2Urn, observations: Vector[PaleographicObservation], baseUrl: String): String = {
+    val bldr = StringBuilder.newBuilder
+    bldr.append(s"\n\n## Human verification of paelographic observations for ${pg.collection}, page ${pg.objectComponent}\n\n###  Completeness\n\n")
+
+    bldr.append(s"To check for **completeness** of coverage, please review these visualizations of paleographic observations in ICT2:\n\n")
+
+
+    val rois = observations.map(_.img)
+    val link = if (rois.size > 0) {
+      baseUrl + "?urn=" + rois.mkString("&urn=")
+    } else {
+      baseUrl
+    }
+    bldr.append(s"-  [${pg.objectComponent}](${link})\n\n")
+
+
+    bldr.append("## Correctness\n\n")
+    bldr.append("To check for **correctness** of indexing, please verify that text transcriptions and images agree:\n\n")
+    val imgmgr = ImageManager()
+
+    bldr.append("| Image     | Reading     |\n| :------------- | :------------- |\n")
+    val rows = for (obs <- observations) yield {
+      "| " + imgmgr.markdown(obs.img) + " | " + obs.reading + " | \n"
+    }
+    bldr.append(rows.mkString("\n") + "\n")
+    bldr.toString
+  }
+
   /** Write a markdown file summarizing validation for a page.
   *
   * @param img Reference image for the page.
@@ -70,6 +112,15 @@ object PaleographyResults {
     md.append("\n## Profile of entire repository\n")
     md.append("Synatically valid observations:  " + rslts.good.size + "\n")
     md.append("Observations with syntax errors:  " + rslts.bad.size + "\n")
+
+
+    if (rslts.bad.nonEmpty) {
+      md.append("\n##Errors\n\n")
+      val errList = for (err <- rslts.bad) yield {
+        "-  " + err + "\n"
+      }
+      md.append(errList.mkString)
+    }
 
     md.toString
   }

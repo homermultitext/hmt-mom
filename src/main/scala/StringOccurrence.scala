@@ -8,4 +8,4 @@ import edu.holycross.shot.cite._
 * @param urn Containing passage.
 * @param s String.
 */
-case class StringOccurrence(urn: CtsUrn, s: String)
+case class Occurrence[T](urn: CtsUrn, something: T)

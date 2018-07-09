@@ -25,8 +25,9 @@ case class MomReporter(mom: HmtMom) {
   val corpus = mom.corpus
   val paleoResults = PaleographyResults(mom.paleoCex)
 
+  // put these in package object?
   val bifolios = Seq("e3", "venB")
-
+  val ictBase= "http://www.homermultitext.org/ict2/"
   val okImg = "http://www.homermultitext.org/iipsrv?OBJ=IIP,1.0&FIF=/project/homer/pyramidal/deepzoom/hmt/vaimg/2017a/VA311RN_0481.tif&RGN=0.6043,0.2275,0.01013,0.008714&WID=50&CVT=JPEG"
 
   /** Select a corpus by page reference.
@@ -75,12 +76,12 @@ case class MomReporter(mom: HmtMom) {
       } else {
         home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) Paleography validation: there were errors. ")
       }
+      home.append("See [details in paleo-validation.md](./paleo-validation.md)\n")
+
       val paleoValidate = pageDir/"paleo-validation.md"
       val paleoImage = dse.imagesForTbs(u).toSeq(0)
       paleoValidate.overwrite(PaleographyResults.pageReport(paleoImage,u,paleoResults))
 
-
-      val paleoVerify = pageDir/"paleo-verification.md"
 
 
 
@@ -133,19 +134,28 @@ case class MomReporter(mom: HmtMom) {
       }
 
 
-      home.append("-  Named entity validation.  **TBA**\n")
       home.append("-  Index of scholia markers validation.  **TBA**\n")
 
       home.append("\n\n## Visualizations to review for verification\n\n")
 
+      //  1.  DSE indexing
       val dseCompleteMd = dseReporter.dseCompleteness
       val dseCorrectMd = dseReporter.dseCorrectness
       val dseVerify = pageDir/"dse-verification.md"
       val dsePassageMd =
       dseVerify.overwrite(dseCompleteMd + dseCorrectMd)
+      // 2. Paloegraphic observations
+      val paleoVerify = pageDir/"paleo-verification.md"
+      val observations = paleoResults.good.filter(_.img ~~ paleoImage)
+      paleoVerify.overwrite(PaleographyResults.pageVerification(u, observations, ictBase))
+      // 3. Named entity tagging
+      val neReporter = NamedEntityReporter(u, pageTokens)
+      val neReport = pageDir/"ne-verification.md"
+      neReport.overwrite(neReporter.report)
 
-      home.append("- Completeness and accuracy of DSE indexing:  see [dse-verification.md](./dse-verification.md)\n")
-      home.append("-  Completeness and accuracy of paleography observations:  see [paleo-verification.md](./paleo-verification.md)\n")
+      home.append("- Completeness and correctness of DSE indexing:  see [dse-verification.md](./dse-verification.md)\n")
+      home.append("-  Completeness and correctness of paleography observations:  see [paleo-verification.md](./paleo-verification.md)\n")
+      home.append("-  Correctness of named entity identification:  see [ne-verification.md](ne-verification.md)")
 
 
 
