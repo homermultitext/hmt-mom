@@ -25,6 +25,6 @@ libraryDependencies ++= Seq(
   "edu.holycross.shot" %% "dse" % "3.2.0",
   //"edu.holycross.shot" %% "citeiip" % "1.0.0",
   "org.homermultitext" %% "hmt-textmodel" % "3.4.3",
-  "org.homermultitext" %% "hmtcexbuilder" % "3.1.2"
+  "org.homermultitext" %% "hmtcexbuilder" % "3.2.0"
 
 )

@@ -56,6 +56,11 @@ case class HmtMom(repo: EditorsRepo) {
   */
   def corpus = iliads ++ scholia
 
+  /** CEX records for paleographic observations.
+  *  We want data lines only, so drop 1 header line.
+  */
+  def paleoCex = DataCollector.compositeFiles(repo.paleographyDir.toString, "cex", 1)
+
   /** Complete tokenization of the corpus. */
   def tokens = TeiReader.fromCorpus(corpus)
 
@@ -75,10 +80,6 @@ case class HmtMom(repo: EditorsRepo) {
     val srcAll = libHeader + dseRecords.mkString("\n")
     DseVector(srcAll)
   }
-
-
-
-
 
 }
 

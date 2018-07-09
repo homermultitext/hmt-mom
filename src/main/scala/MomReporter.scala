@@ -23,9 +23,11 @@ case class MomReporter(mom: HmtMom) {
   // compute these once:
   val dse = mom.dse
   val corpus = mom.corpus
+  val paleoResults = PaleographyResults(mom.paleoCex)
 
   val bifolios = Seq("e3", "venB")
 
+  val okImg = "http://www.homermultitext.org/iipsrv?OBJ=IIP,1.0&FIF=/project/homer/pyramidal/deepzoom/hmt/vaimg/2017a/VA311RN_0481.tif&RGN=0.6043,0.2275,0.01013,0.008714&WID=50&CVT=JPEG"
 
   /** Select a corpus by page reference.
   *
@@ -68,6 +70,20 @@ case class MomReporter(mom: HmtMom) {
 
 
       // 1.  Paleography validation
+      if (paleoResults.bad.isEmpty ) {
+        home.append(s"-  ![errors](${okImg}) Paleography validation: there were no errors. \n")
+      } else {
+        home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) Paleography validation: there were errors. ")
+      }
+      val paleoValidate = pageDir/"paleo-validation.md"
+      val paleoImage = dse.imagesForTbs(u).toSeq(0)
+      paleoValidate.overwrite(PaleographyResults.pageReport(paleoImage,u,paleoResults))
+
+
+      val paleoVerify = pageDir/"paleo-verification.md"
+
+
+
 
 
       // 2.  DSE valdiation reporting:
@@ -80,10 +96,10 @@ case class MomReporter(mom: HmtMom) {
 
 
       if (dseErrors) {
-        home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) DSE: there were errors.  ")
+        home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) DSE validation: there were errors.  ")
 
       } else {
-        home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/yes.png) DSE: there were no errors. \n")
+        home.append(s"-  ![errors](${okImg}) DSE validation: there were no errors. \n")
       }
       home.append("See [details in dse-validation.md](./dse-validation.md)\n")
 
@@ -94,9 +110,9 @@ case class MomReporter(mom: HmtMom) {
       // 3.  Character valdiatoin
       val badChars = HmtMom.badCharTokens(pageTokens)
       if (badChars.isEmpty) {
-          home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/yes.png) Character set in editions: there were no errors.\n")
+          home.append(s"-  ![errors](${okImg}) Character set validation: there were no errors.\n")
       } else {
-        home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) Character set in editions: there were errors.  ")
+        home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) Character set validation: there were errors.  ")
 
         val badCharFile = pageDir/"badCharacters.cex"
         badCharFile.overwrite(HmtMom.badCharTable(badChars))
@@ -107,9 +123,9 @@ case class MomReporter(mom: HmtMom) {
       // 4.  XML markup validation
       val badXml = HmtMom.badMarkup(pageTokens).map(_.analysis.errorReport("#"))
       if (badXml.isEmpty) {
-          home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/yes.png) XML markup: there were no errors.\n")
+          home.append(s"-  ![errors](${okImg}) XML markup validation: there were no errors.\n")
       } else {
-          home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) XML markup: there were errors.  ")
+          home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) XML markup validation: there were errors.  ")
           val badXmlFile = pageDir/"badXML.cex"
 
           badXmlFile.overwrite(errHeader + badXml.mkString("\n"))
@@ -117,8 +133,8 @@ case class MomReporter(mom: HmtMom) {
       }
 
 
-      home.append("-  Named entity identifications.  **TBA**\n")
-      home.append("-  Indexing scholia markers.  **TBA**\n")
+      home.append("-  Named entity validation.  **TBA**\n")
+      home.append("-  Index of scholia markers validation.  **TBA**\n")
 
       home.append("\n\n## Visualizations to review for verification\n\n")
 
@@ -128,7 +144,8 @@ case class MomReporter(mom: HmtMom) {
       val dsePassageMd =
       dseVerify.overwrite(dseCompleteMd + dseCorrectMd)
 
-      home.append("- Completeness of DSE indexing:  see [dse-verification.md](./dse-verification.md)\n")
+      home.append("- Completeness and accuracy of DSE indexing:  see [dse-verification.md](./dse-verification.md)\n")
+      home.append("-  Completeness and accuracy of paleography observations:  see [paleo-verification.md](./paleo-verification.md)\n")
 
 
 
