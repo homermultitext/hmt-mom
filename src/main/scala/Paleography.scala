@@ -102,7 +102,6 @@ object PaleographyResults {
   */
   def pageReport(img: Cite2Urn, pg: Cite2Urn, rslts:  TestResults[PaleographicObservation]): String = {
     val md = StringBuilder.newBuilder
-
     md.append(s"# Validation of paleographic observations for "+ pg.collection + ", page " + pg.objectComponent + "\n\n")
 
     val observations =rslts.good.filter(_.img ~~ img)

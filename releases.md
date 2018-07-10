@@ -2,6 +2,10 @@
 
 Beginning with version 3.0:
 
+**3.4.2**:  Fixes a bug handling logic of paleographic validation display.
+
+**3.4.1**:  Fixes a bug handling case where no DSE data are in the repo yet.
+
 
 **3.4.0**:  Add reporting on paleographic observations.
 

@@ -61,6 +61,7 @@ case class HmtMom(repo: EditorsRepo) {
   */
   def paleoCex = DataCollector.compositeFiles(repo.paleographyDir.toString, "cex", 1)
 
+
   /** Complete tokenization of the corpus. */
   def tokens = TeiReader.fromCorpus(corpus)
 
@@ -77,8 +78,13 @@ case class HmtMom(repo: EditorsRepo) {
     val dseRecords = for ((record, count) <- records.zipWithIndex) yield {
       s"${baseUrn}validate_${count}#Temporary DSE record ${count}#${record}"
     }
-    val srcAll = libHeader + dseRecords.mkString("\n")
-    DseVector(srcAll)
+
+    if (records.isEmpty) {
+      DseVector(Vector.empty[DsePassage])
+    } else {
+      val srcAll = libHeader + dseRecords.mkString("\n")
+      DseVector(srcAll)
+    }
   }
 
 }

@@ -16,7 +16,8 @@ class MomReporterOutputSpec extends FlatSpec {
     val mom = HmtMom(repo)
     val reporter = MomReporter(mom)
     val pg = "urn:cite2:hmt:msA.v1:127v"
-    reporter.validate(pg)
+    val pgB = "urn:cite2:hmt:msB.v1:128v"
+    reporter.validate(pgB)
   }
 
 

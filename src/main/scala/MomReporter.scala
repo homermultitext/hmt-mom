@@ -1,3 +1,4 @@
+
 package org.homermultitext.hmtmom
 
 import edu.holycross.shot.cite._
@@ -26,9 +27,7 @@ case class MomReporter(mom: HmtMom) {
   val paleoResults = PaleographyResults(mom.paleoCex)
 
   // put these in package object?
-  val bifolios = Seq("e3", "venB")
-  val ictBase= "http://www.homermultitext.org/ict2/"
-  val okImg = "http://www.homermultitext.org/iipsrv?OBJ=IIP,1.0&FIF=/project/homer/pyramidal/deepzoom/hmt/vaimg/2017a/VA311RN_0481.tif&RGN=0.6043,0.2275,0.01013,0.008714&WID=50&CVT=JPEG"
+
 
   /** Select a corpus by page reference.
   *
@@ -37,11 +36,17 @@ case class MomReporter(mom: HmtMom) {
   * texts on page.
   */
   def corpusForPage(pg: Cite2Urn) = {
+    //val txtSet = dse.textsForTbs(Cite2Urn("urn:cite2:hmt:msB.v1:128v"))
+    //Corpus(txtSet.toVector)
+
     val textUrns = dse.textsForTbs(pg).toVector
     val miniCorpora = for (u <- textUrns) yield {
-      corpus ~~ u
+      val merged = corpus ~~ u
+      //println("MERGED on " +  u  + " and now " + merged.size)
+      merged
     }
     HmtMom.mergeCorpusVector(miniCorpora, Corpus(Vector.empty[CitableNode]))
+
   }
 
 
@@ -69,18 +74,24 @@ case class MomReporter(mom: HmtMom) {
       home.append(s"# Review of ${u.collection}, page ${u.objectComponent}\n\n")
       home.append("## Summary of automated validation\n\n")
 
-
       // 1.  Paleography validation
-      if (paleoResults.bad.isEmpty ) {
+      if (paleoResults.bad.nonEmpty ) {
         home.append(s"-  ![errors](${okImg}) Paleography validation: there were no errors. \n")
       } else {
         home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) Paleography validation: there were errors. ")
       }
-      home.append("See [details in paleo-validation.md](./paleo-validation.md)\n")
+
 
       val paleoValidate = pageDir/"paleo-validation.md"
-      val paleoImage = dse.imagesForTbs(u).toSeq(0)
-      paleoValidate.overwrite(PaleographyResults.pageReport(paleoImage,u,paleoResults))
+      val paleoImages = dse.imagesForTbs(u).toSeq
+      val paleoImg = paleoImages(0)
+      if (paleoImages.nonEmpty) {
+        paleoValidate.overwrite(PaleographyResults.pageReport(paleoImg,u,paleoResults))
+        home.append("See [details in paleo-validation.md](./paleo-validation.md)\n")
+      } else {
+        home.append("No paleographic observations included in repository.\n")
+      }
+
 
 
 
@@ -146,12 +157,16 @@ case class MomReporter(mom: HmtMom) {
       dseVerify.overwrite(dseCompleteMd + dseCorrectMd)
       // 2. Paloegraphic observations
       val paleoVerify = pageDir/"paleo-verification.md"
-      val observations = paleoResults.good.filter(_.img ~~ paleoImage)
-      paleoVerify.overwrite(PaleographyResults.pageVerification(u, observations, ictBase))
+      if (paleoImages.nonEmpty) {
+        //println(paleoResults.good.map(_._1).mkString("\n"))
+        val observations = paleoResults.good.filter(_.img ~~ paleoImg)
+        paleoVerify.overwrite(PaleographyResults.pageVerification(u, observations, ictBase))
+      }
+
       // 3. Named entity tagging
       val neReporter = NamedEntityReporter(u, pageTokens)
       val neReport = pageDir/"ne-verification.md"
-      neReport.overwrite(neReporter.report)
+      neReport.overwrite(neReporter.verification)
 
       home.append("- Completeness and correctness of DSE indexing:  see [dse-verification.md](./dse-verification.md)\n")
       home.append("-  Completeness and correctness of paleography observations:  see [paleo-verification.md](./paleo-verification.md)\n")
@@ -166,7 +181,7 @@ case class MomReporter(mom: HmtMom) {
       val wordHisto = pageDir/"wordFrequencies.cex"
       wordHisto.overwrite("Word#Frequency\n" + HmtMom.wordHisto(pageTokens).map(_.cex).mkString("\n"))
       val wordIndex = pageDir/"wordIndex.cex"
-      val wordHeader = "Character#Codepoint#Frequency\n"
+      val wordHeader = "Character#Codepoint\n"
 
 
       wordIndex.overwrite(wordHeader + HmtMom.tokenIndex(pageTokens).mkString("\n"))
