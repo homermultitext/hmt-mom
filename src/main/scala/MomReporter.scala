@@ -20,12 +20,13 @@ import better.files.Dsl._
 case class MomReporter(mom: HmtMom) {
 
   val outputDir = mom.repo.validationDir
-
+  //println("PREPARIONG MOM REPORTER")
   // compute these once:
   val dse = mom.dse
+  //println("DSE: " + dse)
   val corpus = mom.corpus
   val paleoResults = PaleographyResults(mom.paleoCex)
-
+  //println("PALEO " + paleoResults)
   // put these in package object?
 
 
@@ -42,6 +43,7 @@ case class MomReporter(mom: HmtMom) {
     val textUrns = dse.textsForTbs(pg).toVector
     val miniCorpora = for (u <- textUrns) yield {
       val merged = corpus ~~ u
+      //println("CORPUS: " + corpus.nodes.map(_.urn).mkString("\n"))
       //println("MERGED on " +  u  + " and now " + merged.size)
       merged
     }
@@ -74,8 +76,11 @@ case class MomReporter(mom: HmtMom) {
       home.append(s"# Review of ${u.collection}, page ${u.objectComponent}\n\n")
       home.append("## Summary of automated validation\n\n")
 
+      //println("PALEO RESULTS:\n")
+      //println("good: " + paleoResults.good.size)
+      //println("bad: " + paleoResults.bad.size)
       // 1.  Paleography validation
-      if (paleoResults.bad.nonEmpty ) {
+      if (paleoResults.bad.isEmpty ) {
         home.append(s"-  ![errors](${okImg}) Paleography validation: there were no errors. \n")
       } else {
         home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) Paleography validation: there were errors. ")
@@ -84,8 +89,9 @@ case class MomReporter(mom: HmtMom) {
 
       val paleoValidate = pageDir/"paleo-validation.md"
       val paleoImages = dse.imagesForTbs(u).toSeq
-      val paleoImg = paleoImages(0)
+
       if (paleoImages.nonEmpty) {
+        val paleoImg = paleoImages(0)
         paleoValidate.overwrite(PaleographyResults.pageReport(paleoImg,u,paleoResults))
         home.append("See [details in paleo-validation.md](./paleo-validation.md)\n")
       } else {
@@ -93,21 +99,19 @@ case class MomReporter(mom: HmtMom) {
       }
 
 
-
-
-
-
-
       // 2.  DSE valdiation reporting:
       println("Validating  DSE records...")
       val dseReporter =  DseReporter(u, dse, pageCorpus)
       val dseValidMd = dseReporter.dseValidation
-      val dseErrors = dseValidMd.contains("## Errors")
+      val dseHasErrors: Boolean = dseValidMd.contains("## Errors")
       val dseReport = pageDir/"dse-validation.md"
       dseReport.overwrite(dseValidMd)
 
 
-      if (dseErrors) {
+      //println("DSE VALID MD:\n" + dseValidMd)
+      //println("DOES IT CONTAIN ERROR HEADER? " + dseValidMd.contains("## Errors") + ", so " + dseHasErrors)
+
+      if (dseHasErrors) {
         home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) DSE validation: there were errors.  ")
 
       } else {
@@ -158,9 +162,13 @@ case class MomReporter(mom: HmtMom) {
       // 2. Paloegraphic observations
       val paleoVerify = pageDir/"paleo-verification.md"
       if (paleoImages.nonEmpty) {
+        val paleoImg = paleoImages(0)
         //println(paleoResults.good.map(_._1).mkString("\n"))
         val observations = paleoResults.good.filter(_.img ~~ paleoImg)
         paleoVerify.overwrite(PaleographyResults.pageVerification(u, observations, ictBase))
+      } else {
+        println("NO PALEOGRAPHIC OBSERVATIONS")
+        home.append("No paleographic observations included in repository.\n")
       }
 
       // 3. Named entity tagging

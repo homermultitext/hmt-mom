@@ -90,8 +90,9 @@ case class DseReporter(pg:  Cite2Urn, dse: DseVector, txts: Corpus) {
         val dseTextMessage =  if (missingPsgs.isEmpty) {
           "**All** passages indexed in DSE records appear in text corpus."
         } else {
-          "The following passages in DSE records do not appear in the text corpus:\n\n" + missingPsgs.mkString("\n") + "\n\n"
-          errors.append("There were errors citing texts.  (See details above). \n\n")
+          errors.append("There were errors citing texts. \n\n")
+          errors.append("The following passages in DSE records do not appear in the text corpus:\n\n" + missingPsgs.map("-  " + _ ).mkString("\n") + "\n\n")
+
         }
         md.append("\n\n## Relation of DSE records to text corpus\n\n" +  dseTextMessage  + "\n\n" + errors.toString + "\n\n")
       }

@@ -9,17 +9,18 @@ import better.files._
 import File._
 import java.io.{File => JFile}
 
-class MomReporterOutputSpec extends FlatSpec {
+class HmtSpec extends FlatSpec {
 
   "An MomReporter" should "write a DSE report" in {
-    val repo = EditorsRepo("src/test/resources/il10")
+    val repo = EditorsRepo("src/test/resources/repos/2018-office3")
     val mom = HmtMom(repo)
     val reporter = MomReporter(mom)
-    val pg = "urn:cite2:hmt:msA.v1:127v"
+    val pgOff3 = "urn:cite2:hmt:e3.v1:127v"
     val pgB = "urn:cite2:hmt:msB.v1:128v"
+    val pgE3 = "urn:cite2:hmt:e3.v1:130v"
 
-    val pgE3 = "urn:cite2:hmt:e3.v1:128v"
-    reporter.validate(pgE3)
+
+    reporter.validate(pgOff3)
   }
 
 

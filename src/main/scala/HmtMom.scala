@@ -73,12 +73,13 @@ case class HmtMom(repo: EditorsRepo) {
   /** Construct DseVector for this repository's records. */
   def dse:  DseVector = {
     val records = dseCex.split("\n").filter(_.nonEmpty).filterNot(_.contains("passage#")).toVector
+
     // This value must agree with header data in header/1.dse-prolog.cex.
     val baseUrn = "urn:cite2:validate:tempDse.temp:"
     val dseRecords = for ((record, count) <- records.zipWithIndex) yield {
       s"${baseUrn}validate_${count}#Temporary DSE record ${count}#${record}"
     }
-
+    
     if (records.isEmpty) {
       DseVector(Vector.empty[DsePassage])
     } else {

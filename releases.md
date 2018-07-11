@@ -2,6 +2,9 @@
 
 Beginning with version 3.0:
 
+
+**3.5.0**:  Improved display of errors in DSE reports.
+
 **3.4.2**:  Fixes a bug handling logic of paleographic validation display.
 
 **3.4.1**:  Fixes a bug handling case where no DSE data are in the repo yet.

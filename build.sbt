@@ -6,7 +6,7 @@ scalaVersion := (crossScalaVersions in ThisBuild).value.last
 
 
 organization := "org.homermultitext"
-version := "3.4.2"
+version := "3.5.0"
 licenses += ("GPL-3.0",url("https://opensource.org/licenses/gpl-3.0.html"))
 
 resolvers += Resolver.jcenterRepo
