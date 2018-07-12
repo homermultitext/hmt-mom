@@ -1,0 +1,571 @@
+<!DOCTYPE html >
+<html>
+        <head>
+          <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+          <title></title>
+          <meta name="description" content="" />
+          <meta name="keywords" content="" />
+          <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+          
+      <link href="../../../lib/index.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../lib/template.css" media="screen" type="text/css" rel="stylesheet" />
+      <link href="../../../lib/diagrams.css" media="screen" type="text/css" rel="stylesheet" id="diagrams-css" />
+      <script type="text/javascript" src="../../../lib/jquery.js"></script>
+      <script type="text/javascript" src="../../../lib/jquery.panzoom.min.js"></script>
+      <script type="text/javascript" src="../../../lib/jquery.mousewheel.min.js"></script>
+      <script type="text/javascript" src="../../../lib/index.js"></script>
+      <script type="text/javascript" src="../../../index.js"></script>
+      <script type="text/javascript" src="../../../lib/scheduler.js"></script>
+      <script type="text/javascript" src="../../../lib/template.js"></script>
+      <script type="text/javascript" src="../../../lib/tools.tooltip.js"></script>
+      
+      <script type="text/javascript">
+        /* this variable can be used by the JS to determine the path to the root document */
+        var toRoot = '../../../';
+      </script>
+    
+        </head>
+        <body>
+      <div id="search">
+        <span id="doc-title"><span id="doc-version"></span></span>
+        <span class="close-results"><span class="left">&lt;</span> Back</span>
+        <div id="textfilter">
+          <span class="input">
+            <input autocapitalize="none" placeholder="Search" id="index-input" type="text" accesskey="/" />
+            <i class="clear material-icons"></i>
+            <i id="search-icon" class="material-icons"></i>
+          </span>
+        </div>
+    </div>
+      <div id="search-results">
+        <div id="search-progress">
+          <div id="progress-fill"></div>
+        </div>
+        <div id="results-content">
+          <div id="entity-results"></div>
+          <div id="member-results"></div>
+        </div>
+      </div>
+      <div id="content-scroll-container" style="-webkit-overflow-scrolling: touch;">
+        <div id="content-container" style="-webkit-overflow-scrolling: touch;">
+          <div id="subpackage-spacer">
+            <div id="packages">
+              <h1>Packages</h1>
+              <ul>
+                <li name="_root_.root" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="_root_"></a><a id="root:_root_"></a>
+      <span class="permalink">
+      <a href="index.html#_root_" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../../../index.html"><span class="name">root</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../index.html" class="extype" name="_root_">root</a></dd></dl></div>
+    </li><li name="_root_.org" visbl="pub" class="indented1 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="org"></a><a id="org:org"></a>
+      <span class="permalink">
+      <a href="index.html#org" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../../index.html"><span class="name">org</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../../index.html" class="extype" name="_root_">root</a></dd></dl></div>
+    </li><li name="org.homermultitext" visbl="pub" class="indented2 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="homermultitext"></a><a id="homermultitext:homermultitext"></a>
+      <span class="permalink">
+      <a href="../org/index.html#homermultitext" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="../index.html"><span class="name">homermultitext</span></a>
+      </span>
+      
+      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../../index.html" class="extype" name="org">org</a></dd></dl></div>
+    </li><li name="org.homermultitext.hmtmom" visbl="pub" class="indented3 current" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="hmtmom"></a><a id="hmtmom:hmtmom"></a>
+      <span class="permalink">
+      <a href="../../org/homermultitext/index.html#hmtmom" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hmtmom</span>
+      </span>
+      
+      <p class="shortcomment cmt">Provides classes for validating editorial work on the Homer Multitext
+project.</p><div class="fullcomment"><div class="comment cmt"><p>Provides classes for validating editorial work on the Homer Multitext
+project.
+See https://homermultext.github.io/ for documentation.</p><h4>Overview</h4><p>The class  <a href="HmtMom.html" class="extype" name="org.homermultitext.hmtmom.HmtMom">HmtMom</a> manages contents of an <a href="EditorsRepo.html" class="extype" name="org.homermultitext.hmtmom.EditorsRepo">EditorsRepo</a>.  It
+can be constructucted from a string path for the root of the
+repository.  For example:</p><pre><span class="kw">val</span> mom = HmtMom(<span class="lit">"REPOROOT"</span>)</pre></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="org.homermultitext">homermultitext</a></dd></dl></div>
+    </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="class" href="AuthorityValue.html" title=""></a>
+                        <a href="AuthorityValue.html" title="">AuthorityValue</a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="class" href="DseReporter.html" title="An object for analyzing and writing reports about the DSE relations for material on a single surface (page)."></a>
+                        <a href="DseReporter.html" title="An object for analyzing and writing reports about the DSE relations for material on a single surface (page).">DseReporter</a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="class" href="EditorsRepo.html" title="Root directory of an HMT editorial repository laid out according to 2018 standards."></a>
+                        <a href="EditorsRepo.html" title="Root directory of an HMT editorial repository laid out according to 2018 standards.">EditorsRepo</a>
+                      </li><li class="current-entities indented3">
+                        <a class="object" href="HmtMom$.html" title=""></a>
+                        <a class="class" href="HmtMom.html" title="HmtMom helps you manage and maintain the contents of a Homer Multitext project repository."></a>
+                        <a href="HmtMom.html" title="HmtMom helps you manage and maintain the contents of a Homer Multitext project repository.">HmtMom</a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="class" href="ImageManager.html" title="A class for working with image services recognizing URNs."></a>
+                        <a href="ImageManager.html" title="A class for working with image services recognizing URNs.">ImageManager</a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="class" href="MomReporter.html" title=""></a>
+                        <a href="MomReporter.html" title="">MomReporter</a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="class" href="NamedEntityReporter.html" title=""></a>
+                        <a href="NamedEntityReporter.html" title="">NamedEntityReporter</a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="class" href="Occurrence.html" title="Convenience class for occurrence of a string in a passage."></a>
+                        <a href="Occurrence.html" title="Convenience class for occurrence of a string in a passage.">Occurrence</a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="class" href="PaleographicObservation.html" title="A paleographic observation of a single glyph."></a>
+                        <a href="PaleographicObservation.html" title="A paleographic observation of a single glyph.">PaleographicObservation</a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="object" href="PaleographyResults$.html" title=""></a>
+                        <a href="PaleographyResults$.html" title="">PaleographyResults</a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="class" href="StringCount.html" title="Convenience class for counts of string occurrences."></a>
+                        <a href="StringCount.html" title="Convenience class for counts of string occurrences.">StringCount</a>
+                      </li><li class="current-entities indented3">
+                        <span class="separator"></span>
+                        <a class="class" href="TestResults.html" title="Type-paramaterized class for results of testing."></a>
+                        <a href="TestResults.html" title="Type-paramaterized class for results of testing.">TestResults</a>
+                      </li>
+              </ul>
+            </div>
+          </div>
+          <div id="content">
+            <body class="package value">
+      <div id="definition">
+        <div class="big-circle package">p</div>
+        <p id="owner"><a href="../../index.html" class="extype" name="org">org</a>.<a href="../index.html" class="extype" name="org.homermultitext">homermultitext</a></p>
+        <h1>hmtmom<span class="permalink">
+      <a href="../../../org/homermultitext/hmtmom/index.html" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span></h1>
+        
+      </div>
+
+      <h4 id="signature" class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">package</span>
+      </span>
+      <span class="symbol">
+        <span class="name">hmtmom</span>
+      </span>
+      </h4>
+
+      
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Provides classes for validating editorial work on the Homer Multitext
+project.
+See https://homermultext.github.io/ for documentation.</p><h4>Overview</h4><p>The class  <a href="HmtMom.html" class="extype" name="org.homermultitext.hmtmom.HmtMom">HmtMom</a> manages contents of an <a href="EditorsRepo.html" class="extype" name="org.homermultitext.hmtmom.EditorsRepo">EditorsRepo</a>.  It
+can be constructucted from a string path for the root of the
+repository.  For example:</p><pre><span class="kw">val</span> mom = HmtMom(<span class="lit">"REPOROOT"</span>)</pre></div><div class="toggleContainer block">
+          <span class="toggle">
+            Linear Supertypes
+          </span>
+          <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
+        </div></div>
+        
+
+      <div id="mbrsel">
+        <div class="toggle"></div>
+        <div id="memberfilter">
+          <i class="material-icons arrow"></i>
+          <span class="input">
+            <input id="mbrsel-input" placeholder="Filter all members" type="text" accesskey="/" />
+          </span>
+          <i class="clear material-icons"></i>
+        </div>
+        <div id="filterby">
+          <div id="order">
+            <span class="filtertype">Ordering</span>
+            <ol>
+              
+              <li class="alpha in"><span>Alphabetic</span></li>
+              <li class="inherit out"><span>By Inheritance</span></li>
+            </ol>
+          </div>
+          <div class="ancestors">
+                  <span class="filtertype">Inherited<br />
+                  </span>
+                  <ol id="linearization">
+                    <li class="in" name="org.homermultitext.hmtmom"><span>hmtmom</span></li><li class="in" name="scala.AnyRef"><span>AnyRef</span></li><li class="in" name="scala.Any"><span>Any</span></li>
+                  </ol>
+                </div><div class="ancestors">
+              <span class="filtertype"></span>
+              <ol>
+                <li class="hideall out"><span>Hide All</span></li>
+                <li class="showall in"><span>Show All</span></li>
+              </ol>
+            </div>
+          <div id="visbl">
+              <span class="filtertype">Visibility</span>
+              <ol><li class="public in"><span>Public</span></li><li class="all out"><span>All</span></li></ol>
+            </div>
+        </div>
+      </div>
+
+      <div id="template">
+        <div id="allMembers">
+        
+
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="org.homermultitext.hmtmom.AuthorityValue" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="AuthorityValueextendsProductwithSerializable"></a><a id="AuthorityValue:AuthorityValue"></a>
+      <span class="permalink">
+      <a href="../../../org/homermultitext/hmtmom/index.html#AuthorityValueextendsProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="AuthorityValue.html"><span class="name">AuthorityValue</span></a><span class="params">(<span name="urn">urn: <span class="extype" name="edu.holycross.shot.cite.Cite2Urn">Cite2Urn</span></span>, <span name="label">label: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      
+    </li><li name="org.homermultitext.hmtmom.DseReporter" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="DseReporterextendsProductwithSerializable"></a><a id="DseReporter:DseReporter"></a>
+      <span class="permalink">
+      <a href="../../../org/homermultitext/hmtmom/index.html#DseReporterextendsProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="An object for analyzing and writing reports about the DSE relations for material on a single surface (page)." href="DseReporter.html"><span class="name">DseReporter</span></a><span class="params">(<span name="pg">pg: <span class="extype" name="edu.holycross.shot.cite.Cite2Urn">Cite2Urn</span></span>, <span name="dse">dse: <span class="extype" name="edu.holycross.shot.dse.DseVector">DseVector</span></span>, <span name="txts">txts: <span class="extype" name="edu.holycross.shot.ohco2.Corpus">Corpus</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      <p class="shortcomment cmt">An object for analyzing and writing reports about the DSE
+relations for material on a single surface (page).</p><div class="fullcomment"><div class="comment cmt"><p>An object for analyzing and writing reports about the DSE
+relations for material on a single surface (page).
+</p></div><dl class="paramcmts block"><dt class="param">pg</dt><dd class="cmt"><p>Page to analyze.</p></dd><dt class="param">dse</dt><dd class="cmt"><p>DSE records for the whole repository.</p></dd><dt class="param">txts</dt><dd class="cmt"><p>Corpus composed only of texts on this page.</p></dd></dl></div>
+    </li><li name="org.homermultitext.hmtmom.EditorsRepo" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="EditorsRepoextendsProductwithSerializable"></a><a id="EditorsRepo:EditorsRepo"></a>
+      <span class="permalink">
+      <a href="../../../org/homermultitext/hmtmom/index.html#EditorsRepoextendsProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="Root directory of an HMT editorial repository laid out according to 2018 standards." href="EditorsRepo.html"><span class="name">EditorsRepo</span></a><span class="params">(<span name="baseDir">baseDir: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      <p class="shortcomment cmt">Root directory of an HMT editorial repository
+laid out according to 2018 standards.</p><div class="fullcomment"><div class="comment cmt"><p>Root directory of an HMT editorial repository
+laid out according to 2018 standards.
+</p></div><dl class="paramcmts block"><dt class="param">baseDir</dt><dd class="cmt"><p>Name of root directory.</p></dd></dl></div>
+    </li><li name="org.homermultitext.hmtmom.HmtMom" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="HmtMomextendsProductwithSerializable"></a><a id="HmtMom:HmtMom"></a>
+      <span class="permalink">
+      <a href="../../../org/homermultitext/hmtmom/index.html#HmtMomextendsProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="HmtMom helps you manage and maintain the contents of a Homer Multitext project repository." href="HmtMom.html"><span class="name">HmtMom</span></a><span class="params">(<span name="repo">repo: <a href="EditorsRepo.html" class="extype" name="org.homermultitext.hmtmom.EditorsRepo">EditorsRepo</a></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      <p class="shortcomment cmt">HmtMom helps you manage and maintain the contents of a Homer Multitext
+ project repository.</p><div class="fullcomment"><div class="comment cmt"><p>HmtMom helps you manage and maintain the contents of a Homer Multitext
+ project repository.
+</p></div><dl class="paramcmts block"><dt class="param">repo</dt><dd class="cmt"><p>Root directory of a repository laid out according to conventions
+of HMT project in 2018.</p></dd></dl></div>
+    </li><li name="org.homermultitext.hmtmom.ImageManager" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="ImageManagerextendsProductwithSerializable"></a><a id="ImageManager:ImageManager"></a>
+      <span class="permalink">
+      <a href="../../../org/homermultitext/hmtmom/index.html#ImageManagerextendsProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="A class for working with image services recognizing URNs." href="ImageManager.html"><span class="name">ImageManager</span></a><span class="params">(<span name="ictBase">ictBase: <span class="extype" name="scala.Predef.String">String</span> = <span class="defval" name="&quot;http://www.homermultitext.org/ict2/&quot;">...</span></span>, <span name="iipBase">iipBase: <span class="extype" name="scala.Predef.String">String</span> = <span class="defval" name="&quot;http://www.homermultitext.org/iipsrv?OBJ=IIP,1.0&amp;FIF=/project/homer/pyramidal/deepzoom/&quot;">...</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      <p class="shortcomment cmt">A class for working with image services recognizing URNs.</p><div class="fullcomment"><div class="comment cmt"><p>A class for working with image services recognizing URNs.
+</p></div><dl class="paramcmts block"><dt class="param">ictBase</dt><dd class="cmt"><p>Base URL for HMT Image Citation Service, version 2.</p></dd><dt class="param">iipBase</dt><dd class="cmt"><p>Base URL for IIP image service.</p></dd></dl></div>
+    </li><li name="org.homermultitext.hmtmom.MomReporter" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="MomReporterextendsProductwithSerializable"></a><a id="MomReporter:MomReporter"></a>
+      <span class="permalink">
+      <a href="../../../org/homermultitext/hmtmom/index.html#MomReporterextendsProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="MomReporter.html"><span class="name">MomReporter</span></a><span class="params">(<span name="mom">mom: <a href="HmtMom.html" class="extype" name="org.homermultitext.hmtmom.HmtMom">HmtMom</a></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      <p class="shortcomment cmt"></p>
+    </li><li name="org.homermultitext.hmtmom.NamedEntityReporter" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="NamedEntityReporterextendsProductwithSerializable"></a><a id="NamedEntityReporter:NamedEntityReporter"></a>
+      <span class="permalink">
+      <a href="../../../org/homermultitext/hmtmom/index.html#NamedEntityReporterextendsProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="NamedEntityReporter.html"><span class="name">NamedEntityReporter</span></a><span class="params">(<span name="pg">pg: <span class="extype" name="edu.holycross.shot.cite.Cite2Urn">Cite2Urn</span></span>, <span name="tkns">tkns: <span class="extype" name="scala.Vector">Vector</span>[<span class="extype" name="org.homermultitext.edmodel.TokenAnalysis">TokenAnalysis</span>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      <p class="shortcomment cmt"></p>
+    </li><li name="org.homermultitext.hmtmom.Occurrence" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="Occurrence[T]extendsProductwithSerializable"></a><a id="Occurrence[T]:Occurrence[T]"></a>
+      <span class="permalink">
+      <a href="../../../org/homermultitext/hmtmom/index.html#Occurrence[T]extendsProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="Convenience class for occurrence of a string in a passage." href="Occurrence.html"><span class="name">Occurrence</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="urn">urn: <span class="extype" name="edu.holycross.shot.cite.CtsUrn">CtsUrn</span></span>, <span name="something">something: <span class="extype" name="org.homermultitext.hmtmom.Occurrence.T">T</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      <p class="shortcomment cmt">Convenience class for occurrence of a string in a passage.</p><div class="fullcomment"><div class="comment cmt"><p>Convenience class for occurrence of a string in a passage.
+</p></div><dl class="paramcmts block"><dt class="param">urn</dt><dd class="cmt"><p>Containing passage.</p></dd></dl></div>
+    </li><li name="org.homermultitext.hmtmom.PaleographicObservation" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="PaleographicObservationextendsProductwithSerializable"></a><a id="PaleographicObservation:PaleographicObservation"></a>
+      <span class="permalink">
+      <a href="../../../org/homermultitext/hmtmom/index.html#PaleographicObservationextendsProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="A paleographic observation of a single glyph." href="PaleographicObservation.html"><span class="name">PaleographicObservation</span></a><span class="params">(<span name="reading">reading: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="img">img: <span class="extype" name="edu.holycross.shot.cite.Cite2Urn">Cite2Urn</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      <p class="shortcomment cmt">A paleographic observation of a single glyph.</p><div class="fullcomment"><div class="comment cmt"><p>A paleographic observation of a single glyph.
+</p></div><dl class="paramcmts block"><dt class="param">reading</dt><dd class="cmt"><p>Reading of text of a single glyph.</p></dd></dl></div>
+    </li><li name="org.homermultitext.hmtmom.StringCount" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="StringCountextendsProductwithSerializable"></a><a id="StringCount:StringCount"></a>
+      <span class="permalink">
+      <a href="../../../org/homermultitext/hmtmom/index.html#StringCountextendsProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="Convenience class for counts of string occurrences." href="StringCount.html"><span class="name">StringCount</span></a><span class="params">(<span name="str">str: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="count">count: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      <p class="shortcomment cmt">Convenience class for counts of string occurrences.</p><div class="fullcomment"><div class="comment cmt"><p>Convenience class for counts of string occurrences.
+</p></div><dl class="paramcmts block"><dt class="param">str</dt><dd class="cmt"><p>String.</p></dd></dl></div>
+    </li><li name="org.homermultitext.hmtmom.TestResults" visbl="pub" class="indented0 " data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="TestResults[T]extendsProductwithSerializable"></a><a id="TestResults[T]:TestResults[T]"></a>
+      <span class="permalink">
+      <a href="../../../org/homermultitext/hmtmom/index.html#TestResults[T]extendsProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="Type-paramaterized class for results of testing." href="TestResults.html"><span class="name">TestResults</span></a><span class="tparams">[<span name="T">T</span>]</span><span class="params">(<span name="good">good: <span class="extype" name="scala.Vector">Vector</span>[<span class="extype" name="org.homermultitext.hmtmom.TestResults.T">T</span>]</span>, <span name="bad">bad: <span class="extype" name="scala.Vector">Vector</span>[<span class="extype" name="scala.Predef.String">String</span>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      <p class="shortcomment cmt"> Type-paramaterized class for results of testing.</p><div class="fullcomment"><div class="comment cmt"><p> Type-paramaterized class for results of testing.
+</p></div><dl class="paramcmts block"><dt class="param">good</dt><dd class="cmt"><p>A Vector of successful results of type T.</p></dd><dt class="param">bad</dt><dd class="cmt"><p>A Vector of error messages.</p></dd></dl></div>
+    </li></ol>
+            </div>
+
+        
+
+        <div class="values members">
+              <h3>Value Members</h3>
+              <ol>
+                <li name="org.homermultitext.hmtmom#bifolios" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="bifolios:Seq[String]"></a>
+      <span class="permalink">
+      <a href="../../../org/homermultitext/hmtmom/index.html#bifolios:Seq[String]" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">bifolios</span><span class="result">: <span class="extype" name="scala.collection.Seq">Seq</span>[<span class="extype" name="java.lang.String">String</span>]</span>
+      </span>
+      
+      <p class="shortcomment cmt">Object selectors for MSS illustrated in bifolio spreads.</p>
+    </li><li name="org.homermultitext.hmtmom#ictBase" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="ictBase:String"></a>
+      <span class="permalink">
+      <a href="../../../org/homermultitext/hmtmom/index.html#ictBase:String" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">ictBase</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      
+      <p class="shortcomment cmt">Base URL for Image Citation Tools.</p>
+    </li><li name="org.homermultitext.hmtmom#okImg" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="okImg:String"></a>
+      <span class="permalink">
+      <a href="../../../org/homermultitext/hmtmom/index.html#okImg:String" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">val</span>
+      </span>
+      <span class="symbol">
+        <span class="name">okImg</span><span class="result">: <span class="extype" name="java.lang.String">String</span></span>
+      </span>
+      
+      <p class="shortcomment cmt">Icon image for good results.</p>
+    </li><li name="org.homermultitext.hmtmom.HmtMom" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="HmtMom"></a><a id="HmtMom:HmtMom"></a>
+      <span class="permalink">
+      <a href="../../../org/homermultitext/hmtmom/index.html#HmtMom" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="HmtMom$.html"><span class="name">HmtMom</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      
+    </li><li name="org.homermultitext.hmtmom.PaleographyResults" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="PaleographyResults"></a><a id="PaleographyResults:PaleographyResults"></a>
+      <span class="permalink">
+      <a href="../../../org/homermultitext/hmtmom/index.html#PaleographyResults" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">object</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="PaleographyResults$.html"><span class="name">PaleographyResults</span></a>
+      </span>
+      
+      
+    </li>
+              </ol>
+            </div>
+
+        
+
+        
+        </div>
+
+        <div id="inheritedMembers">
+        <div class="parent" name="scala.AnyRef">
+              <h3>Inherited from <span class="extype" name="scala.AnyRef">AnyRef</span></h3>
+            </div><div class="parent" name="scala.Any">
+              <h3>Inherited from <span class="extype" name="scala.Any">Any</span></h3>
+            </div>
+        
+        </div>
+
+        <div id="groupedMembers">
+        <div class="group" name="Ungrouped">
+              <h3>Ungrouped</h3>
+              
+            </div>
+        </div>
+
+      </div>
+
+      <div id="tooltip"></div>
+
+      <div id="footer">  </div>
+    </body>
+          </div>
+        </div>
+      </div>
+    </body>
+      </html>
