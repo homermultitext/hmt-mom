@@ -1,24 +1,39 @@
 ---
 layout: page
-title: "HMT MOM"
+title: "HMT MOM:  mandatory, ongoing maintenance"
 ---
 
 
-## What MOM is about
+## Overview
 
-
-Diplomatic editions of the HMT relate text, physical object and documentary images.  Editors create these editions with simple delimited text files, and
-TEI-compliant XML documents.
+Diplomatic editions of the HMT project relate text, physical object and documentary images.  Editors create these editions with simple delimited text files, and TEI-compliant XML documents.
 
 MOM validates these documents to ensure that they comply with the HMT project standards.
 
-## What MOM checks
-
--   [texts](texts)
--   integrity of the triangular relations of text, artifact and image
--   referential integrity of all URN values in texts and data tables
-
-## How to use MOM
+## Installation
 
 -   [prerequisites and setting up your repository](prereqs)
--   running MOM
+
+
+## Running MOM
+
+
+From the root directory of your project, start an sbt console:
+
+    sbt console
+
+From the console, load the MOM script:
+
+    :load scripts/mom.sc
+
+If this loads successfuly, your repository is correctly organized. To validate a specific page, use the `validate` function of the script you loaded:
+
+
+    validate("PAGE's URN")
+
+
+## Under the hood
+
+`mom.sc` depends on a code library hosted at <https://github.com/homermultitext/hmt-mom>.
+
+-  [API documentation](api/org/homermultitext/hmtmom/index.html) for version **3.5.0**.

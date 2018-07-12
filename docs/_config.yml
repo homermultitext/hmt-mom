@@ -18,15 +18,9 @@ author:
 paginate:         5
 
 links:
-  - title: HMT home page
-    url: http://www.homermultitext.org/
-    external: true
-  - title: HMT editors' group
-    url: http://hmteditors.github.io/
-    external: true
   - title: HMT on github
     url: http://homermultitext.github.io/
     external: true
-  - title: Github source for this site
+  - title: Github source hmt-mom
     url: https://github.com/homermultitext/hmt-mom
     external: true

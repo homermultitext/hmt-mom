@@ -10,10 +10,7 @@ HMT MOM is a library to support validating editorial work on the Homer Muiltitex
 
 ## Documentation
 
-Currently being updated for new release of MOM.
-
-
-[docs]: https://homermultitext.github.io/hmt-mom/
+See <https://homermultitext.github.io/hmt-mom/>.
 
 
 
