@@ -47,8 +47,9 @@ case class HmtMom(repo: EditorsRepo) {
       val txt = "<div>" + noReff.nodes(i).text + " " + noReff.nodes(i+1).text + "</div>"
       CitableNode(u,txt)
     }
+    // For 
     Corpus(collapsed.toVector.map( n => {
-      CitableNode(n.urn.dropVersion.addVersion("hmt") ,n.text)
+      CitableNode(n.urn.dropVersion.addVersion("dipl") ,n.text)
     }))
   }
 
@@ -79,7 +80,7 @@ case class HmtMom(repo: EditorsRepo) {
     val dseRecords = for ((record, count) <- records.zipWithIndex) yield {
       s"${baseUrn}validate_${count}#Temporary DSE record ${count}#${record}"
     }
-    
+
     if (records.isEmpty) {
       DseVector(Vector.empty[DsePassage])
     } else {

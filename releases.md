@@ -2,6 +2,10 @@
 
 Beginning with version 3.0:
 
+**3.5.2**:  Corrects a bug in nameing of diplomatic editions of scholia.
+
+
+**3.5.1**:  Add sad face image to package.
 
 **3.5.0**:  Improved display of errors in DSE reports.
 

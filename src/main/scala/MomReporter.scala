@@ -83,7 +83,7 @@ case class MomReporter(mom: HmtMom) {
       if (paleoResults.bad.isEmpty ) {
         home.append(s"-  ![errors](${okImg}) Paleography validation: there were no errors. \n")
       } else {
-        home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) Paleography validation: there were errors. ")
+        home.append("-  ![errors](${sadImg}) Paleography validation: there were errors. ")
       }
 
 
@@ -112,7 +112,7 @@ case class MomReporter(mom: HmtMom) {
       //println("DOES IT CONTAIN ERROR HEADER? " + dseValidMd.contains("## Errors") + ", so " + dseHasErrors)
 
       if (dseHasErrors) {
-        home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) DSE validation: there were errors.  ")
+        home.append("-  ![errors](${sadImg}) DSE validation: there were errors.  ")
 
       } else {
         home.append(s"-  ![errors](${okImg}) DSE validation: there were no errors. \n")
@@ -128,7 +128,7 @@ case class MomReporter(mom: HmtMom) {
       if (badChars.isEmpty) {
           home.append(s"-  ![errors](${okImg}) Character set validation: there were no errors.\n")
       } else {
-        home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) Character set validation: there were errors.  ")
+        home.append("-  ![errors](${sadImg}) Character set validation: there were errors.  ")
 
         val badCharFile = pageDir/"badCharacters.cex"
         badCharFile.overwrite(HmtMom.badCharTable(badChars))
@@ -141,7 +141,7 @@ case class MomReporter(mom: HmtMom) {
       if (badXml.isEmpty) {
           home.append(s"-  ![errors](${okImg}) XML markup validation: there were no errors.\n")
       } else {
-          home.append("-  ![errors](https://raw.githubusercontent.com/wiki/neelsmith/tabulae/images/no.png) XML markup validation: there were errors.  ")
+          home.append("-  ![errors](${sadImg}) XML markup validation: there were errors.  ")
           val badXmlFile = pageDir/"badXML.cex"
 
           badXmlFile.overwrite(errHeader + badXml.mkString("\n"))
