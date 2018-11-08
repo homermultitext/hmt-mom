@@ -88,8 +88,8 @@ case class MomReporter(mom: HmtMom) {
 
 
       val paleoValidate = pageDir/"paleo-validation.md"
-      val paleoImages = dse.imagesForTbs(u).toSeq
-
+      val paleoImg = dse.imageForTbs(u)
+/*
       if (paleoImages.nonEmpty) {
         val paleoImg = paleoImages(0)
         paleoValidate.overwrite(PaleographyResults.pageReport(paleoImg,u,paleoResults))
@@ -97,6 +97,7 @@ case class MomReporter(mom: HmtMom) {
       } else {
         home.append("No paleographic observations included in repository.\n")
       }
+      */
 
 
       // 2.  DSE valdiation reporting:
@@ -161,6 +162,7 @@ case class MomReporter(mom: HmtMom) {
       dseVerify.overwrite(dseCompleteMd + dseCorrectMd)
       // 2. Paloegraphic observations
       val paleoVerify = pageDir/"paleo-verification.md"
+      /*
       if (paleoImages.nonEmpty) {
         val paleoImg = paleoImages(0)
         //println(paleoResults.good.map(_._1).mkString("\n"))
@@ -170,6 +172,7 @@ case class MomReporter(mom: HmtMom) {
         println("NO PALEOGRAPHIC OBSERVATIONS")
         home.append("No paleographic observations included in repository.\n")
       }
+      */
 
       // 3. Named entity tagging
       val neReporter = NamedEntityReporter(u, pageTokens)

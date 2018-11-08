@@ -2,6 +2,10 @@
 
 Beginning with version 3.0:
 
+
+**3.5.3**:   Support dynamic definition of character encoding with `scala.io.Source`.
+
+
 **3.5.2**:  Corrects a bug in nameing of diplomatic editions of scholia.
 
 
