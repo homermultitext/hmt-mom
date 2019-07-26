@@ -208,20 +208,15 @@ case class HmtMom(baseDir: String)  {
   * classes implementing the MidOrthography trait.
   */
   def orthoMappings : Vector[OrthoPairing] = {
-    Vector.empty[OrthoPairing]
-  }
-/*
+    val orthoList = orthoConfig.lines.tail
+    val pairs = for (row <- orthoList) yield {
+      val parts = row.split(",").toVector
+      OrthoPairing(CtsUrn(parts(0)), HmtValidator.orthoForString(parts(1)))
+    }
+    pairs.toVector
 
-def orthoMappings(csvSource : String = "editions/orthographies.csv") = {
-  val csvRows = scala.io.Source.fromFile(csvSource).getLines.toVector.tail
-  val pairs = for (row <- csvRows) yield {
-    val parts = row.split(",").toVector
-    OrthoPairing(CtsUrn(parts(0)), orthoForString(parts(1)))
   }
-  pairs.toVector
-}
 
-*/
   // Text repo configuration
   val ctsCatalog = editionsDir/"catalog.cex"
   val ctsCitation = editionsDir/"citation.cex"

@@ -27,7 +27,7 @@ object HmtValidator {
     HmtValidator(CiteLibrary(cex))
   }
 
-  /** Lookup MidMarkupReader class by identifying String.
+  /** Lookup list of MidMarkupReader's by identifying String.
   *
   * @readerName Name of class implementing MidMarkupReader trait.
   */
@@ -39,6 +39,17 @@ object HmtValidator {
     }
   }
 
+  /** Lookup MidMarkupReader class by identifying String.
+  *
+  * @orthoName Name of class implementing MidOrthography trait.
+  */
+  def orthoForString(orthoName: String): MidOrthography = {
+    if (orthoMap.keySet.contains(orthoName)){
+      orthoMap(orthoName)
+    } else {
+      throw (new Exception(s"${orthoName} is not a recognized Orthography in this project."))
+    }
+  }
 
   /** HMT project mapping of string names to MidMarkupReader class.
   */

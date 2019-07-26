@@ -32,7 +32,7 @@ class HmtMomSpec extends FlatSpec {
     repo.scholiaComments(repo.scholia(repo.texts.corpus))
   }
 
-  it should "map readers IDed by String to scala classes" in {
+  it should "map texts String to scala classes implementing MidMarkupReader" in {
     val repo = HmtMom(repoDir)
     val readers = repo.readerMappings
 
@@ -46,4 +46,16 @@ class HmtMomSpec extends FlatSpec {
     assert(georgeMapping.size == 1)
   }
 
+  it should "map texts String to scala classes implementing MidOrthography" in {
+    val repo = HmtMom(repoDir)
+    val orthos = repo.orthoMappings
+    println("ORTHOS: " + orthos)
+    val expectedSize = 3
+    assert(orthos.size == expectedSize)
+
+    // Only 1 entry for homeric poetry
+    val george = CtsUrn("urn:cts:greekLit:tlg0012:")
+    val georgeMapping = orthos.filter(_.urn ~~ george)
+    assert(georgeMapping.size == 1)
+  }
 }
