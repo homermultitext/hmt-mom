@@ -191,15 +191,39 @@ case class HmtMom(baseDir: String)  {
   val dirs = Vector(dseDir, editionsDir, validationDir, paleographyDir, libHeadersDir)
 
 
+/*
+def readerMappings(csvSource : String = "editions/readers.csv") = {
+  // drop header row:
+  val csvRows = scala.io.Source.fromFile(csvSource).getLines.toVector.tail
+  val pairs = for (row <- csvRows) yield {
+    val parts = row.split(",").toVector
+    ReadersPairing(CtsUrn(parts(0)), readersForString(parts(1)))
+  }
+  pairs.toVector
+}
+
+def orthoMappings(csvSource : String = "editions/orthographies.csv") = {
+  val csvRows = scala.io.Source.fromFile(csvSource).getLines.toVector.tail
+  val pairs = for (row <- csvRows) yield {
+    val parts = row.split(",").toVector
+    OrthoPairing(CtsUrn(parts(0)), orthoForString(parts(1)))
+  }
+  pairs.toVector
+}
+
+*/
+  // Text repo configuration
   val ctsCatalog = editionsDir/"catalog.cex"
   val ctsCitation = editionsDir/"citation.cex"
+  val readersConfig = editionsDir/"readers.csv"
+  val orthoConfig = editionsDir/"orthographies.csv"
   constructed
 
   def constructed: Unit = {
     for (d <- dirs) {
       require(d.exists, "Repository not correctly laid out: missing directory " + d)
     }
-    for (conf <- Seq(ctsCatalog, ctsCitation)) {
+    for (conf <- Seq(ctsCatalog, ctsCitation, readersConfig, orthoConfig)) {
       require(conf.exists,"Missing required configuration file: " + conf)
     }
   }
