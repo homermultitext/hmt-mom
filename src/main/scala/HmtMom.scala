@@ -8,6 +8,7 @@ import edu.holycross.shot.scm._
 import edu.holycross.shot.cex._
 import edu.holycross.shot.dse._
 import edu.holycross.shot.citerelation._
+import edu.holycross.shot.mid.validator._
 
 import scala.xml._
 
@@ -190,17 +191,26 @@ case class HmtMom(baseDir: String)  {
   val libHeadersDir = File(baseDir + "/header")
   val dirs = Vector(dseDir, editionsDir, validationDir, paleographyDir, libHeadersDir)
 
-
-/*
-def readerMappings(csvSource : String = "editions/readers.csv") = {
-  // drop header row:
-  val csvRows = scala.io.Source.fromFile(csvSource).getLines.toVector.tail
-  val pairs = for (row <- csvRows) yield {
-    val parts = row.split(",").toVector
-    ReadersPairing(CtsUrn(parts(0)), readersForString(parts(1)))
+  /** Construct mappings, as configurred for this repository, of CtsUrns to
+  * classes implementing the MidMarkupReader trait.
+  */
+  def readerMappings :  Vector[ReadersPairing]= {
+    val readersList = readersConfig.lines.tail
+    val pairs = for (row <- readersList) yield {
+      val parts = row.split(",").toVector
+      ReadersPairing(CtsUrn(parts(0)), HmtValidator.readersForString(parts(1)))
+    }
+    pairs.toVector
   }
-  pairs.toVector
-}
+
+
+  /** Construct mappings, as configurred for this repository, of CtsUrns to
+  * classes implementing the MidOrthography trait.
+  */
+  def orthoMappings : Vector[OrthoPairing] = {
+    Vector.empty[OrthoPairing]
+  }
+/*
 
 def orthoMappings(csvSource : String = "editions/orthographies.csv") = {
   val csvRows = scala.io.Source.fromFile(csvSource).getLines.toVector.tail

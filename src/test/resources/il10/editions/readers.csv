@@ -1,3 +1,4 @@
 text,MidReader class
-urn:cts:chant:massordinary.sg359.text_xml:,MidProseABReader
-urn:cts:chant:massordinary.sg359.neumes_xml:,MidNeumeReader
+urn:cts:greekLit:tlg0012.tlg001:,DiplomaticReader
+urn:cts:greekLit:tlg5026:,DiplomaticReader
+urn:cts:greekLit:tlg7000:,DiplomaticReader

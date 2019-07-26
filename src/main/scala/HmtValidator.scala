@@ -7,11 +7,14 @@ import edu.holycross.shot.citerelation._
 import edu.holycross.shot.citeobj._
 import edu.holycross.shot.dse._
 import org.homermultitext.edmodel._
+import edu.holycross.shot.greek._
 
+import edu.holycross.shot.mid.validator._
 
 /** A class for validating and analyzing a CiteLibrary with HMT project content.
 */
 case class HmtValidator(library: CiteLibrary) {
+
 
 }
 
@@ -24,7 +27,30 @@ object HmtValidator {
     HmtValidator(CiteLibrary(cex))
   }
 
+  /** Lookup MidMarkupReader class by identifying String.
+  *
+  * @readerName Name of class implementing MidMarkupReader trait.
+  */
+  def readersForString(readerName: String): Vector[MidMarkupReader] = {
+    if (readerMap.keySet.contains(readerName)){
+      readerMap(readerName)
+    } else {
+      throw (new Exception(s"${readerName} is not a recognized MidReader in this project."))
+    }
+  }
 
+
+  /** HMT project mapping of string names to MidMarkupReader class.
+  */
+  val readerMap =   Map(
+    "DiplomaticReader" ->   Vector(DiplomaticReader)
+  )
+
+  /** HMT project mapping of string names to MidOrthography class.
+  */
+  val orthoMap = Map(
+    "LiteraryGreekString" -> LiteraryGreekString
+  )
 
 
     /** Count number of tokens occurring for each token type.
