@@ -38,11 +38,11 @@ class MomSpec extends FlatSpec {
     val mom = HmtMom(repo)
     assert(mom.corpus.isInstanceOf[Corpus])
   }
-  it should "create a vector of HmtTokens for the whole corpus" in {
+  it should "create a vector of HmtTokens for the whole corpus" in pending /*{
     val repo = EditorsRepo("src/test/resources/il10")
     val mom = HmtMom(repo)
     assert(mom.tokens.isInstanceOf[Vector[HmtToken]])
-  }
+  }*/
 
 
 

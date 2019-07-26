@@ -7,11 +7,11 @@ import org.homermultitext.edmodel._
 
 class MomDseSpec extends FlatSpec {
 
-  "An HmtMom" should "build a DseVector for the repository" in {
+  "An HmtMom" should "build a DseVector for the repository" in pending /*{
     val repo = EditorsRepo("src/test/resources/il10")
     val mom = HmtMom(repo)
     val dseV = mom.dse
     assert(dseV.passages.size > 0)
   }
-
+*/
 }

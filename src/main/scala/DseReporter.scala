@@ -6,7 +6,7 @@ import edu.holycross.shot.citerelation._
 import edu.holycross.shot.citeobj._
 import edu.holycross.shot.dse._
 import org.homermultitext.edmodel._
-import org.homermultitext.hmtcexbuilder._
+//import org.homermultitext.hmtcexbuilder._
 
 
 import better.files._
@@ -114,7 +114,9 @@ case class DseReporter(pg:  Cite2Urn, dse: DseVector, txts: Corpus) {
       val imgmgr = ImageManager()
       val md = imgmgr.markdown(img, 1000)
 
-      val dipl = TeiReader(psg.cex("#")).tokens.map(_.analysis.readWithDiplomatic).mkString(" ")
+      //FAIL
+      val dipl = ""
+      //TeiReader(psg.cex("#")).tokens.map(_.analysis.readWithDiplomatic).mkString(" ")
 
       dipl + " (*" + psg.urn + "*)" + "  " + md
     }

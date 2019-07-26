@@ -6,7 +6,7 @@ import edu.holycross.shot.citerelation._
 import edu.holycross.shot.citeobj._
 import edu.holycross.shot.dse._
 import org.homermultitext.edmodel._
-import org.homermultitext.hmtcexbuilder._
+import edu.holycross.shot.cex._
 
 
 /** HmtMom helps you manage and maintain the contents of a Homer Multitext
@@ -43,11 +43,11 @@ case class HmtMom(repo: EditorsRepo) {
     val scholiaXml = raw ~~ CtsUrn("urn:cts:greekLit:tlg5026:")
     val noReff = Corpus(scholiaXml.nodes.filterNot(_.urn.toString.contains(".ref")))
     val collapsed = for (i <- 0 until (noReff.size - 1) by 2 ) yield {
-      val u = noReff.nodes(i).urn.collapsePassageBy(1)
+      val u = noReff.nodes(i + 1).urn.collapsePassageBy(1)
       val txt = "<div>" + noReff.nodes(i).text + " " + noReff.nodes(i+1).text + "</div>"
       CitableNode(u,txt)
     }
-    // For 
+    // For
     Corpus(collapsed.toVector.map( n => {
       CitableNode(n.urn.dropVersion.addVersion("dipl") ,n.text)
     }))
@@ -64,30 +64,9 @@ case class HmtMom(repo: EditorsRepo) {
 
 
   /** Complete tokenization of the corpus. */
-  def tokens = TeiReader.fromCorpus(corpus)
+  def tokens = TeiReader.analyzeCorpus(corpus)
 
-  /** CEX library header data.*/
-  val libHeader = DataCollector.compositeFiles(repo.libHeadersDir.toString, "cex")
-  /** CEX data for DSE relations.*/
-  val dseCex = DataCollector.compositeFiles(repo.dseDir.toString, "cex")
 
-  /** Construct DseVector for this repository's records. */
-  def dse:  DseVector = {
-    val records = dseCex.split("\n").filter(_.nonEmpty).filterNot(_.contains("passage#")).toVector
-
-    // This value must agree with header data in header/1.dse-prolog.cex.
-    val baseUrn = "urn:cite2:validate:tempDse.temp:"
-    val dseRecords = for ((record, count) <- records.zipWithIndex) yield {
-      s"${baseUrn}validate_${count}#Temporary DSE record ${count}#${record}"
-    }
-
-    if (records.isEmpty) {
-      DseVector(Vector.empty[DsePassage])
-    } else {
-      val srcAll = libHeader + dseRecords.mkString("\n")
-      DseVector(srcAll)
-    }
-  }
 
 }
 
@@ -188,13 +167,13 @@ object HmtMom {
     "Character#CodePoint#Frequency\n" + rows.mkString("\n")
   }
 
-  /** Compose text for a token analysis according todo
+  /** Compose text for a token analysis according to
   * HMT project normalization.
   *
   * @param tkn Token analysis.
   */
   def hmtText(tkn: TokenAnalysis): String = {
-    val rdgs = tkn.analysis.readings.map(_.reading).mkString
+    val rdgs = tkn.analysis.readings.map(_.text).mkString
     //get alt reading string
     val alts = if (tkn.hasAlternate) {
       tkn.analysis.alternateReading.get.simpleString

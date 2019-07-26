@@ -7,7 +7,7 @@ import edu.holycross.shot.citerelation._
 import edu.holycross.shot.citeobj._
 import edu.holycross.shot.dse._
 import org.homermultitext.edmodel._
-import org.homermultitext.hmtcexbuilder._
+//import org.homermultitext.hmtcexbuilder._
 
 import better.files._
 import File._
@@ -18,7 +18,7 @@ import better.files.Dsl._
 /**
 */
 case class MomReporter(mom: HmtMom) {
-
+/*
   val outputDir = mom.repo.validationDir
   //println("PREPARIONG MOM REPORTER")
   // compute these once:
@@ -28,14 +28,14 @@ case class MomReporter(mom: HmtMom) {
   val paleoResults = PaleographyResults(mom.paleoCex)
   //println("PALEO " + paleoResults)
   // put these in package object?
-
+*/
 
   /** Select a corpus by page reference.
   *
   * @param pg Page to select texts for.
   * @param dse DseVector to consult for records of
   * texts on page.
-  */
+
   def corpusForPage(pg: Cite2Urn) = {
     //val txtSet = dse.textsForTbs(Cite2Urn("urn:cite2:hmt:msB.v1:128v"))
     //Corpus(txtSet.toVector)
@@ -50,13 +50,13 @@ case class MomReporter(mom: HmtMom) {
     HmtMom.mergeCorpusVector(miniCorpora, Corpus(Vector.empty[CitableNode]))
 
   }
-
+  */
 
   /** Write suite of markdown reports to validate and
   * verify editorial work on a single page.
   *
   * @param pageUrn
-  */
+
   def validate(pageUrn: String) = {
     try {
       val u = Cite2Urn(pageUrn)
@@ -70,7 +70,7 @@ case class MomReporter(mom: HmtMom) {
       mkdirs(pageDir)
 
       val pageCorpus = corpusForPage(u)
-      val pageTokens = TeiReader.fromCorpus(pageCorpus)
+      val pageTokens = TeiReader.analyzeCorpus(pageCorpus)
 
       val home = StringBuilder.newBuilder
       home.append(s"# Review of ${u.collection}, page ${u.objectComponent}\n\n")
@@ -88,7 +88,7 @@ case class MomReporter(mom: HmtMom) {
 
 
       val paleoValidate = pageDir/"paleo-validation.md"
-      val paleoImg = dse.imageForTbs(u)
+      val paleoImg = dse.imageForTbs(u)  */
 /*
       if (paleoImages.nonEmpty) {
         val paleoImg = paleoImages(0)
@@ -98,8 +98,7 @@ case class MomReporter(mom: HmtMom) {
         home.append("No paleographic observations included in repository.\n")
       }
       */
-
-
+/*
       // 2.  DSE valdiation reporting:
       println("Validating  DSE records...")
       val dseReporter =  DseReporter(u, dse, pageCorpus)
@@ -119,8 +118,8 @@ case class MomReporter(mom: HmtMom) {
         home.append(s"-  ![errors](${okImg}) DSE validation: there were no errors. \n")
       }
       home.append("See [details in dse-validation.md](./dse-validation.md)\n")
-
-
+  */
+/*
       // Text validation reporting
       val errHeader = "Token#Reading#Error\n"
 
@@ -162,7 +161,7 @@ case class MomReporter(mom: HmtMom) {
       dseVerify.overwrite(dseCompleteMd + dseCorrectMd)
       // 2. Paloegraphic observations
       val paleoVerify = pageDir/"paleo-verification.md"
-      /*
+
       if (paleoImages.nonEmpty) {
         val paleoImg = paleoImages(0)
         //println(paleoResults.good.map(_._1).mkString("\n"))
@@ -172,7 +171,7 @@ case class MomReporter(mom: HmtMom) {
         println("NO PALEOGRAPHIC OBSERVATIONS")
         home.append("No paleographic observations included in repository.\n")
       }
-      */
+
 
       // 3. Named entity tagging
       val neReporter = NamedEntityReporter(u, pageTokens)
@@ -216,8 +215,8 @@ case class MomReporter(mom: HmtMom) {
       home.append("\nCharacter data:\n\n")
       home.append("-  frequencies:  see [characterFrequencies.cex](./characterFrequencies.cex)\n")
 
-
-
+  */
+/*
 
       val index = pageDir/"summary.md"
       index.overwrite(home.toString)
@@ -230,5 +229,5 @@ case class MomReporter(mom: HmtMom) {
         println(t.toString + "\n\n")
       }
     }
-  }
+  }*/
 }

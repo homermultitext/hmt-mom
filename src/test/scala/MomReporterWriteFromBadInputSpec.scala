@@ -11,13 +11,13 @@ import java.io.{File => JFile}
 
 class MomReporterWriteFromBadInputSpec extends FlatSpec {
 
-  "An MomReporter" should "write a DSE report" in {
+  "An MomReporter" should "write a DSE report" in  pending /*{
     val repo = EditorsRepo("src/test/resources/il10")
     val mom = HmtMom(repo)
     val reporter = MomReporter(mom)
     val pg = "urn:cite2:hmt:msA.v1:126r"
     reporter.validate(pg)
-  }
+  }*/
 
 
 }

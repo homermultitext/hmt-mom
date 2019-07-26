@@ -11,7 +11,7 @@ import java.io.{File => JFile}
 
 class MomReporterOutputSpec extends FlatSpec {
 
-  "An MomReporter" should "write a DSE report" in {
+  "An MomReporter" should "write a DSE report" in pending /* {
     val repo = EditorsRepo("src/test/resources/il10")
     val mom = HmtMom(repo)
     val reporter = MomReporter(mom)
@@ -20,7 +20,7 @@ class MomReporterOutputSpec extends FlatSpec {
 
     val pgE3 = "urn:cite2:hmt:e3.v1:128v"
     reporter.validate(pgE3)
-  }
+  }*/
 
 
 }
