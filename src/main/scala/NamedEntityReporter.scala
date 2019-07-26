@@ -6,7 +6,7 @@ import edu.holycross.shot.citerelation._
 import edu.holycross.shot.citeobj._
 import edu.holycross.shot.dse._
 import org.homermultitext.edmodel._
-import org.homermultitext.hmtcexbuilder._
+
 
 
 import better.files._

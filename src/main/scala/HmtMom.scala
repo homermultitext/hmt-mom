@@ -1,264 +1,206 @@
 package org.homermultitext.hmtmom
 
+
+
 import edu.holycross.shot.cite._
 import edu.holycross.shot.ohco2._
-import edu.holycross.shot.citerelation._
-import edu.holycross.shot.citeobj._
-import edu.holycross.shot.dse._
-import org.homermultitext.edmodel._
+import edu.holycross.shot.scm._
 import edu.holycross.shot.cex._
+import edu.holycross.shot.dse._
+import edu.holycross.shot.citerelation._
+
+import scala.xml._
+
+import better.files._
+import File._
+import java.io.{File => JFile}
+import better.files.Dsl._
 
 
-/** HmtMom helps you manage and maintain the contents of a Homer Multitext
-*  project repository.
+/** Mandatory Ongoing Maintenance for HMT project editorial repositories.
 *
-* @param repo Root directory of a repository laid out according to conventions
-* of HMT project in 2018.
+* @param baseDir Name of Root directory of an HMT editorial repository
+* laid out according to 2018 standards..
 */
-case class HmtMom(repo: EditorsRepo) {
+case class HmtMom(baseDir: String)  {
 
-  /** Create a corpus of XML archival editions.
-  */
-  def raw:  Corpus = {
-    TextRepositorySource.fromFiles(repo.ctsCatalog.toString, repo.ctsCitation.toString, repo.editionsDir.toString).corpus
+
+  /** Build an HMT library from the library. */
+  def library: CiteLibrary = {
+    // required components:
+    // text repo, dse,
+    // relations dervied from cross-references in scholia editions
+    CiteLibrary(libHeader + dseCex + textsCex + commentsCex)
   }
 
-  /** Create corpus of XML source of Iliad with all nodes renamed to
-  * diplomatic version.
-  */
-  def iliads: Corpus = {
-    val iliadXml = raw ~~ CtsUrn("urn:cts:greekLit:tlg0012.tlg001:")
-    val iliadNodes = iliadXml.nodes.map( n => {
-      val diplo = n.urn.version.replaceAll("_xml","")
-      CitableNode(n.urn.dropVersion.addVersion(diplo) ,n.text)
-    })
-    Corpus (iliadNodes)
+  /** Construct DseVector for this repository's records. */
+  def dse:  DseVector = {
+    val records = dseCex.split("\n").filter(_.nonEmpty).toVector
+
+    // This value must agree with header data in header/1.dse-prolog.cex.
+    val baseUrn = "urn:cite2:validate:tempDse.temp:"
+    val dseRecords = for ((record, count) <- records.zipWithIndex) yield {
+      s"${baseUrn}validate_${count}#Temporary DSE record ${count}#${record}"
+    }
+
+    if (records.isEmpty) {
+      DseVector(Vector.empty[DsePassage])
+    } else {
+      val srcAll = libHeader + dseRecords.mkString("\n")
+      DseVector(srcAll)
+    }
+  }
+
+  /** Construct TextRepository. */
+  def texts : TextRepository = {
+    TextRepositorySource.fromFiles(ctsCatalog.toString, ctsCitation.toString, editionsDir.toString)
   }
 
 
-  /** Create corpus of XML source of scholia with all nodes renamed to
-  * diplomatic version.
+  /** Create new corpus by extracting all scholia from a
+  * given corpus.
+  *
+  * @param c Corpus to extact scholia from.
   */
-  def scholia : Corpus = {
-    val scholiaXml = raw ~~ CtsUrn("urn:cts:greekLit:tlg5026:")
-    val noReff = Corpus(scholiaXml.nodes.filterNot(_.urn.toString.contains(".ref")))
-    val collapsed = for (i <- 0 until (noReff.size - 1) by 2 ) yield {
-      val u = noReff.nodes(i + 1).urn.collapsePassageBy(1)
-      val txt = "<div>" + noReff.nodes(i).text + " " + noReff.nodes(i+1).text + "</div>"
+  def scholia(c: Corpus = texts.corpus) : Corpus = {
+    val scholiaUrn = CtsUrn("urn:cts:greekLit:tlg5026:")
+    c ~~ scholiaUrn
+  }
+
+  /** Create new corpus by extracting all Iliad passages from a
+  * given corpus.
+  *
+  * @param c Corpus to extact scholia from.
+  */
+  def iliads(c: Corpus = texts.corpus): Corpus = {
+    val iliadUrn = CtsUrn("urn:cts:greekLit:tlg0012.tlg001:")
+    c ~~ iliadUrn
+  }
+
+  /** From a corpus citing scholia at leaf node (lemma, ref, comment),
+  * drop all "ref" elements to create a new leaf-node corpus containing
+  * only text content of the edition.
+  *
+  * @param scholia Corpus of scholia cited at leaf node.
+  */
+  def scholiaTextCorpus (scholia: Corpus): Corpus = {
+    Corpus(scholia.nodes.filterNot(_.urn.toString.endsWith(".ref")))
+  }
+
+  /** Given a corpus of scholia in HMT archival XML cited at leaf node,
+  * create a corpus of well-formed XML texts cited at the level of
+  * the whole scholion.  The function first drops any ".ref" nodes,
+  * then combines any remaining lemma and comment nodes in a well-formed
+  * XML block with URN collapsed by 1 level.
+  *
+  * @param scholiaXml Corpus of scholia in archival XML cited at leaf node.
+  */
+  def scholiaCollapsedXml(scholiaXml: Corpus) = {
+    val textOnly = scholiaTextCorpus(scholiaXml)
+    // There should be 2 citable XML nodes per scholion  in the sequence
+    // lemma, comment, so we walk through the nodes 2 at a time.
+    val collapsedNodes = for (i <- 0 until (textOnly.size - 1) by 2 ) yield {
+      val u = textOnly.nodes(i).urn.collapsePassageBy(1)
+      val txt = "<div>" + textOnly.nodes(i).text + " " + textOnly.nodes(i+1).text + "</div>"
       CitableNode(u,txt)
     }
-    // For
-    Corpus(collapsed.toVector.map( n => {
-      CitableNode(n.urn.dropVersion.addVersion("dipl") ,n.text)
-    }))
+    Corpus(collapsedNodes.toVector)
   }
 
-  /** Create corpus of XML source of Iliads and scholia.
-  */
-  def corpus = iliads ++ scholia
 
-  /** CEX records for paleographic observations.
-  *  We want data lines only, so drop 1 header line.
-  */
-  def paleoCex = DataCollector.compositeFiles(repo.paleographyDir.toString, "cex", 1)
-
-
-  /** Complete tokenization of the corpus. */
-  def tokens = TeiReader.analyzeCorpus(corpus)
-
-
-
-}
-
-object HmtMom {
-
-  /** Construct an HmtMom object from the path to an
-  * editorial repository.
+  /** Given a corpus of scholia in HMT cited at leaf node,
+  * create a corpus of well-formed XML texts cited at the level of
+  * the whole scholion.  The function first drops any ".ref" nodes,
+  * then combines any remaining lemma and comment nodes in text string
+  * with URN collapsed by 1 level.
   *
-  * @param repoPath Path to repository.
+  * @param scholiaXml Corpus of scholia in archival XML cited at leaf node.
   */
-  def apply(repoPath: String) : HmtMom = {
-    HmtMom(EditorsRepo(repoPath))
-  }
-
-  /** Count number of tokens occurring for each token type.
-  *
-  * @param tokens Tokens to profile.
-  */
-  def profileTokens(tokens: Vector[TokenAnalysis]): Vector[(LexicalCategory, Int, Int)] = {
-    val tokenTypes = tokens.map(_.analysis.lexicalCategory).distinct
-
-    val profile = for (ttype <- tokenTypes) yield {
-      val typeTokens = tokens.filter(_.analysis.lexicalCategory == ttype)
-      (ttype,typeTokens.size,typeTokens.map(_.analysis.readWithAlternate).distinct.size )
+  def scholiaCollapsedText(scholiaXml: Corpus) = {
+    val textOnly = scholiaTextCorpus(scholiaXml)
+    // There should now be 2 citable XML nodes per scholion  in the sequence
+    // lemma, comment, so we walk through the nodes 3 at a time.
+    val collapsedNodes = for (i <- 0 until (textOnly.size - 1) by 2 ) yield {
+      val u = textOnly.nodes(i).urn.collapsePassageBy(1)
+      val txt = textOnly.nodes(i).text + " " + textOnly.nodes(i+1).text
+      CitableNode(u,txt)
     }
-    profile
+    Corpus(collapsedNodes.toVector)
   }
 
-  /** Compute index of tokens to passage where they occur.
+
+
+  /** Given a corpus of scholia in HMT archival XML cited at leaf node,
+  * create CiteTriples.
   *
-  * @param tokens Tokens to index.
+  * @param scholiaXml Corpus of scholia in archival XML cited at leaf node.
   */
-  def tokenIndex(tokens: Vector[TokenAnalysis]) : Vector[String] = {
-    def grouped = stringSeq(tokens).groupBy ( occ => occ.something).toVector
-    val idx = for (grp <- grouped) yield {
-      val str = grp._1
-      val occurrences = grp._2.map(_.urn)
-      val flatList = for (occurrence <- occurrences) yield {
-        str + "#" + occurrence.toString
-      }
-      flatList
-    }
-    idx.flatten
-  }
-
-  /** Extract list of unique lexical words from tokens.
-  *
-  * @param tokens List of tokens to analyze.
-  */
-  def wordList(tokens: Vector[TokenAnalysis]): Vector[String] = {
-    tokens.map(_.analysis.readWithAlternate).distinct
-  }
-
-  /** Compute histogram of words for a list of tokens.
-  *
-  * @param tokens List of tokens to analyze.
-  */
-  def wordHisto(tokens: Vector[TokenAnalysis]): Vector[StringCount] = {
-    val lexTokens = tokens.filter(_.analysis.lexicalCategory == LexicalToken)
-    val strs = lexTokens.map(_.analysis.readWithAlternate)
-    val grouped = strs.groupBy(w => w).toVector
-    val counted =  grouped.map{ case (k,v) => StringCount(k,v.size) }
-    counted.sortBy(_.count).reverse
-  }
-
-  /** Compute sequence of occurrences for a list of tokens.
-  *
-  * @param tokens Tokens to analyze
-  */
-  def stringSeq(tokens: Vector[TokenAnalysis]): Vector[Occurrence[String]] = {
-     tokens.map( tkn => {
-        Occurrence(tkn.analysis.editionUrn, tkn.analysis.readWithAlternate)
-      }
-    )
-  }
-
-
-  /** Compute histogram of codepoints for a list of tokens
-  * sorted from most frequent to least frequent.
-  *
-  * @param tokens List of tokens to analyze.
-  */
-  def cpHisto(tokens: Vector[TokenAnalysis]):  Vector[(Int,Int)] = {
-    def cps = hmtCpsFromTokens(tokens)
-    val grouped = cps.groupBy(cp => cp).toVector
-    val counted =  grouped.map{ case (k,v) => (k,v.size) }
-    counted.sortBy(_._2).reverse
-  }
-
-  def cpTable(tokens: Vector[TokenAnalysis]): String = {
-    cpTableFromHisto(cpHisto(tokens))
-  }
-  def cpTableFromHisto(histo: Vector[(Int,Int)]): String = {
-    val rows = for ((cp,freq) <- histo) yield {
-      val s = HmtChars.cpsToString(Vector(cp))
-      s"${s}#x${cp.toHexString}#${freq}"
-    }
-    "Character#CodePoint#Frequency\n" + rows.mkString("\n")
-  }
-
-  /** Compose text for a token analysis according to
-  * HMT project normalization.
-  *
-  * @param tkn Token analysis.
-  */
-  def hmtText(tkn: TokenAnalysis): String = {
-    val rdgs = tkn.analysis.readings.map(_.text).mkString
-    //get alt reading string
-    val alts = if (tkn.hasAlternate) {
-      tkn.analysis.alternateReading.get.simpleString
-    } else { ""}
-    val str = (rdgs + alts).replaceAll("\\s","")
-    //option: HmtChars.hmtNormalize(str)
-    str
-  }
-
-  /** Compute list of codepoints from a list of tokens.
-  *
-  * @param tokens Tokens to analyze.
-  */
-  def hmtCpsFromTokens(tokens: Vector[TokenAnalysis]):  Vector[Int] = {
-    val snormal = tokens.map(hmtText(_))
-    HmtChars.stringToCps(snormal.mkString)
-  }
-
-  /** Determine if all codepoints in a list are valid.
-  *
-  * @param cps List of codepoints.
-  */
-  def validCPs(cps: Vector[Int]): Boolean = {
-    val checkOk =  cps.map(HmtChars.legal(_)).distinct
-    // all tokens were valid of only distinct value is true:
-    if ((checkOk.size == 1)  && (checkOk(0))) {
-      true
-    } else {
-      false
-    }
-  }
-
-  /** Filter a token list for tokens containing one or more
-  * invalid characters.
-  *
-  * @param tokens List of tokens.
-  */
-  def badCharTokens(tokens: Vector[TokenAnalysis]): Vector[TokenAnalysis] = {
-    tokens.filterNot(t => {
-      val txt = hmtText(t)
-      HmtChars.legalChars(txt)
-    })
-  }
-
-  def badCharTable(tokens: Vector[TokenAnalysis]):  String ={
-    val rows = for (t <- tokens) yield {
-      val allText = t.analysis.readWithDiplomatic + t.analysis.readWithAlternate
-      val badChars= HmtChars.badCPs(allText).map( c =>
-        s"${HmtChars.cpsToString(Vector(c))} (x${c.toHexString})"
-      )
-      t.analysis.editionUrn + "#" + allText + "#" + badChars.mkString(", ")
-    }
-    "Passage#All readings#Errors\n" + rows.mkString("\n")
-  }
-
-
-
-  /** Filter a token list for tokens containing one or more
-  * markup errors.
-  *
-  * @param tokens List of tokens.
-  */
-  def badMarkup(tokens: Vector[TokenAnalysis]): Vector[TokenAnalysis] = {
-    val tokenOpts = for (t <- tokens) yield {
-      if (t.analysis.errors.nonEmpty) {
-        Some(t)
-      } else {
-        None
+  def scholiaComments(scholiaXml: Corpus)  : Vector[Option[CiteTriple]]= {
+    val verb = Cite2Urn("urn:cite2:cite:verbs.v1:commentsOn")
+    val scholiaNodes = scholiaXml.nodes
+    // There should be 3 citable XML nodes per scholion  in the sequence
+    // lemma, ref, comment, so we walk through the nodes 3 at a time.
+    val commentRelations = for (i <- 0 until (scholiaXml.size - 2) by 3) yield {
+      val xref = XML.loadString(scholiaNodes(i+1).text)
+      val nList = xref.attribute("n").get
+      val scholionUrn = scholiaNodes(i).urn.collapsePassageBy(1)
+      val iliadUrnString = xref.text.trim
+      try {
+        val iliadUrn = CtsUrn(iliadUrnString)
+        Some(CiteTriple(scholionUrn, verb, iliadUrn))
+      } catch {
+        case t: Throwable => {
+          println(s"Failed to create CiteTriple for scholion ${scholionUrn}.  Iliad Urn string was '" + iliadUrnString +  "'" + "\n\t===>" + t)
+          None
+        }
       }
     }
-    tokenOpts.flatten
+    commentRelations.toVector
   }
 
-  /** Recursively merge  a list of corpora into a single corpus.
-  *
-  * @param v List of corpora to merge.
-  * @param composite Composite corpus compiled so far.
-  */
-  def mergeCorpusVector(v: Vector[Corpus], composite: Corpus):  Corpus = {
-    if (v.isEmpty) {
-      composite
-    } else {
-      val nextCorpus = composite ++ v.head
-      mergeCorpusVector(v.tail, nextCorpus)
+  /** CEX library header data.*/
+  def libHeader:  String = DataCollector.compositeFiles(libHeadersDir.toString, "cex")
+
+  /** CEX data for DSE relations.*/
+  def dseCex:  String = {
+    val triplesCex = DataCollector.compositeFiles(dseDir.toString, "cex", dropLines = 1)
+    val tempCollection = Cite2Urn("urn:cite2:validate:tempDse.temp:")
+    val dseV = DseVector.fromTextTriples(triplesCex, tempCollection)
+    //dseV.cex
+    val rows = dseV.passages.map(_.cex())
+    rows.mkString("\n")
+  }
+
+  /** CEX data for text editions.*/
+  def textsCex: String = {
+    texts.cex()
+  }
+
+  def commentsCex: String = {
+    val scholia = scholiaTextCorpus(texts.corpus)
+    val comments = scholiaComments(scholia).flatten.toSet
+    CiteRelationSet(comments).cex()
+  }
+
+
+  val dseDir = File(baseDir + "/dse")
+  val validationDir = File(baseDir + "/validation")
+  val editionsDir = File(baseDir + "/editions")
+  val paleographyDir = File(baseDir + "/paleography") // allow this to be optional
+  val libHeadersDir = File(baseDir + "/header")
+  val dirs = Vector(dseDir, editionsDir, validationDir, paleographyDir, libHeadersDir)
+
+
+  val ctsCatalog = editionsDir/"catalog.cex"
+  val ctsCitation = editionsDir/"citation.cex"
+  constructed
+
+  def constructed: Unit = {
+    for (d <- dirs) {
+      require(d.exists, "Repository not correctly laid out: missing directory " + d)
+    }
+    for (conf <- Seq(ctsCatalog, ctsCitation)) {
+      require(conf.exists,"Missing required configuration file: " + conf)
     }
   }
-
 }
