@@ -26,6 +26,13 @@ import better.files.Dsl._
 case class HmtMom(baseDir: String)  {
 
 
+
+
+  val midRepo = EditorsRepo(baseDir)
+  //val midValidator = Validator(, readerMappings, orthoMappings)
+  //val dse = midValidator.dse
+
+
   /** Build an HMT library from the library. */
   def library: CiteLibrary = {
     // required components:
@@ -35,8 +42,6 @@ case class HmtMom(baseDir: String)  {
   }
 
 
-  val midValidator = Validator(EditorsRepo(baseDir), readerMappings, orthoMappings)
-  //val dse = midValidator.dse
 
   /** Construct DseVector for this repository's records. */
   def dse:  DseVector = {
@@ -58,7 +63,7 @@ case class HmtMom(baseDir: String)  {
 
   /** Construct TextRepository. */
   def texts : TextRepository = {
-    TextRepositorySource.fromFiles(ctsCatalog.toString, ctsCitation.toString, editionsDir.toString)
+    TextRepositorySource.fromFiles(midRepo.ctsCatalog.toString, midRepo.ctsCitation.toString, midRepo.editionsDir.toString)
   }
 
 
@@ -164,11 +169,11 @@ case class HmtMom(baseDir: String)  {
   }
 
   /** CEX library header data.*/
-  def libHeader:  String = DataCollector.compositeFiles(libHeadersDir.toString, "cex")
+  def libHeader:  String = DataCollector.compositeFiles(midRepo.libHeadersDir.toString, "cex")
 
   /** CEX data for DSE relations.*/
   def dseCex:  String = {
-    val triplesCex = DataCollector.compositeFiles(dseDir.toString, "cex", dropLines = 1)
+    val triplesCex = DataCollector.compositeFiles(midRepo.dseDir.toString, "cex", dropLines = 1)
     val tempCollection = Cite2Urn("urn:cite2:validate:tempDse.temp:")
     val dseV = DseVector.fromTextTriples(triplesCex, tempCollection)
     //dseV.cex
@@ -187,14 +192,14 @@ case class HmtMom(baseDir: String)  {
     CiteRelationSet(comments).cex()
   }
 
-
+/*
   val dseDir = File(baseDir + "/dse")
   val validationDir = File(baseDir + "/validation")
   val editionsDir = File(baseDir + "/editions")
   val paleographyDir = File(baseDir + "/paleography") // allow this to be optional
   val libHeadersDir = File(baseDir + "/header")
   val dirs = Vector(dseDir, editionsDir, validationDir, paleographyDir, libHeadersDir)
-
+*/
   /** Construct mappings, as configurred for this repository, of CtsUrns to
   * classes implementing the MidMarkupReader trait.
   */
@@ -223,18 +228,25 @@ case class HmtMom(baseDir: String)  {
     pairs.toVector
   }
 
+  def validate : Unit = {
+    //val midValidator = Validator(repo, readerMappings(), orthoMappings())
+
+  }
+
   // Text repo configuration
+  /*
   val ctsCatalog = editionsDir/"catalog.cex"
   val ctsCitation = editionsDir/"citation.cex"
-  val readersConfig = editionsDir/"readers.csv"
-  val orthoConfig = editionsDir/"orthographies.csv"
+  */
+  val readersConfig = midRepo.editionsDir/"readers.csv"
+  val orthoConfig = midRepo.editionsDir/"orthographies.csv"
   constructed
 
   def constructed: Unit = {
-    for (d <- dirs) {
+  /*  for (d <- dirs) {
       require(d.exists, "Repository not correctly laid out: missing directory " + d)
-    }
-    for (conf <- Seq(ctsCatalog, ctsCitation, readersConfig, orthoConfig)) {
+    }*/
+    for (conf <- Seq(readersConfig, orthoConfig)) {
       require(conf.exists,"Missing required configuration file: " + conf)
     }
   }

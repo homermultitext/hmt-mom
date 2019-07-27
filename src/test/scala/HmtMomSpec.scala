@@ -13,10 +13,15 @@ class HmtMomSpec extends FlatSpec {
 
   val repoDir = "./src/test/resources/il10"
 
-  "An HmtMom" should "include a dse directory" in {
+  "An HmtMom" should "create an MID EditorsRepo" in {
+    val repo = HmtMom(repoDir)
+    assert(repo.midRepo.baseDir == repoDir)
+  }
+
+  it should "include a dse directory" in {
     val repo = HmtMom(repoDir)
     val expectedDse = File(repoDir + "/dse")
-    assert (repo.dseDir == expectedDse)
+    assert (repo.midRepo.dseDir == expectedDse)
   }
 
 
@@ -27,12 +32,12 @@ class HmtMomSpec extends FlatSpec {
     assert(lib.name == expected)
   }
 
-  it should "compute CITE relations for scholia" in pending /*{
+  it should "compute CITE relations for scholia" in {
     val repo = HmtMom(repoDir)
     repo.scholiaComments(repo.scholia(repo.texts.corpus))
-  }*/
+  }
 
-  it should "map texts String to scala classes implementing MidMarkupReader" in pending /*{
+  it should "map texts String to scala classes implementing MidMarkupReader" in {
     val repo = HmtMom(repoDir)
     val readers = repo.readerMappings
 
@@ -44,9 +49,9 @@ class HmtMomSpec extends FlatSpec {
     val george = CtsUrn("urn:cts:greekLit:tlg0012:")
     val georgeMapping = readers.filter(_.urn ~~ george)
     assert(georgeMapping.size == 1)
-  }*/
+  }
 
-  it should "map texts String to scala classes implementing MidOrthography" in pending /*{
+  it should "map texts String to scala classes implementing MidOrthography" in {
     val repo = HmtMom(repoDir)
     val orthos = repo.orthoMappings
     val expectedSize = 3
@@ -56,5 +61,5 @@ class HmtMomSpec extends FlatSpec {
     val george = CtsUrn("urn:cts:greekLit:tlg0012:")
     val georgeMapping = orthos.filter(_.urn ~~ george)
     assert(georgeMapping.size == 1)
-  }*/
+  }
 }
