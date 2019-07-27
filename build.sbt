@@ -17,7 +17,7 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
   "com.github.pathikrit" %% "better-files" % "3.5.0",
 
-  "edu.holycross.shot.cite" %% "xcite" % "4.0.2",
+  "edu.holycross.shot.cite" %% "xcite" % "4.1.0",
   "edu.holycross.shot" %% "scm" % "7.0.0",
   "edu.holycross.shot" %% "ohco2" % "10.13.0",
   "edu.holycross.shot" %% "citeobj" % "7.3.3",
@@ -25,10 +25,10 @@ libraryDependencies ++= Seq(
   "edu.holycross.shot" %% "dse" % "5.1.1",
   "edu.holycross.shot" %% "cex" % "6.3.3",
   //"edu.holycross.shot" %% "citeiip" % "1.0.0",
-  "org.homermultitext" %% "hmt-textmodel" % "6.0.0",
+  "org.homermultitext" %% "hmt-textmodel" % "6.0.1",
 
 
-  "edu.holycross.shot" %% "midvalidator" % "6.0.2"
+  "edu.holycross.shot" %% "midvalidator" % "6.7.0"
 
 
 

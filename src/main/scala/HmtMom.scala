@@ -98,8 +98,9 @@ case class HmtMom(baseDir: String)  {
   *
   * @param scholia Corpus of scholia cited at leaf node.
   */
-  def scholiaTextCorpus (scholia: Corpus): Corpus = {
-    Corpus(scholia.nodes.filterNot(_.urn.toString.endsWith(".ref")))
+  def scholiaTextCorpus (c: Corpus): Corpus = {
+    val scholiaNodes = c.nodes.filter(_.urn ~~ CtsUrn("urn:cts:greekLit:tlg5026:"))
+    Corpus(scholiaNodes.filterNot(_.urn.toString.endsWith(".ref")))
   }
 
   /** Given a corpus of scholia in HMT archival XML cited at leaf node,
@@ -187,9 +188,11 @@ case class HmtMom(baseDir: String)  {
     texts.cex()
   }
 
+// THIS IS MESSED UP
   def commentsCex: String = {
-    val scholia = scholiaTextCorpus(texts.corpus)
-    val comments = scholiaComments(scholia).flatten.toSet
+    val scholiaNodes = texts.corpus.nodes.filter(_.urn ~~ CtsUrn("urn:cts:greekLit:tlg5026:"))
+
+    val comments = scholiaComments(Corpus(scholiaNodes)).flatten.toSet
     CiteRelationSet(comments).cex()
   }
 
