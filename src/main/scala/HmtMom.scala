@@ -29,7 +29,7 @@ case class HmtMom(baseDir: String)  {
 
 
   val midRepo = EditorsRepo(baseDir)
-  //val midValidator = Validator(, readerMappings, orthoMappings)
+
   //val dse = midValidator.dse
 
 
@@ -229,23 +229,17 @@ case class HmtMom(baseDir: String)  {
   }
 
   def validate : Unit = {
-    //val midValidator = Validator(repo, readerMappings(), orthoMappings())
-
+    val midValidator = Validator(midRepo, readerMappings, orthoMappings)
+    val hmtValidator = HmtValidator(library)
   }
 
   // Text repo configuration
-  /*
-  val ctsCatalog = editionsDir/"catalog.cex"
-  val ctsCitation = editionsDir/"citation.cex"
-  */
+  // THIS SHOULD BE MOVED TO MID VALIDATOR
   val readersConfig = midRepo.editionsDir/"readers.csv"
   val orthoConfig = midRepo.editionsDir/"orthographies.csv"
   constructed
 
   def constructed: Unit = {
-  /*  for (d <- dirs) {
-      require(d.exists, "Repository not correctly laid out: missing directory " + d)
-    }*/
     for (conf <- Seq(readersConfig, orthoConfig)) {
       require(conf.exists,"Missing required configuration file: " + conf)
     }
