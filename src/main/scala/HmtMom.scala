@@ -34,6 +34,10 @@ case class HmtMom(baseDir: String)  {
     CiteLibrary(libHeader + dseCex + textsCex + commentsCex)
   }
 
+
+  val midValidator = Validator(EditorsRepo(baseDir), readerMappings, orthoMappings)
+  //val dse = midValidator.dse
+
   /** Construct DseVector for this repository's records. */
   def dse:  DseVector = {
     val records = dseCex.split("\n").filter(_.nonEmpty).toVector
@@ -195,12 +199,14 @@ case class HmtMom(baseDir: String)  {
   * classes implementing the MidMarkupReader trait.
   */
   def readerMappings :  Vector[ReadersPairing]= {
-    val readersList = readersConfig.lines.tail
+    val readersConf = File(baseDir + "/editions/readers.csv")
+    val readersList = readersConf.lines.tail
     val pairs = for (row <- readersList) yield {
       val parts = row.split(",").toVector
       ReadersPairing(CtsUrn(parts(0)), HmtValidator.readersForString(parts(1)))
     }
     pairs.toVector
+    //Vector.empty[ReadersPairing]
   }
 
 
@@ -208,13 +214,13 @@ case class HmtMom(baseDir: String)  {
   * classes implementing the MidOrthography trait.
   */
   def orthoMappings : Vector[OrthoPairing] = {
-    val orthoList = orthoConfig.lines.tail
+    val orthoConf = File(baseDir + "/editions/orthographies.csv")
+    val orthoList = orthoConf.lines.tail
     val pairs = for (row <- orthoList) yield {
       val parts = row.split(",").toVector
       OrthoPairing(CtsUrn(parts(0)), HmtValidator.orthoForString(parts(1)))
     }
     pairs.toVector
-
   }
 
   // Text repo configuration

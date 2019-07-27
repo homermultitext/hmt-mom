@@ -7,10 +7,10 @@ import org.homermultitext.edmodel._
 
 class HmtMomDeprecatedSpec extends FlatSpec {
 
-  "An HmtMom" should "create a CTS corpus of raw XML source" in {
+  "An HmtMom" should "create a CTS corpus of raw XML source" in pending /*{
     val mom = HmtMomDeprecated("src/test/resources/il10")
     assert(mom.raw.isInstanceOf[Corpus])
-  }
+  }*/
 
   it should "create an Iliad corpus with XML source for diplomatic edition" in pending /*{
     val mom = HmtMomDeprecated("src/test/resources/il10")
@@ -22,18 +22,18 @@ class HmtMomDeprecatedSpec extends FlatSpec {
   }*/
 
 
-  it should "create a scholia corpus with XML source for diplomatic edition" in {
+  it should "create a scholia corpus with XML source for diplomatic edition" in  pending /*{
     val mom = HmtMomDeprecated("src/test/resources/il10")
     assert(mom.scholia.isInstanceOf[Corpus])
 
     val expectedScholia = Set("msAext", "msA", "msAil", "msAint", "msAim")
     val actualScholia = mom.scholia.nodes.map(_.urn.work).toSet
     assert(actualScholia == expectedScholia)
-  }
-  it should "create a comprehensive corpus with XML source for diplomatic edition" in {
+  }*/
+  it should "create a comprehensive corpus with XML source for diplomatic edition" in  pending/* {
     val mom = HmtMomDeprecated("src/test/resources/il10")
     assert(mom.corpus.isInstanceOf[Corpus])
-  }
+  }*/
   it should "create a vector of HmtTokens for the whole corpus" in pending /*{
     val mom = HmtMomDeprecated("src/test/resources/il10")
     assert(mom.tokens.isInstanceOf[Vector[HmtToken]])
