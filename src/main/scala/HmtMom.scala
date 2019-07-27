@@ -45,6 +45,11 @@ case class HmtMom(baseDir: String)  {
 
   /** Construct DseVector for this repository's records. */
   def dse:  DseVector = {
+    val triplesCex = DataCollector.compositeFiles(midRepo.dseDir.toString, "cex", dropLines = 1)
+    val tempCollection = Cite2Urn("urn:cite2:validate:tempDse.temp:")
+    val dseV = DseVector.fromTextTriples(triplesCex, tempCollection)
+    dseV
+    /*
     val records = dseCex.split("\n").filter(_.nonEmpty).toVector
 
     // This value must agree with header data in header/1.dse-prolog.cex.
@@ -58,7 +63,7 @@ case class HmtMom(baseDir: String)  {
     } else {
       val srcAll = libHeader + dseRecords.mkString("\n")
       DseVector(srcAll)
-    }
+    }*/
   }
 
   /** Construct TextRepository. */
@@ -173,11 +178,7 @@ case class HmtMom(baseDir: String)  {
 
   /** CEX data for DSE relations.*/
   def dseCex:  String = {
-    val triplesCex = DataCollector.compositeFiles(midRepo.dseDir.toString, "cex", dropLines = 1)
-    val tempCollection = Cite2Urn("urn:cite2:validate:tempDse.temp:")
-    val dseV = DseVector.fromTextTriples(triplesCex, tempCollection)
-    //dseV.cex
-    val rows = dseV.passages.map(_.cex())
+    val rows = dse.passages.map(_.cex())
     rows.mkString("\n")
   }
 
@@ -228,20 +229,16 @@ case class HmtMom(baseDir: String)  {
     pairs.toVector
   }
 
-  def validate : Unit = {
-    val midValidator = Validator(midRepo, readerMappings, orthoMappings)
+  /** HCMID project validator to check on layout or repository.*/
+  val midValidator = Validator(midRepo, readerMappings, orthoMappings)
+
+  def validate(uString : String) = {
+    println("Validating DSE consistency:")
+    //val dse = midValidator.dse
+    val reporter = ValidationReporter(midValidator)
+    reporter.validate(uString)
     val hmtValidator = HmtValidator(library)
   }
 
-  // Text repo configuration
-  // THIS SHOULD BE MOVED TO MID VALIDATOR
-  val readersConfig = midRepo.editionsDir/"readers.csv"
-  val orthoConfig = midRepo.editionsDir/"orthographies.csv"
-  constructed
 
-  def constructed: Unit = {
-    for (conf <- Seq(readersConfig, orthoConfig)) {
-      require(conf.exists,"Missing required configuration file: " + conf)
-    }
-  }
 }

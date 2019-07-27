@@ -14,32 +14,36 @@ class HmtMomSpec extends FlatSpec {
   val repoDir = "./src/test/resources/il10"
 
   "An HmtMom" should "create an MID EditorsRepo" in {
-    val repo = HmtMom(repoDir)
-    assert(repo.midRepo.baseDir == repoDir)
+    val mom = HmtMom(repoDir)
+    assert(mom.midRepo.baseDir == repoDir)
   }
 
   it should "include a dse directory" in {
-    val repo = HmtMom(repoDir)
+    val mom = HmtMom(repoDir)
     val expectedDse = File(repoDir + "/dse")
-    assert (repo.midRepo.dseDir == expectedDse)
+    assert (mom.midRepo.dseDir == expectedDse)
+  }
+
+  it should "do MID DSE consistency checking" in {
+    val mom = HmtMom(repoDir)
   }
 
 
   it should "generate a CITE Library" in {
-    val repo = HmtMom(repoDir)
-    val lib = repo.library
+    val mom = HmtMom(repoDir)
+    val lib = mom.library
     val expected = "Homer Multitext project, temporary library for validating work in progress"
     assert(lib.name == expected)
   }
 
   it should "compute CITE relations for scholia" in {
-    val repo = HmtMom(repoDir)
-    repo.scholiaComments(repo.scholia(repo.texts.corpus))
+    val mom = HmtMom(repoDir)
+    mom.scholiaComments(mom.scholia(mom.texts.corpus))
   }
 
   it should "map texts String to scala classes implementing MidMarkupReader" in {
-    val repo = HmtMom(repoDir)
-    val readers = repo.readerMappings
+    val mom = HmtMom(repoDir)
+    val readers = mom.readerMappings
 
     // Entries configured for 3 distinct URNs
     val expectedSize = 3
@@ -52,8 +56,8 @@ class HmtMomSpec extends FlatSpec {
   }
 
   it should "map texts String to scala classes implementing MidOrthography" in {
-    val repo = HmtMom(repoDir)
-    val orthos = repo.orthoMappings
+    val mom = HmtMom(repoDir)
+    val orthos = mom.orthoMappings
     val expectedSize = 3
     assert(orthos.size == expectedSize)
 
@@ -61,5 +65,9 @@ class HmtMomSpec extends FlatSpec {
     val george = CtsUrn("urn:cts:greekLit:tlg0012:")
     val georgeMapping = orthos.filter(_.urn ~~ george)
     assert(georgeMapping.size == 1)
+  }
+
+  it should "support MID validation" in {
+    
   }
 }
