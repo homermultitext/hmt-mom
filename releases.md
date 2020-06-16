@@ -2,6 +2,8 @@
 
 Beginning with version 3.0:
 
+**4.0.0**: Complete rewoking of the library as pluggable implementations of the CITE `Validator` trait.
+
 
 **3.5.3**:   Support dynamic definition of character encoding with `scala.io.Source`.
 

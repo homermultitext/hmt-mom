@@ -3,16 +3,16 @@
 
 HMT MOM is a library to support validating editorial work on the Homer Muiltitext project.
 
-## Current version:  3.5.3
+## Current version:  4.0.0
+
+Version 4.0 begins a complete API-breaking reworking of HMT-MOM as a series of implementations of the CITE architecture `Validator` trait.
+
+More information forthcoming in the user's guide.
 
 [Release notes](releases.md)
 
 
 ## Documentation
 
-See <https://homermultitext.github.io/hmt-mom/>.
-
-
-
-
-[2]: http://www.homermultitext.org/hmt-docs/guides/index.html
+- User guide
+- API
