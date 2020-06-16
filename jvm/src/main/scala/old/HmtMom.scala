@@ -8,7 +8,11 @@ import edu.holycross.shot.scm._
 import edu.holycross.shot.cex._
 import edu.holycross.shot.dse._
 import edu.holycross.shot.citerelation._
+
 import edu.holycross.shot.mid.validator._
+import edu.holycross.shot.mid.orthography._
+import edu.holycross.shot.mid.markupreader._
+import edu.holycross.shot.citevalidator._
 
 import scala.xml._
 
@@ -28,48 +32,11 @@ case class HmtMom(baseDir: String)  {
 
 
 
-  val midRepo = EditorsRepo(baseDir)
+  //val midRepo = EditorsRepo(baseDir)
 
   //val dse = midValidator.dse
 
 
-  /** Build an HMT library from the library. */
-  def library: CiteLibrary = {
-    // required components:
-    // text repo, dse,
-    // relations dervied from cross-references in scholia editions
-    CiteLibrary(libHeader + dseCex + textsCex + commentsCex)
-  }
-
-
-
-  /** Construct DseVector for this repository's records. */
-  def dse:  DseVector = {
-    val triplesCex = DataCollector.compositeFiles(midRepo.dseDir.toString, "cex", dropLines = 1)
-    val tempCollection = Cite2Urn("urn:cite2:validate:tempDse.temp:")
-    val dseV = DseVector.fromTextTriples(triplesCex, tempCollection)
-    dseV
-    /*
-    val records = dseCex.split("\n").filter(_.nonEmpty).toVector
-
-    // This value must agree with header data in header/1.dse-prolog.cex.
-    val baseUrn = "urn:cite2:validate:tempDse.temp:"
-    val dseRecords = for ((record, count) <- records.zipWithIndex) yield {
-      s"${baseUrn}validate_${count}#Temporary DSE record ${count}#${record}"
-    }
-
-    if (records.isEmpty) {
-      DseVector(Vector.empty[DsePassage])
-    } else {
-      val srcAll = libHeader + dseRecords.mkString("\n")
-      DseVector(srcAll)
-    }*/
-  }
-
-  /** Construct TextRepository. */
-  def texts : TextRepository = {
-    TextRepositorySource.fromFiles(midRepo.ctsCatalog.toString, midRepo.ctsCitation.toString, midRepo.editionsDir.toString)
-  }
 
 
   /** Create new corpus by extracting all scholia from a
@@ -77,7 +44,7 @@ case class HmtMom(baseDir: String)  {
   *
   * @param c Corpus to extact scholia from.
   */
-  def scholia(c: Corpus = texts.corpus) : Corpus = {
+  def scholia(c: Corpus) : Corpus = {
     val scholiaUrn = CtsUrn("urn:cts:greekLit:tlg5026:")
     c ~~ scholiaUrn
   }
@@ -87,7 +54,7 @@ case class HmtMom(baseDir: String)  {
   *
   * @param c Corpus to extact scholia from.
   */
-  def iliads(c: Corpus = texts.corpus): Corpus = {
+  def iliads(c: Corpus): Corpus = {
     val iliadUrn = CtsUrn("urn:cts:greekLit:tlg0012.tlg001:")
     c ~~ iliadUrn
   }
@@ -174,36 +141,17 @@ case class HmtMom(baseDir: String)  {
     commentRelations.toVector
   }
 
-  /** CEX library header data.*/
-  def libHeader:  String = DataCollector.compositeFiles(midRepo.libHeadersDir.toString, "cex")
 
-  /** CEX data for DSE relations.*/
-  def dseCex:  String = {
-    val rows = dse.passages.map(_.cex())
-    rows.mkString("\n")
-  }
-
-  /** CEX data for text editions.*/
-  def textsCex: String = {
-    texts.cex()
-  }
 
 // THIS IS MESSED UP
-  def commentsCex: String = {
-    val scholiaNodes = texts.corpus.nodes.filter(_.urn ~~ CtsUrn("urn:cts:greekLit:tlg5026:"))
+  def commentsCex(corpus: Corpus): String = {
+    val scholiaNodes = corpus.nodes.filter(_.urn ~~ CtsUrn("urn:cts:greekLit:tlg5026:"))
 
     val comments = scholiaComments(Corpus(scholiaNodes)).flatten.toSet
     CiteRelationSet(comments).cex()
   }
 
-/*
-  val dseDir = File(baseDir + "/dse")
-  val validationDir = File(baseDir + "/validation")
-  val editionsDir = File(baseDir + "/editions")
-  val paleographyDir = File(baseDir + "/paleography") // allow this to be optional
-  val libHeadersDir = File(baseDir + "/header")
-  val dirs = Vector(dseDir, editionsDir, validationDir, paleographyDir, libHeadersDir)
-*/
+
   /** Construct mappings, as configurred for this repository, of CtsUrns to
   * classes implementing the MidMarkupReader trait.
   */
@@ -233,14 +181,14 @@ case class HmtMom(baseDir: String)  {
   }
 
   /** HCMID project validator to check on layout or repository.*/
-  val midValidator = Validator(midRepo, readerMappings, orthoMappings)
+  //val midValidator = Validator(midRepo, readerMappings, orthoMappings)
 
   def validate(uString : String) = {
     println("Validating DSE consistency:")
     //val dse = midValidator.dse
-    val reporter = ValidationReporter(midValidator)
-    reporter.validate(uString)
-    val hmtValidator = HmtValidator(library)
+    //val reporter = ValidationReporter(midValidator)
+    //reporter.validate(uString)
+    //val hmtValidator = HmtValidator(library)
   }
 
 

@@ -10,6 +10,9 @@ import org.homermultitext.edmodel._
 import edu.holycross.shot.greek._
 
 import edu.holycross.shot.mid.validator._
+import edu.holycross.shot.mid.orthography._
+import edu.holycross.shot.mid.markupreader._
+import edu.holycross.shot.citevalidator._
 
 /** A class for validating and analyzing a CiteLibrary with HMT project content.
 */
