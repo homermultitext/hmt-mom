@@ -15,4 +15,4 @@ More information forthcoming in the user's guide.
 ## Documentation
 
 - User guide
-- API
+- [API docs](http://neelsmith.info/code/auto/hmt-mom/org/homermultitext/hmtmom/index.html)
