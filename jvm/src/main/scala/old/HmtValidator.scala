@@ -63,7 +63,7 @@ object HmtValidator {
   /** HMT project mapping of string names to MidOrthography class.
   */
   val orthoMap = Map(
-    "LiteraryGreekString" -> LiteraryGreekString
+    "LiteraryGreekString" -> HmtIliadOrthography
   )
 
 

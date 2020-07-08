@@ -12,6 +12,7 @@ lazy val root = project.in(file(".")).
 
 lazy val crossed = crossProject(JSPlatform, JVMPlatform).in(file(".")).
     settings(
+      name := "hmtmom",
       organization := "org.homermultitext",
       version := "4.0.0",
       licenses += ("GPL-3.0",url("https://opensource.org/licenses/gpl-3.0.html")),
@@ -25,17 +26,17 @@ lazy val crossed = crossProject(JSPlatform, JVMPlatform).in(file(".")).
 
         "edu.holycross.shot.cite" %% "xcite" % "4.3.0",
         "edu.holycross.shot" %% "scm" % "7.3.0",
-        "edu.holycross.shot" %% "ohco2" % "10.19.0",
+        "edu.holycross.shot" %% "ohco2" % "10.20.3",
         "edu.holycross.shot" %% "citeobj" % "7.5.0",
         "edu.holycross.shot" %% "citerelations" % "2.7.0",
-        "edu.holycross.shot" %% "dse" % "7.1.0",
+        "edu.holycross.shot" %% "dse" % "7.1.3",
         "edu.holycross.shot" %% "cex" % "6.5.0",
 
-        "edu.holycross.shot" %% "midvalidator" % "13.0.0",
-        "edu.holycross.shot" %% "citevalidator" % "1.1.0",
-        "edu.holycross.shot.mid" %% "orthography" % "1.0.0",
+        "edu.holycross.shot" %% "midvalidator" % "13.3.0",
+        "edu.holycross.shot" %% "citevalidator" % "1.2.1",
+        "edu.holycross.shot.mid" %% "orthography" % "2.0.0",
 
-        "edu.holycross.shot" %% "greek" % "5.0.1",
+        "edu.holycross.shot" %% "greek" % "7.0.0",
         "org.homermultitext" %% "hmt-textmodel" % "7.0.0",
 
 
